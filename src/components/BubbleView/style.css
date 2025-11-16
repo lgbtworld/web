@@ -30,16 +30,7 @@
   border: 5px solid #000;
 }
 
-.face-title {
-  
-  user-select: none;
-  position: absolute;
-  font-weight: 900;
-  font-size: 3rem;
-  left: 1.6em;
-  top: 50%;
-}
-
+ 
 .action-button-icon {
   user-select: none;
   position: relative;
@@ -49,6 +40,12 @@
 }
 
 .face-title {
+    user-select: none;
+  position: absolute;
+  font-weight: 900;
+  font-size: 3rem;
+  left: 1.6em;
+  top: 50%;
   position: absolute;
   top: 50%;
   transform: translate(20%, -50%);
@@ -112,9 +109,4 @@
   transition: 0.1s ease;
 }
 
-@media (max-width: 1500px) {
-  .face-title,
-  .face-description {
-    display: none;
-  }
-}
+ 

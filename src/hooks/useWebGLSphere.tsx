@@ -21,7 +21,7 @@ flat out int vInstanceId;
 
 void main() {
     vec4 worldPosition = uWorldMatrix * aInstanceMatrix * vec4(aModelPosition, 1.);
-    vec3 centerPos = (uWorldMatrix * aInstanceMatrix * vec4(0., 0., 0., 1.)).xyz;
+    vec3 centerPos = (uWorldMatrix * aInstanceMatrix * vec4(0., 0., 0., .92)).xyz;
     float radius = length(centerPos.xyz);
     if (gl_VertexID > 0) {
         vec3 rotationAxis = uRotationAxisVelocity.xyz;
@@ -230,8 +230,12 @@ class ArcballControl {
 
 // --- MAIN WEBGL CLASS ---
 class InfiniteGridMenu {
-    TARGET_FRAME_DURATION = 1000 / 60; SPHERE_RADIUS = 2;
-    #time = 0; #deltaTime = 0; #deltaFrames = 0; #frames = 0;
+    TARGET_FRAME_DURATION = 1000 / 60; 
+    SPHERE_RADIUS = 2;
+    #time = 0; 
+    #deltaTime = 0;
+     #deltaFrames = 0; 
+     #frames = 0;
     camera = {
         matrix: mat4.create(), near: 0.1, far: 40, fov: Math.PI / 4, aspect: 1, position: vec3.fromValues(0, 0, 3), up: vec3.fromValues(0, 1, 0),
         matrices: { view: mat4.create(), projection: mat4.create(), inversProjection: mat4.create() }

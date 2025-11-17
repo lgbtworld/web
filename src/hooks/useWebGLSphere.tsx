@@ -299,10 +299,9 @@ class InfiniteGridMenu {
         const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const cellSize = 512;
         canvas.width = this.atlasSize * cellSize; canvas.height = this.atlasSize * cellSize;
         Promise.all(this.items.map(item => new Promise<HTMLImageElement>(resolve => {
-            console.log("item",item)
             const imageURL = getSafeImageURL(item.avatar, 'large');
 
-            let  imageURI = "https://api.coolvibes.io/static/uploads/users/88597a10-33d0-48c7-bed8-0447e219ea61/stories/2025-11-15/8b503a7a-9ade-4e89-a403-97db5981db9f_portrait_md.webp"
+            let  imageURI = `https://placehold.co/400?text=${item.displayname}&font=roboto`
             const img = new Image(); img.crossOrigin = 'anonymous';
             img.onload = () => resolve(img);
             img.onerror = () => { img.src = imageURL ? imageURL : imageURI }; // Fallback

@@ -21,11 +21,11 @@ flat out int vInstanceId;
 
 void main() {
     vec4 worldPosition = uWorldMatrix * aInstanceMatrix * vec4(aModelPosition, 1.);
-    vec3 centerPos = (uWorldMatrix * aInstanceMatrix * vec4(0., 0., 0., .92)).xyz;
+    vec3 centerPos = (uWorldMatrix * aInstanceMatrix * vec4(0., 0., 0., 1.)).xyz;
     float radius = length(centerPos.xyz);
     if (gl_VertexID > 0) {
         vec3 rotationAxis = uRotationAxisVelocity.xyz;
-        float rotationVelocity = min(.15, uRotationAxisVelocity.w * 15.);
+        float rotationVelocity = min(.15, uRotationAxisVelocity.w * 5.);
         vec3 stretchDir = normalize(cross(centerPos, rotationAxis));
         vec3 relativeVertexPos = normalize(worldPosition.xyz - centerPos);
         float strength = dot(stretchDir, relativeVertexPos);

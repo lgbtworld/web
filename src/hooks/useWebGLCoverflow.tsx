@@ -88,7 +88,6 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
 
     useEffect(() => {
         isMutedRef.current = isMuted;
-        console.log("isMuted",isMuted)
     }, [isMuted]);
 
     const interactionRef = useRef({ 
@@ -328,42 +327,29 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
             gl.uniform1i(texFromLocation, 0);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, fromItem.texture);
-            if (fromItem.isReady && fromItem.isVideo) {
-                 const video = fromItem.element as HTMLVideoElement;
-                 if (video.readyState >= video.HAVE_CURRENT_DATA) {
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-                 }
-            }
 
             gl.uniform1i(texToLocation, 1);
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, toItem.texture);
-            if (toItem.isReady && toItem.isVideo) {
-                 const video = toItem.element as HTMLVideoElement;
-                 if (video.readyState >= video.HAVE_CURRENT_DATA) {
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-                 }
-            }
 
-            gl.uniform2f(resLocation, gl.canvas.width, gl.canvas.height);
+            gl.uniform2f(resLocation, canvas.width, canvas.height);
             gl.uniform2f(resFromLocation, fromItem.resolution[0], fromItem.resolution[1]);
             gl.uniform2f(resToLocation, toItem.resolution[0], toItem.resolution[1]);
+
             gl.uniform1f(progressLocation, progress);
             gl.uniform1f(velocityLocation, pos.velocity);
-            
+
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         };
-        render(0);
-        
-        return () => { 
-            cancelAnimationFrame(animationFrameRef.current);
-            mediaItemsRef.current.forEach(item => {
-                if(item.isVideo) {
-                    (item.element as HTMLVideoElement).pause();
-                }
-            });
+
+        animationFrameRef.current = requestAnimationFrame(render);
+
+        return () => {
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+            }
         };
-    }, [vibes, onActiveIndexChange, canvasRef]);
+    }, [vibes, onActiveIndexChange]);
     
     useEffect(() => {
         const canvas = canvasRef.current;

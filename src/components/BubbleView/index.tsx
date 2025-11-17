@@ -67,9 +67,9 @@ export default function BubbleView() {
     const webglController = useWebGLSphere(canvasRef, users, handleActiveItemChange, setIsMoving);
 
 
-   
 
- 
+
+
 
     const handleSendMessage = async (profile: any) => {
         if (!profile?.id) {
@@ -213,9 +213,18 @@ export default function BubbleView() {
 
 
     return (
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}><canvas id="infinite-grid-menu-canvas" ref={canvasRef} />
-            {activeUser && (<>
-                <div className={(isMoving ? 'hidden' : '') + ` absolute flex flex-col gap-2 items-center justify-center text-center bottom-0  w-full  h-1/4 md:h-1/7  z-5 rounded-lg backdrop-blur-sm py-5 bg-red-500"`}>
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <canvas id="infinite-grid-menu-canvas" ref={canvasRef} />
+            <AnimatePresence>
+            {activeUser && !isMoving && (
+                    <motion.div
+                        className="absolute bottom-0 left-0 right-0 h-1/4 md:h-1/5 flex flex-col items-center justify-center"
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 50 }}
+                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                <div className={` w-full max-w-sm flex flex-col gap-2 items-center justify-center text-center`}>
                     <h2 className="text-md font-bold">{activeUser?.username} <span className="font-light">{calculateAge(activeUser.date_of_birth)}</span></h2>
                     <ActionBar
                         viewMode='bubble'
@@ -246,7 +255,8 @@ export default function BubbleView() {
 
 
 
-            </>)}
+            </motion.div>)}
+            </AnimatePresence>
 
             {isOverlayReady && overlay &&
                 createPortal(

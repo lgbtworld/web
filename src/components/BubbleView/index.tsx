@@ -216,7 +216,7 @@ export default function BubbleView() {
         <div style={{ position: 'relative', width: '100%', height: '100%' }}><canvas id="infinite-grid-menu-canvas" ref={canvasRef} />
             {activeUser && (<>
                 <div className={(isMoving ? 'hidden' : '') + ` absolute flex flex-col gap-2 items-center justify-center text-center bottom-0  w-full  h-1/4 md:h-1/7  z-5 rounded-lg backdrop-blur-sm py-5 bg-red-500"`}>
-                    <h2 className="text-3xl font-bold">{activeUser?.username} <span className="font-light">{calculateAge(activeUser.date_of_birth)}</span></h2>
+                    <h2 className="text-md font-bold">{activeUser?.username} <span className="font-light">{calculateAge(activeUser.date_of_birth)}</span></h2>
                     <ActionBar
                         viewMode='bubble'
                         liked={liked}

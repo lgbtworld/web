@@ -341,15 +341,19 @@ class InfiniteGridMenu {
         const gl = this.gl; if (!gl || !this.discProgram || !this.discBuffers.indices || !this.discVAO || !this.control) return;
         gl.useProgram(this.discProgram); gl.enable(gl.CULL_FACE); gl.enable(gl.DEPTH_TEST);
         gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.uniformMatrix4fv(this.discLocations.uWorldMatrix, false, this.worldMatrix); gl.uniformMatrix4fv(this.discLocations.uViewMatrix, false, this.camera.matrices.view);
+        gl.uniformMatrix4fv(this.discLocations.uWorldMatrix, false, this.worldMatrix); 
+        gl.uniformMatrix4fv(this.discLocations.uViewMatrix, false, this.camera.matrices.view);
         gl.uniformMatrix4fv(this.discLocations.uProjectionMatrix, false, this.camera.matrices.projection);
         gl.uniform3f(this.discLocations.uCameraPosition, this.camera.position[0], this.camera.position[1], this.camera.position[2]);
         gl.uniform4f(this.discLocations.uRotationAxisVelocity, this.control.rotationAxis[0], this.control.rotationAxis[1], this.control.rotationAxis[2], this.smoothRotationVelocity * 1.1);
         gl.uniform1i(this.discLocations.uItemCount, this.items.length); gl.uniform1i(this.discLocations.uAtlasSize, this.atlasSize);
-        gl.uniform1f(this.discLocations.uFrames, this.#frames); gl.uniform1f(this.discLocations.uScaleFactor, this.scaleFactor);
-        gl.uniform1i(this.discLocations.uTex, 0); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex);
-        gl.bindVertexArray(this.discVAO); gl.drawElementsInstanced(gl.TRIANGLES, this.discBuffers.indices.length, gl.UNSIGNED_SHORT, 0, this.DISC_INSTANCE_COUNT);
-    }
+        gl.uniform1f(this.discLocations.uFrames, this.#frames); 
+        gl.uniform1f(this.discLocations.uScaleFactor, this.scaleFactor);
+        gl.uniform1i(this.discLocations.uTex, 0); 
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex);
+        gl.bindVertexArray(this.discVAO); 
+        gl.drawElementsInstanced(gl.TRIANGLES, this.discBuffers.indices.length, gl.UNSIGNED_SHORT, 0, this.DISC_INSTANCE_COUNT);
+       }
     #updateCameraMatrix() { mat4.targetTo(this.camera.matrix, this.camera.position, [0, 0, 0], this.camera.up); mat4.invert(this.camera.matrices.view, this.camera.matrix); }
     #updateProjectionMatrix(gl: WebGL2RenderingContext) {
         // FIX: Cast gl.canvas to HTMLCanvasElement to safely access clientWidth and clientHeight properties, which are not available on OffscreenCanvas.

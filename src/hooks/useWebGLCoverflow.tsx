@@ -53,10 +53,14 @@ const FRAGMENT_SHADER_SOURCE = `
         vec2 cover_uv_from = getCoverUv(uv_from, u_resolution, u_res_from);
         vec2 cover_uv_to = getCoverUv(uv_to, u_resolution, u_res_to);
 
-        // A small constant to inset UVs and prevent texture edge artifacts on mobile GPUs
-        float epsilon = 0.001; 
-        vec2 clamped_uv_from = clamp(cover_uv_from, vec2(epsilon), vec2(1.0 - epsilon));
-        vec2 clamped_uv_to = clamp(cover_uv_to, vec2(epsilon), vec2(1.0 - epsilon));
+        // To prevent edge artifacts (thin lines) on some GPUs, especially mobile,
+        // we inset the texture coordinates by half a pixel (texel).
+        // This is more robust than a fixed epsilon value as it's resolution-independent.
+        vec2 half_texel_from = 0.5 / u_res_from;
+        vec2 half_texel_to   = 0.5 / u_res_to;
+
+        vec2 clamped_uv_from = clamp(cover_uv_from, half_texel_from, 1.0 - half_texel_from);
+        vec2 clamped_uv_to   = clamp(cover_uv_to, half_texel_to,   1.0 - half_texel_to);
 
         vec4 color_from = texture2D(u_tex_from, clamped_uv_from);
         vec4 color_to = texture2D(u_tex_to, clamped_uv_to);

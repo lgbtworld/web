@@ -53,8 +53,13 @@ const FRAGMENT_SHADER_SOURCE = `
         vec2 cover_uv_from = getCoverUv(uv_from, u_resolution, u_res_from);
         vec2 cover_uv_to = getCoverUv(uv_to, u_resolution, u_res_to);
 
-        vec4 color_from = texture2D(u_tex_from, cover_uv_from);
-        vec4 color_to = texture2D(u_tex_to, cover_uv_to);
+        // A small constant to inset UVs and prevent texture edge artifacts on mobile GPUs
+        float epsilon = 0.001; 
+        vec2 clamped_uv_from = clamp(cover_uv_from, vec2(epsilon), vec2(1.0 - epsilon));
+        vec2 clamped_uv_to = clamp(cover_uv_to, vec2(epsilon), vec2(1.0 - epsilon));
+
+        vec4 color_from = texture2D(u_tex_from, clamped_uv_from);
+        vec4 color_to = texture2D(u_tex_to, clamped_uv_to);
 
         float fade_progress = smoothstep(0.0, 1.0, u_progress);
 

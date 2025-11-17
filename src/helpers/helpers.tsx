@@ -119,3 +119,5 @@ export function urlBase64ToUint8Array(base64String: string) {
   }
   return outputArray;
 }
+
+export const random = (min: number, max: number): number => Math.random() * (max - min) + min;

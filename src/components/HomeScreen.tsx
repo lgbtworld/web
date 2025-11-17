@@ -10,6 +10,7 @@ import Vibes from './Vibes';
 import CreatePost from './CreatePost';
 import { api } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
+import VibesGL from './VibesGL/VibesGL';
 
 const MAX_HEADER_HEIGHT = 335;
 const MIN_HEADER_HEIGHT = 80;
@@ -290,11 +291,10 @@ const HomeScreen: React.FC = () => {
                 onProfileClick={handleProfileClick}
               />
             ) : (
-              <Vibes
-                key="vibes"
-                activeTab={activeTab}
-                onPostClick={handlePostClick}
-              />
+              <>
+              <VibesGL/>
+             
+              </>
             )}
           </AnimatePresence>
         )}

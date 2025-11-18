@@ -94,7 +94,7 @@ export function PushNotificationSetupContext() {
 
     fallbackInterval.current = window.setInterval(async () => {
       try {
-        const res = await api.checkNewNotifications();
+        const res = await api.checkNewNotifications(1,null);
 
         if (res?.success && res.notifications && res.notifications.length > 0) {
           const unread = res.notifications.some(n => n.is_read === false);

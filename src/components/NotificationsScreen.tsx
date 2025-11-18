@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,6 +13,7 @@ import {
   CheckCheck
 } from 'lucide-react';
 import Container from './Container';
+import { api } from '../services/api';
 
 interface Notification {
   id: number;
@@ -180,6 +181,19 @@ const NotificationsScreen: React.FC = () => {
     }
     return time;
   };
+
+
+
+  const fetchNotifications = async() => {
+        const res = await api.checkNewNotifications(100,null);
+        console.log(`notifications,`,res)
+
+  }
+
+  useEffect(()=>{
+
+    fetchNotifications()
+  },[])
 
   return (
     <Container>

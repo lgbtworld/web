@@ -12,9 +12,10 @@ interface ApiRequestOptions {
 export class ApiService {
 
 
-  async checkNewNotifications(){
+  async checkNewNotifications(limit:number = 1,cursor:any = null){
     return this.call(Actions.CMD_GET_NOTIFICATIONS, {
       method: "POST",
+      body:{limit:limit,cursor:cursor}
     });
   }
 

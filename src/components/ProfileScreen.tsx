@@ -2255,7 +2255,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
               );
               if (category) {
                 const restoredInterest = {
-                  id: `temp-${Date.now()}`,
+                  id: `${itemId}`,
                   user_id: user.id,
                   interest_item_id: itemId,
                   interest_item: {
@@ -2355,7 +2355,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         const fantasy = appData?.fantasies?.find(f => f.id === fantasyId);
         if (fantasy) {
           const newFantasy = {
-            id: `temp-${Date.now()}`,
+            id: `${fantasyId}`,
             user_id: user.id,
             fantasy_id: fantasyId,
             fantasy: {
@@ -2437,7 +2437,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
           const fantasy = appData?.fantasies?.find(f => f.id === fantasyId);
           if (fantasy) {
             const restoredFantasy = {
-              id: `temp-${Date.now()}`,
+              id: `${fantasyId}`,
               user_id: user.id,
               fantasy_id: fantasyId,
               fantasy: {

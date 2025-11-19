@@ -1,8 +1,10 @@
 import { atom } from 'jotai';
 
 export interface GlobalState {
-    notificationCursor: string | number | null;
+    notificationNextCursor: string | number | null;
+    notificationPrevCursor: string | number | null;
     notifications: any[];
+    
     vibesCursor: string | number | null
     nearByCursor: string | number | null;
     nearbyUsers: any[];
@@ -12,8 +14,10 @@ export interface GlobalState {
 }
 
 export const globalState = atom<GlobalState>({
-    notificationCursor: null,
+    notificationNextCursor: null,
+    notificationPrevCursor: null,
     notifications: [],
+
     nearByCursor: null,
     nearbyUsers: [],
     posts: [],

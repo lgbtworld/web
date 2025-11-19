@@ -78,7 +78,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  
+  return
   if (event.request.method !== 'GET') return;
 
   // VITE HMR protection

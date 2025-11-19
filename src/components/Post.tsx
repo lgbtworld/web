@@ -496,7 +496,7 @@ className={`
             }
           }}
         >
-          <div className={`leading-relaxed text-[15px] ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+          <div className={`leading-relaxed  break-words text-[15px] ${theme === 'dark' ? 'text-white' : 'text-gray-900'
             }`} style={{
               color: theme === 'dark' ? '#ffffff' : '#111827'
             }}>

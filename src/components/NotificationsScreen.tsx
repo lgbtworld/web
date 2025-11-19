@@ -5,195 +5,163 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bell, 
   UserPlus, 
+  UserMinus,
   Heart, 
   MessageCircle, 
-  Check, 
   MoreVertical,
   Settings,
-  CheckCheck
+  CheckCheck,
+  Gift,
+  Sparkles,
+  Eye,
+  Users,
+  AlertCircle
 } from 'lucide-react';
 import Container from './Container';
 import { api } from '../services/api';
+import { useAtom } from 'jotai';
+import { globalState } from '../state/nearby';
 
 interface Notification {
-  id: number;
-  type: 'follow' | 'like' | 'mention' | 'message' | 'reply' | 'repost';
-  user: { 
-    name: string; 
-    username: string; 
-    avatar: string; 
-    verified: boolean;
+  id: string;
+  sender_id: string;
+  sender: {
+    public_id: string;
+    id: string;
+    username: string;
+    displayname: string;
+    [key: string]: any;
   };
+  user_id: string;
+  type: string;
+  title: string;
   message: string;
-  time: string;
-  read: boolean;
-  postId?: string;
+  payload: {
+    title: string;
+    body: string;
+    [key: string]: any;
+  };
+  is_read: boolean;
+  is_shown: boolean;
+  created_at: string;
 }
 
 const NotificationsScreen: React.FC = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'all' | 'mentions' | 'follows'>('all');
-
-  const notifications: Notification[] = [
-    {
-      id: 1,
-      type: 'follow',
-      user: { 
-        name: 'Alex Chen', 
-        username: 'alexchen', 
-        avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2', 
-        verified: true 
-      },
-      message: 'started following you',
-      time: '2m',
-      read: false
-    },
-    {
-      id: 2,
-      type: 'like',
-      user: { 
-        name: 'Jordan Lee', 
-        username: 'jordanl', 
-        avatar: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2', 
-        verified: false 
-      },
-      message: 'liked your post',
-      time: '15m',
-      read: false
-    },
-    {
-      id: 3,
-      type: 'mention',
-      user: { 
-        name: 'Sam Kim', 
-        username: 'samkim', 
-        avatar: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2', 
-        verified: true 
-      },
-      message: 'mentioned you in a post',
-      time: '1h',
-      read: true
-    },
-    {
-      id: 4,
-      type: 'message',
-      user: { 
-        name: 'Taylor Swift', 
-        username: 'taylorswift', 
-        avatar: 'https://images.pexels.com/photos/1102341/pexels-photo-1102341.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2', 
-        verified: true 
-      },
-      message: 'sent you a message',
-      time: '2h',
-      read: true
-    },
-    {
-      id: 5,
-      type: 'reply',
-      user: { 
-        name: 'Chris Brown', 
-        username: 'chrisbrown', 
-        avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2', 
-        verified: false 
-      },
-      message: 'replied to your post',
-      time: '3h',
-      read: true
-    },
-    {
-      id: 6,
-      type: 'follow',
-      user: { 
-        name: 'Emma Watson', 
-        username: 'emmawatson', 
-        avatar: 'https://images.pexels.com/photos/1559486/pexels-photo-1559486.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2', 
-        verified: true 
-      },
-      message: 'started following you',
-      time: '5h',
-      read: true
-    },
-    {
-      id: 7,
-      type: 'repost',
-      user: { 
-        name: 'Michael Johnson', 
-        username: 'michaelj', 
-        avatar: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2', 
-        verified: false 
-      },
-      message: 'shared your post',
-      time: '6h',
-      read: true
-    },
-    {
-      id: 8,
-      type: 'like',
-      user: { 
-        name: 'Sarah Williams', 
-        username: 'sarahw', 
-        avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2', 
-        verified: true 
-      },
-      message: 'liked your post',
-      time: '1d',
-      read: false
-    }
-  ];
+  const [activeTab, setActiveTab] = useState<'all' | 'messages' | 'matches' | 'likes' | 'follows' | 'gifts' | 'other'>('all');
+  const [state, setState] = useAtom(globalState);
+  const notifications: Notification[] = state.notifications || [];
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'follow':
+      case 'chat_message':
+        return MessageCircle;
+      case 'new_match':
+        return Heart;
+      case 'profile_visit':
+        return Eye;
+      case 'friend_request':
         return UserPlus;
+      case 'event_reminder':
+        return Bell;
+      case 'system_alert':
+        return AlertCircle;
       case 'like':
         return Heart;
-      case 'mention':
-        return Bell;
-      case 'message':
-        return MessageCircle;
-      case 'reply':
-        return MessageCircle;
-      case 'repost':
-        return Bell;
+      case 'gift':
+        return Gift;
+      case 'follow':
+        return UserPlus;
+      case 'unfollow':
+        return UserMinus;
+      case 'super_like':
+        return Sparkles;
+      case 'message_read':
+        return CheckCheck;
+      case 'match_unmatch':
+        return Users;
       default:
         return Bell;
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-  const mentionCount = notifications.filter(n => n.type === 'mention').length;
-  const followCount = notifications.filter(n => n.type === 'follow').length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const messageCount = notifications.filter(n => n.type === 'chat_message' || n.type === 'message_read').length;
+  const matchCount = notifications.filter(n => n.type === 'new_match' || n.type === 'match_unmatch').length;
+  const likeCount = notifications.filter(n => n.type === 'like' || n.type === 'super_like').length;
+  const followCount = notifications.filter(n => n.type === 'follow' || n.type === 'unfollow').length;
+  const giftCount = notifications.filter(n => n.type === 'gift').length;
+  const otherCount = notifications.filter(n => 
+    n.type === 'profile_visit' || 
+    n.type === 'friend_request' || 
+    n.type === 'event_reminder' || 
+    n.type === 'system_alert'
+  ).length;
 
   const filteredNotifications = activeTab === 'all' 
     ? notifications 
-    : activeTab === 'mentions'
-    ? notifications.filter(n => n.type === 'mention')
-    : notifications.filter(n => n.type === 'follow');
+    : activeTab === 'messages'
+    ? notifications.filter(n => n.type === 'chat_message' || n.type === 'message_read')
+    : activeTab === 'matches'
+    ? notifications.filter(n => n.type === 'new_match' || n.type === 'match_unmatch')
+    : activeTab === 'likes'
+    ? notifications.filter(n => n.type === 'like' || n.type === 'super_like')
+    : activeTab === 'follows'
+    ? notifications.filter(n => n.type === 'follow' || n.type === 'unfollow')
+    : activeTab === 'gifts'
+    ? notifications.filter(n => n.type === 'gift')
+    : notifications.filter(n => 
+        n.type === 'profile_visit' || 
+        n.type === 'friend_request' || 
+        n.type === 'event_reminder' || 
+        n.type === 'system_alert'
+      );
 
-  const formatTime = (time: string) => {
-    if (time.endsWith('m')) {
-      return `${time.replace('m', '')} min ago`;
-    } else if (time.endsWith('h')) {
-      return `${time.replace('h', '')} hour${parseInt(time) > 1 ? 's' : ''} ago`;
-    } else if (time.endsWith('d')) {
-      return `${time.replace('d', '')} day${parseInt(time) > 1 ? 's' : ''} ago`;
+  const formatTime = (createdAt: string) => {
+    const now = new Date();
+    const created = new Date(createdAt);
+    const diffMs = now.getTime() - created.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) {
+      return 'just now';
+    } else if (diffMins < 60) {
+      return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    } else if (diffDays < 7) {
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } else {
+      return created.toLocaleDateString();
     }
-    return time;
   };
 
 
 
-  const fetchNotifications = async() => {
-        const res = await api.checkNewNotifications(100,null);
-        console.log(`notifications,`,res)
-
+  const fetchNotifications = async(reset: boolean = false) => {
+    const res = await api.checkNewNotifications(
+      20,
+      reset ? null : state.notificationNextCursor // ilerleme için kullanıyoruz
+    );
+    setState(prev => ({
+      ...prev,
+      notifications: reset 
+        ? (res.notifications ?? [])
+        : [
+            ...prev.notifications,
+            ...(res.notifications ?? [])
+          ],
+      notificationNextCursor: res.next_cursor,
+      notificationPrevCursor: res.prev_cursor
+    }));
   }
 
-  useEffect(()=>{
-
-    fetchNotifications()
-  },[])
+  useEffect(() => {
+    fetchNotifications(true); // İlk yüklemede sıfırla
+  }, []);
 
   return (
     <Container>
@@ -253,10 +221,10 @@ const NotificationsScreen: React.FC = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex space-x-1 -mb-px">
+          <div className="flex space-x-1 -mb-px overflow-x-auto scrollbar-hide">
             <button
               onClick={() => setActiveTab('all')}
-              className={`relative px-6 py-3 text-sm font-bold transition-all duration-200 ${
+              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${
                 activeTab === 'all'
                   ? theme === 'dark'
                     ? 'text-white'
@@ -278,9 +246,9 @@ const NotificationsScreen: React.FC = () => {
               )}
             </button>
             <button
-              onClick={() => setActiveTab('mentions')}
-              className={`relative px-6 py-3 text-sm font-bold transition-all duration-200 ${
-                activeTab === 'mentions'
+              onClick={() => setActiveTab('messages')}
+              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'messages'
                   ? theme === 'dark'
                     ? 'text-white'
                     : 'text-black'
@@ -289,17 +257,81 @@ const NotificationsScreen: React.FC = () => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Mentions
-              {mentionCount > 0 && (
+              Messages
+              {messageCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
                   theme === 'dark'
                     ? 'bg-white/10 text-white'
                     : 'bg-black/10 text-black'
                 }`}>
-                  {mentionCount}
+                  {messageCount}
                 </span>
               )}
-              {activeTab === 'mentions' && (
+              {activeTab === 'messages' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className={`absolute bottom-0 left-0 right-0 h-0.5 ${
+                    theme === 'dark' ? 'bg-white' : 'bg-black'
+                  }`}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('matches')}
+              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'matches'
+                  ? theme === 'dark'
+                    ? 'text-white'
+                    : 'text-black'
+                  : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Matches
+              {matchCount > 0 && (
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                  theme === 'dark'
+                    ? 'bg-white/10 text-white'
+                    : 'bg-black/10 text-black'
+                }`}>
+                  {matchCount}
+                </span>
+              )}
+              {activeTab === 'matches' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className={`absolute bottom-0 left-0 right-0 h-0.5 ${
+                    theme === 'dark' ? 'bg-white' : 'bg-black'
+                  }`}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('likes')}
+              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'likes'
+                  ? theme === 'dark'
+                    ? 'text-white'
+                    : 'text-black'
+                  : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Likes
+              {likeCount > 0 && (
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                  theme === 'dark'
+                    ? 'bg-white/10 text-white'
+                    : 'bg-black/10 text-black'
+                }`}>
+                  {likeCount}
+                </span>
+              )}
+              {activeTab === 'likes' && (
                 <motion.div
                   layoutId="activeTab"
                   className={`absolute bottom-0 left-0 right-0 h-0.5 ${
@@ -311,7 +343,7 @@ const NotificationsScreen: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('follows')}
-              className={`relative px-6 py-3 text-sm font-bold transition-all duration-200 ${
+              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${
                 activeTab === 'follows'
                   ? theme === 'dark'
                     ? 'text-white'
@@ -341,6 +373,70 @@ const NotificationsScreen: React.FC = () => {
                 />
               )}
             </button>
+            <button
+              onClick={() => setActiveTab('gifts')}
+              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'gifts'
+                  ? theme === 'dark'
+                    ? 'text-white'
+                    : 'text-black'
+                  : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Gifts
+              {giftCount > 0 && (
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                  theme === 'dark'
+                    ? 'bg-white/10 text-white'
+                    : 'bg-black/10 text-black'
+                }`}>
+                  {giftCount}
+                </span>
+              )}
+              {activeTab === 'gifts' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className={`absolute bottom-0 left-0 right-0 h-0.5 ${
+                    theme === 'dark' ? 'bg-white' : 'bg-black'
+                  }`}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('other')}
+              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'other'
+                  ? theme === 'dark'
+                    ? 'text-white'
+                    : 'text-black'
+                  : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Other
+              {otherCount > 0 && (
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                  theme === 'dark'
+                    ? 'bg-white/10 text-white'
+                    : 'bg-black/10 text-black'
+                }`}>
+                  {otherCount}
+                </span>
+              )}
+              {activeTab === 'other' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className={`absolute bottom-0 left-0 right-0 h-0.5 ${
+                    theme === 'dark' ? 'bg-white' : 'bg-black'
+                  }`}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
+            </button>
           </div>
         </div>
       </div>
@@ -360,12 +456,24 @@ const NotificationsScreen: React.FC = () => {
                 <Bell className={`w-8 h-8 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
               </div>
               <h3 className={`text-lg font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                {activeTab === 'all' ? 'No notifications' : `No ${activeTab === 'mentions' ? 'mentions' : 'follows'} yet`}
+                {activeTab === 'all' 
+                  ? 'No notifications' 
+                  : `No ${activeTab === 'messages' ? 'messages' : activeTab === 'matches' ? 'matches' : activeTab === 'likes' ? 'likes' : activeTab === 'follows' ? 'follows' : activeTab === 'gifts' ? 'gifts' : 'other notifications'} yet`}
               </h3>
               <p className={`text-sm text-center max-w-sm ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
                 {activeTab === 'all' 
                   ? "You're all caught up! When you get notifications, they'll show up here."
-                  : `When someone ${activeTab === 'mentions' ? 'mentions you' : 'follows you'}, you'll see it here.`
+                  : activeTab === 'messages'
+                  ? "When you receive messages, they'll show up here."
+                  : activeTab === 'matches'
+                  ? "When you get a new match, you'll see it here."
+                  : activeTab === 'likes'
+                  ? "When someone likes your profile, you'll see it here."
+                  : activeTab === 'follows'
+                  ? "When someone follows you, you'll see it here."
+                  : activeTab === 'gifts'
+                  ? "When you receive a gift, you'll see it here."
+                  : "Other notifications will show up here."
                 }
               </p>
             </motion.div>
@@ -382,16 +490,18 @@ const NotificationsScreen: React.FC = () => {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ delay: index * 0.02, duration: 0.2 }}
                     onClick={() => {
-                      if (notification.type === 'message') {
+                      if (notification.type === 'chat_message') {
                         navigate('/messages');
-                      } else if (notification.user.username) {
-                        navigate(`/${notification.user.username}`);
+                      } else if (notification.type === 'new_match' || notification.type === 'match_unmatch') {
+                        navigate('/matches');
+                      } else if (notification.sender?.username) {
+                        navigate(`/${notification.sender.username}`);
                       }
                     }}
                     className={`group relative px-4 lg:px-6 py-5 cursor-pointer transition-all duration-200 ${
                       !isLast ? `border-b ${theme === 'dark' ? 'border-gray-900/30' : 'border-gray-100/50'}` : ''
                     } ${
-                      !notification.read 
+                      !notification.is_read 
                         ? theme === 'dark' 
                           ? 'bg-white/[0.03] hover:bg-white/[0.05]' 
                           : 'bg-black/[0.02] hover:bg-black/[0.04]'
@@ -418,21 +528,24 @@ const NotificationsScreen: React.FC = () => {
                           <div className={`w-12 h-12 rounded-full overflow-hidden ring-2 ${
                             theme === 'dark' ? 'ring-gray-800' : 'ring-gray-200'
                           }`}>
-                            <img
-                              src={notification.user.avatar}
-                              alt={notification.user.name}
-                              className="w-full h-full object-cover"
-                            />
+                            {notification.sender?.avatar ? (
+                              <img
+                                src={notification.sender.avatar}
+                                alt={notification.sender.displayname || notification.sender.username}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className={`w-full h-full flex items-center justify-center ${
+                                theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
+                              }`}>
+                                <span className={`text-lg font-bold ${
+                                  theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                                }`}>
+                                  {(notification.sender?.displayname || notification.sender?.username || 'U')[0].toUpperCase()}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                          {notification.user.verified && (
-                            <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center ring-2 ${
-                              theme === 'dark' ? 'bg-black ring-black' : 'bg-white ring-white'
-                            }`}>
-                              <Check className={`w-2.5 h-2.5 ${
-                                theme === 'dark' ? 'text-white' : 'text-black'
-                              }`} strokeWidth={3} />
-                            </div>
-                          )}
                         </div>
                       </div>
 
@@ -442,31 +555,20 @@ const NotificationsScreen: React.FC = () => {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-1.5 mb-1 flex-wrap">
                               <span className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                                {notification.user.name}
+                                {notification.sender?.displayname || notification.sender?.username || 'Unknown User'}
                               </span>
-                              {notification.user.verified && (
-                                <svg 
-                                  className={`w-4 h-4 flex-shrink-0 ${
-                                    theme === 'dark' ? 'text-white' : 'text-black'
-                                  }`} 
-                                  fill="currentColor" 
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="M23 12l-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 2.96 8.6 1.54 6.71 4.72l-3.61.82.34 3.68L1 12l2.44 2.78-.34 3.68 3.61.82 1.89 3.18L12 21.04l3.4 1.42 1.89-3.18 3.61-.82-.34-3.68L23 12zm-10.29 4.8l-4.5-4.31 1.39-1.32 3.11 2.97 5.98-6.03 1.39 1.37-7.37 7.32z"/>
-                                </svg>
-                              )}
                             </div>
                             <p className={`text-sm leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                               {notification.message}
                             </p>
                             <span className={`text-xs mt-2 block ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                              {formatTime(notification.time)}
+                              {formatTime(notification.created_at)}
                             </span>
                           </div>
                           
                           {/* Actions */}
                           <div className="flex items-center space-x-1 flex-shrink-0">
-                            {!notification.read && (
+                            {!notification.is_read && (
                               <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}

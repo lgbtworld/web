@@ -25,9 +25,7 @@ const SplashScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
-          className={`fixed inset-0 z-[9999] flex items-center justify-center ${
-            theme === 'dark' ? 'bg-black' : 'bg-white'
-          }`}
+          className={`fixed inset-0 z-[9999] flex items-center justify-center `}
         >
           <div className="text-center">
             {/* Logo Animation */}

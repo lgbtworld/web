@@ -96,10 +96,19 @@ interface UserEngagementDetail {
   id?: string;
   engagement_id?: string;
   engager_id?: string;
+  engager?: {
+    id?: string;
+    public_id?: string | number;
+  };
   recipient_id?: string;
+  engagee_id?: string;
   kind?: string;
   details?: Record<string, any>;
   recipient?: {
+    id?: string;
+    public_id?: string | number;
+  };
+  engagee?: {
     id?: string;
     public_id?: string | number;
   };
@@ -218,19 +227,33 @@ const getIsFollowingFromEngagements = (authUserData: any, targetUser: ProfileUse
   const targetPublicId = targetUser.public_id != null ? String(targetUser.public_id) : null;
   const targetId = targetUser.id;
 
-  return engagementDetails.some((detail: UserEngagementDetail) => {
+  const matchesTarget = (detail: UserEngagementDetail) => {
     if (!detail || detail.kind !== 'following') {
       return false;
     }
 
-    const recipientPublicId = detail.recipient?.public_id ?? detail.recipient_id;
-    if (recipientPublicId && targetPublicId && String(recipientPublicId) === targetPublicId) {
+    const candidatePublicIds = [
+      detail.recipient?.public_id,
+      detail.recipient_id,
+      detail.engagee?.public_id,
+      detail.engagee_id,
+    ].filter(Boolean) as Array<string | number>;
+
+    if (targetPublicId && candidatePublicIds.some((id) => String(id) === targetPublicId)) {
       return true;
     }
 
-    const recipientId = detail.recipient?.id ?? detail.recipient_id;
-    return !!recipientId && !!targetId && recipientId === targetId;
-  });
+    const candidateIds = [
+      detail.recipient?.id,
+      detail.recipient_id,
+      detail.engagee?.id,
+      detail.engagee_id,
+    ].filter(Boolean) as string[];
+
+    return !!targetId && candidateIds.some((id) => id === targetId);
+  };
+
+  return engagementDetails.some(matchesTarget);
 };
 
 const normalizeProfileUser = (rawUser: any): ProfileUser | null => {
@@ -1103,14 +1126,25 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         return false;
       }
 
-      const recipientPublicId = detail.recipient?.public_id ?? detail.recipient_id;
-      const recipientId = detail.recipient?.id ?? detail.recipient_id;
+      const candidatePublicIds = [
+        detail.recipient?.public_id,
+        detail.recipient_id,
+        detail.engagee?.public_id,
+        detail.engagee_id,
+      ].filter(Boolean) as Array<string | number>;
 
-      if (recipientPublicId && targetPublicId && String(recipientPublicId) === targetPublicId) {
+      if (targetPublicId && candidatePublicIds.some((id) => String(id) === targetPublicId)) {
         return true;
       }
 
-      if (recipientId && targetId && String(recipientId) === targetId) {
+      const candidateIds = [
+        detail.recipient?.id,
+        detail.recipient_id,
+        detail.engagee?.id,
+        detail.engagee_id,
+      ].filter(Boolean) as string[];
+
+      if (targetId && candidateIds.some((id) => id === targetId)) {
         return true;
       }
 
@@ -1122,13 +1156,17 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     let followingDelta = 0;
 
     if (shouldFollow && !alreadyFollowing) {
+      const targetRecipient = {
+        id: targetUser.id,
+        public_id: targetUser.public_id,
+      };
+
       const newDetail: UserEngagementDetail = {
         kind: 'following',
         recipient_id: targetUser.id,
-        recipient: {
-          id: targetUser.id,
-          public_id: targetUser.public_id,
-        },
+        recipient: targetRecipient,
+        engagee_id: targetUser.id,
+        engagee: targetRecipient,
       };
       updatedDetails = [...currentDetails, newDetail];
       followingDelta = 1;
@@ -1158,6 +1196,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         engagement_details: updatedDetails,
       },
     } as any);
+    skipNextFetchRef.current = true;
   }, [authUser, updateUser]);
   const [editFormData, setEditFormData] = useState<Partial<ProfileUser>>({});
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
@@ -1169,6 +1208,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   const profileImageInputRef = useRef<HTMLInputElement>(null);
   const coverImageInputRef = useRef<HTMLInputElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+  const previousAuthUserRef = useRef<typeof authUser>(authUser);
+  const skipNextFetchRef = useRef(false);
   const [headerHeight, setHeaderHeight] = useState(57);
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [attributeView, setAttributeView] = useState<'list' | 'detail'>('list');
@@ -2704,10 +2745,51 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   // Fetch user data from API
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!username) {
+        return;
+      }
+
       console.log('ProfileScreen - fetchUserData called, username:', username);
 
-      if (!username) {
-        console.log('ProfileScreen - No username, returning early');
+      const isOwn = isAuthenticated && authUser && (authUser.username === username || authUser.id === username);
+
+      // Use auth user data immediately when viewing own profile
+      if (isOwn && authUser) {
+        console.log('ProfileScreen - Using own profile data from authUser');
+        const followerCount =
+          (authUser as any)?.engagements?.counts?.follower_count ??
+          (authUser as any)?.followers_count ??
+          0;
+        const followingCount =
+          (authUser as any)?.engagements?.counts?.following_count ??
+          (authUser as any)?.following_count ??
+          0;
+
+        setUser({
+          ...(authUser as unknown as ProfileUser),
+          followers_count: followerCount,
+          following_count: followingCount,
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (skipNextFetchRef.current) {
+        skipNextFetchRef.current = false;
+        return;
+      }
+
+      // Avoid unnecessary refetch when authUser state updates (e.g., follow/unfollow) but viewer stays the same person
+      const previousAuthUser = previousAuthUserRef.current;
+      const viewerStateOnlyChanged =
+        previousAuthUser &&
+        authUser &&
+        previousAuthUser.id === authUser.id &&
+        previousAuthUser !== authUser &&
+        username !== authUser.username &&
+        user?.username === username;
+
+      if (viewerStateOnlyChanged) {
         return;
       }
 
@@ -2715,31 +2797,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         setLoading(true);
         setError(null);
 
-        // Check if viewing own profile and authUser exists
-        const isOwn = isAuthenticated && authUser && (authUser.username === username || authUser.id === username);
-
-        // If viewing own profile, use authUser data immediately for better UX
-        if (isOwn && authUser) {
-          console.log('ProfileScreen - Using own profile data from authUser');
-          const followerCount =
-            (authUser as any)?.engagements?.counts?.follower_count ??
-            (authUser as any)?.followers_count ??
-            0;
-          const followingCount =
-            (authUser as any)?.engagements?.counts?.following_count ??
-            (authUser as any)?.following_count ??
-            0;
-
-          setUser({
-            ...(authUser as unknown as ProfileUser),
-            followers_count: followerCount,
-            following_count: followingCount,
-          });
-          setLoading(false);
-          return;
-        }
-
-        // Fetch user profile from API using POST with nickname
         console.log('ProfileScreen - Fetching profile for username:', username);
         const requestBody = { nickname: username };
         console.log('ProfileScreen - Request body:', requestBody);
@@ -2758,8 +2815,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
           throw new Error('User not found');
         }
 
-        // Normalize avatar and cover URLs from API response structure
-        // API returns avatar.file.url and cover.file.url, we need to extract them
         const followerCountFromEngagements =
           userData.engagements?.counts?.follower_count ??
           userData.followers_count ??
@@ -2779,7 +2834,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
 
         console.log('ProfileScreen - Normalized user data:', normalizedUserData);
 
-        // Set user data
         setUser(normalizedUserData as unknown as ProfileUser);
       } catch (err: any) {
         console.error('Error fetching user:', err);
@@ -2794,7 +2848,11 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     if (username) {
       fetchUserData();
     }
-  }, [username, authUser, isAuthenticated]);
+  }, [username, authUser, isAuthenticated, user?.username]);
+
+  useEffect(() => {
+    previousAuthUserRef.current = authUser;
+  }, [authUser]);
 
   // Fetch posts based on active tab
   useEffect(() => {
@@ -2936,8 +2994,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         },
       });
 
-      const normalized = normalizeProfileUser(followResponse?.user);
-      if (normalized) {
+      const responseUser =
+        followResponse?.target_user ||
+        followResponse?.followee ||
+        followResponse?.user;
+
+      const normalized = normalizeProfileUser(responseUser);
+      if (normalized && normalized.id === targetUser.id) {
         setUser(normalized);
       }
 

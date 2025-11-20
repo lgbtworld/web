@@ -188,7 +188,7 @@ const VibesGL: React.FC = () => {
     // ------------------------------------------------------------
     return (
         <div
-            className="relative w-full h-11/12 overflow-hidden"
+            className="relative w-full  h-[calc(100dvh-112px)] sm:h-[calc(100vh-64px)] overflow-hidden"
             style={{ cursor: "grab" }}
         >
 

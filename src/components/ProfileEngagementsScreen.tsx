@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Users, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import { useTheme } from '../contexts/ThemeContext';
+import { useApp } from '../contexts/AppContext';
 import { useTranslation } from 'react-i18next';
 import Container from './Container';
 import { api } from '../services/api';
@@ -29,82 +30,6 @@ interface ProfileSummary {
   avatar?: any;
 }
 
-const DUMMY_ENGAGEMENTS: Record<
-  EngagementType,
-  { users: EngagementUser[]; next_cursor: string | null }
-> = {
-  followers: {
-    users: [
-      {
-        id: 'dummy-follower-1',
-        username: 'travelbuddy',
-        displayname: 'Travel Buddy',
-        avatar: {
-          file: {
-            url: '/static/dummy/avatars/avatar_01.jpg',
-          },
-        },
-        bio: 'Always looking for the next adventure.',
-        is_following: true,
-      },
-      {
-        id: 'dummy-follower-2',
-        username: 'citylights',
-        displayname: 'City Lights',
-        avatar: {
-          file: {
-            url: '/static/dummy/avatars/avatar_02.jpg',
-          },
-        },
-        bio: 'Nightlife enthusiast and foodie.',
-        is_following: false,
-      },
-      {
-        id: 'dummy-follower-3',
-        username: 'bookishbee',
-        displayname: 'Bookish Bee',
-        avatar: {
-          file: {
-            url: '/static/dummy/avatars/avatar_03.jpg',
-          },
-        },
-        bio: 'Reading, coffee, repeat.',
-        is_following: true,
-      },
-    ],
-    next_cursor: null,
-  },
-  followings: {
-    users: [
-      {
-        id: 'dummy-following-1',
-        username: 'artcollective',
-        displayname: 'Art Collective',
-        avatar: {
-          file: {
-            url: '/static/dummy/avatars/avatar_04.jpg',
-          },
-        },
-        bio: 'Curating creative minds across the globe.',
-        is_following: true,
-      },
-      {
-        id: 'dummy-following-2',
-        username: 'fitnessflow',
-        displayname: 'Fitness Flow',
-        avatar: {
-          file: {
-            url: '/static/dummy/avatars/avatar_05.jpg',
-          },
-        },
-        bio: 'Move, breathe, thrive.',
-        is_following: true,
-      },
-    ],
-    next_cursor: null,
-  },
-};
-
 const isEngagementType = (value: string): value is EngagementType => {
   return value === 'followers' || value === 'followings';
 };
@@ -117,6 +42,7 @@ const ProfileEngagementsScreen: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const { defaultLanguage } = useApp();
   const { t } = useTranslation('common');
 
   const resolvedType = useMemo(() => {
@@ -211,12 +137,51 @@ const ProfileEngagementsScreen: React.FC = () => {
           body,
         });
 
-        const users: EngagementUser[] = Array.isArray(response?.users)
-          ? response.users
-          : DUMMY_ENGAGEMENTS[type].users;
+        // API returns engagements array, not users array
+        const engagementsArray = Array.isArray(response?.engagements)
+          ? response.engagements
+          : [];
 
-        const responseCursor =
-          response?.next_cursor ?? DUMMY_ENGAGEMENTS[type].next_cursor ?? null;
+        // Transform engagements to EngagementUser array
+        // For followers: use engager (the person following us)
+        // For followings: use engagee (the person we're following)
+        const users: EngagementUser[] = engagementsArray
+          .map((engagement: any) => {
+            const userData =
+            engagement.kind === 'follower' ? engagement.engagee : engagement.engagee;
+
+            if (!userData) {
+              return null;
+            }
+
+            // Handle bio - can be object (multi-language HTML) or string
+            let bioText: string | undefined;
+            if (userData.bio) {
+              if (typeof userData.bio === 'string') {
+                bioText = userData.bio;
+              } else if (typeof userData.bio === 'object') {
+                // Try to get bio in app's default language, then user's default language, then fallback to en
+                const userDefaultLang = userData.default_language || defaultLanguage || 'en';
+                bioText =
+                  userData.bio[defaultLanguage] ||
+                  userData.bio[userDefaultLang] ||
+                  userData.bio.en ||
+                  Object.values(userData.bio)[0] ||
+                  undefined;
+              }
+            }
+
+            return {
+              id: userData.id || '',
+              username: userData.username || '',
+              displayname: userData.displayname || userData.username || '',
+              avatar: userData.avatar || null,
+              bio: bioText,
+            };
+          })
+          .filter((user: EngagementUser | null): user is EngagementUser => user !== null);
+
+        const responseCursor = response?.next_cursor ?? null;
 
         setEngagements((prev) =>
           append ? [...prev, ...users] : [...users]
@@ -224,11 +189,8 @@ const ProfileEngagementsScreen: React.FC = () => {
         setCursor(responseCursor);
       } catch (err) {
         console.error('Failed to load engagements', err);
-        const fallback = DUMMY_ENGAGEMENTS[type];
-        setEngagements((prev) =>
-          append ? [...prev, ...fallback.users] : [...fallback.users]
-        );
-        setCursor(fallback.next_cursor);
+        setEngagements((prev) => (append ? prev : []));
+        setCursor(null);
         setError(
           (err as any)?.response?.data?.message ||
             (err as Error).message ||
@@ -240,7 +202,7 @@ const ProfileEngagementsScreen: React.FC = () => {
         setLoadingEngagements(false);
       }
     },
-    [profile?.public_id, t, username]
+    [profile?.public_id, t, username, defaultLanguage]
   );
 
   useEffect(() => {
@@ -315,10 +277,10 @@ const ProfileEngagementsScreen: React.FC = () => {
     <Container>
       <div className="max-w-3xl mx-auto min-h-[100dvh]">
         <div
-          className={`sticky top-0 z-30 backdrop-blur-md border-b ${
+          className={`sticky top-0 z-30 backdrop-blur-xl border-b ${
             theme === 'dark'
-              ? 'bg-black/80 border-white/10'
-              : 'bg-white/80 border-black/10'
+              ? 'bg-black/90 border-white/10'
+              : 'bg-white/90 border-black/10'
           }`}
         >
           <div className="flex items-center justify-between px-4 py-4">
@@ -326,24 +288,24 @@ const ProfileEngagementsScreen: React.FC = () => {
               <button
                 type="button"
                 onClick={handleNavigateBack}
-                className={`p-2 rounded-full transition-colors ${
+                className={`p-2 rounded-full transition-all duration-200 ${
                   theme === 'dark'
-                    ? 'hover:bg-white/10 text-white'
-                    : 'hover:bg-black/10 text-gray-700'
+                    ? 'hover:bg-white/10 text-white active:scale-95'
+                    : 'hover:bg-black/10 text-gray-700 active:scale-95'
                 }`}
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div className="min-w-0">
                 <h1
-                  className={`text-lg font-bold leading-tight ${
+                  className={`text-xl font-bold leading-tight tracking-tight ${
                     theme === 'dark' ? 'text-white' : 'text-gray-900'
                   }`}
                 >
                   {pageTitle}
                 </h1>
                 <p
-                  className={`text-xs ${
+                  className={`text-xs mt-0.5 ${
                     theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
                   }`}
                 >
@@ -355,14 +317,14 @@ const ProfileEngagementsScreen: React.FC = () => {
               type="button"
               onClick={handleRefresh}
               disabled={loadingEngagements}
-              className={`p-2 rounded-full transition-colors ${
+              className={`p-2 rounded-full transition-all duration-200 ${
                 theme === 'dark'
-                  ? 'hover:bg-white/10 text-gray-400 hover:text-white'
-                  : 'hover:bg-black/10 text-gray-500 hover:text-black'
+                  ? 'hover:bg-white/10 text-gray-400 hover:text-white active:scale-95'
+                  : 'hover:bg-black/10 text-gray-500 hover:text-black active:scale-95'
               } ${loadingEngagements ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <RefreshCw
-                className={`w-5 h-5 ${
+                className={`w-5 h-5 transition-transform ${
                   loadingEngagements ? 'animate-spin' : ''
                 }`}
               />
@@ -370,7 +332,7 @@ const ProfileEngagementsScreen: React.FC = () => {
           </div>
         </div>
 
-        <div className="px-4 py-6 space-y-4">
+        <div className="px-4 py-6 space-y-5">
           {loadingProfile ? (
             <div className="flex items-center justify-center py-20">
               <motion.div
@@ -398,13 +360,17 @@ const ProfileEngagementsScreen: React.FC = () => {
           ) : (
             <>
               {profile && (
-                <div
-                  className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className={`rounded-2xl px-4 py-3.5 flex items-center gap-3 ${
                     theme === 'dark'
-                      ? 'bg-white/5 border border-white/10'
-                      : 'bg-black/[0.04] border border-black/[0.06]'
+                      ? 'bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10'
+                      : 'bg-gradient-to-br from-black/[0.04] to-black/[0.02] border border-black/[0.06]'
                   }`}
                 >
+                  <div className="relative">
                   <img
                     src={
                       getSafeImageURL(profile.avatar, 'icon') ||
@@ -413,18 +379,21 @@ const ProfileEngagementsScreen: React.FC = () => {
                       )}&background=random`
                     }
                     alt={profile.displayname || profile.username}
-                    className="w-12 h-12 rounded-full object-cover"
+                      className={`w-14 h-14 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ${
+                        theme === 'dark' ? 'ring-white/10' : 'ring-black/10'
+                      }`}
                   />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p
-                      className={`text-sm font-semibold truncate ${
+                      className={`text-sm font-bold truncate ${
                         theme === 'dark' ? 'text-white' : 'text-gray-900'
                       }`}
                     >
                       {profile.displayname || profile.username}
                     </p>
                     <p
-                      className={`text-xs ${
+                      className={`text-xs mt-0.5 ${
                         theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
                       }`}
                     >
@@ -432,34 +401,34 @@ const ProfileEngagementsScreen: React.FC = () => {
                     </p>
                   </div>
                   <span
-                    className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-full ${
                       theme === 'dark'
-                        ? 'bg-white/10 text-white'
-                        : 'bg-black/10 text-gray-900'
+                        ? 'bg-white/10 text-white border border-white/20'
+                        : 'bg-black/10 text-gray-900 border border-black/20'
                     }`}
                   >
                     {badgeLabel}
                   </span>
-                </div>
+                </motion.div>
               )}
 
               {loadingEngagements && engagements.length === 0 ? (
-                <div className="flex items-center justify-center py-20">
+                <div className="flex items-center justify-center py-24">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3 }}
-                    className="flex flex-col items-center gap-3"
+                    className="flex flex-col items-center gap-4"
                   >
                     <div
-                      className={`w-10 h-10 border-4 rounded-full animate-spin ${
+                      className={`w-12 h-12 border-4 rounded-full animate-spin ${
                         theme === 'dark'
                           ? 'border-white/10 border-t-white'
                           : 'border-gray-200 border-t-gray-700'
                       }`}
                     />
                     <p
-                      className={`text-sm ${
+                      className={`text-sm font-medium ${
                         theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
                       }`}
                     >
@@ -468,71 +437,114 @@ const ProfileEngagementsScreen: React.FC = () => {
                   </motion.div>
                 </div>
               ) : engagements.length === 0 ? (
-                <div className="flex items-center justify-center py-20">
+                <div className="flex items-center justify-center py-24">
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className={`text-sm text-center ${
-                      theme === 'dark' ? 'text-gray-500' : 'text-gray-600'
-                    }`}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                    className="flex flex-col items-center gap-4 max-w-sm mx-auto px-4"
+                  >
+                    <div
+                      className={`w-20 h-20 rounded-full flex items-center justify-center ${
+                        theme === 'dark'
+                          ? 'bg-white/5 border border-white/10'
+                          : 'bg-black/5 border border-black/10'
+                      }`}
+                    >
+                      {resolvedType === 'followers' ? (
+                        <Users
+                          className={`w-10 h-10 ${
+                            theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                          }`}
+                        />
+                      ) : (
+                        <UserPlus
+                          className={`w-10 h-10 ${
+                            theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                          }`}
+                        />
+                      )}
+                    </div>
+                    <div className="text-center space-y-1">
+                      <h3
+                        className={`text-lg font-bold ${
+                          theme === 'dark' ? 'text-white' : 'text-gray-900'
+                        }`}
                   >
                     {noResultsLabel}
+                      </h3>
+                      <p
+                        className={`text-sm ${
+                          theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                        }`}
+                      >
+                        {resolvedType === 'followers'
+                          ? t('profile.no_followers_description', {
+                              defaultValue: 'This user has no followers yet.',
+                            })
+                          : t('profile.no_followings_description', {
+                              defaultValue: 'This user is not following anyone yet.',
+                            })}
+                      </p>
+                    </div>
                   </motion.div>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {engagements.map((engagementUser) => (
+                  {engagements.map((engagementUser, index) => (
                     <motion.div
                       key={engagementUser.id}
-                      initial={{ opacity: 0, y: 8 }}
+                      initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className={`flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors ${
+                      transition={{ duration: 0.3, delay: index * 0.03 }}
+                      className={`group flex items-center gap-3 rounded-2xl px-4 py-3.5 transition-all duration-200 ${
                         theme === 'dark'
-                          ? 'hover:bg-white/5'
-                          : 'hover:bg-black/5'
+                          ? 'bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/10 hover:bg-white/5 hover:border-white/20'
+                          : 'bg-gradient-to-br from-black/[0.02] to-black/[0.01] border border-black/10 hover:bg-black/5 hover:border-black/20'
                       }`}
                     >
+                      <div className="relative flex-shrink-0">
                       <img
                         src={renderAvatar(engagementUser)}
                         alt={engagementUser.displayname || engagementUser.username}
-                        className="w-12 h-12 rounded-full object-cover"
+                          className={`w-14 h-14 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent transition-all duration-200 group-hover:ring-opacity-50 ${
+                            theme === 'dark' ? 'ring-white/10' : 'ring-black/10'
+                          }`}
                       />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p
-                          className={`text-sm font-semibold truncate ${
+                          className={`text-sm font-bold truncate ${
                             theme === 'dark' ? 'text-white' : 'text-gray-900'
                           }`}
                         >
                           {engagementUser.displayname || engagementUser.username}
                         </p>
                         <p
-                          className={`text-xs truncate ${
-                            theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                          className={`text-xs mt-0.5 truncate ${
+                            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
                           }`}
                         >
                           @{engagementUser.username}
                         </p>
                         {engagementUser.bio && (
-                          <p
-                            className={`text-xs mt-1 line-clamp-2 ${
+                          <div
+                            className={`text-xs mt-1.5 line-clamp-2 leading-relaxed ${
                               theme === 'dark'
                                 ? 'text-gray-400'
                                 : 'text-gray-600'
                             }`}
-                          >
-                            {engagementUser.bio}
-                          </p>
+                            dangerouslySetInnerHTML={{ __html: engagementUser.bio }}
+                          />
                         )}
                       </div>
                       <button
                         type="button"
                         onClick={() => navigate(`/${engagementUser.username}`)}
-                        className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
+                        className={`px-4 py-2 text-xs font-semibold rounded-full transition-all duration-200 flex-shrink-0 ${
                           theme === 'dark'
-                            ? 'bg-white text-black hover:bg-gray-200'
-                            : 'bg-black text-white hover:bg-gray-900'
+                            ? 'bg-white text-black hover:bg-gray-200 hover:scale-105 active:scale-95'
+                            : 'bg-black text-white hover:bg-gray-900 hover:scale-105 active:scale-95'
                         }`}
                       >
                         {viewProfileLabel}
@@ -543,33 +555,50 @@ const ProfileEngagementsScreen: React.FC = () => {
               )}
 
               {error && (
-                <div
-                  className={`text-xs rounded-xl px-3 py-2 ${
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`text-sm rounded-xl px-4 py-3 border ${
                     theme === 'dark'
-                      ? 'bg-red-500/10 text-red-300'
-                      : 'bg-red-50 text-red-600'
+                      ? 'bg-red-500/10 text-red-300 border-red-500/20'
+                      : 'bg-red-50 text-red-600 border-red-200'
                   }`}
                 >
                   {error}
-                </div>
+                </motion.div>
               )}
 
               {cursor && (
-                <div className="flex justify-center pt-2">
-                  <button
+                <div className="flex justify-center pt-4">
+                  <motion.button
                     type="button"
                     onClick={handleLoadMore}
                     disabled={loadingEngagements}
-                    className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-colors ${
+                    whileHover={!loadingEngagements ? { scale: 1.02 } : {}}
+                    whileTap={!loadingEngagements ? { scale: 0.98 } : {}}
+                    className={`px-6 py-3 rounded-full text-sm font-semibold transition-all duration-200 ${
                       loadingEngagements
                         ? 'opacity-50 cursor-not-allowed'
                         : theme === 'dark'
-                        ? 'bg-white text-black hover:bg-gray-200'
-                        : 'bg-black text-white hover:bg-gray-900'
+                        ? 'bg-white text-black hover:bg-gray-200 shadow-lg shadow-white/10'
+                        : 'bg-black text-white hover:bg-gray-900 shadow-lg shadow-black/10'
                     }`}
                   >
-                    {loadingEngagements ? loadingLabel : loadMoreLabel}
-                  </button>
+                    {loadingEngagements ? (
+                      <span className="flex items-center gap-2">
+                        <div
+                          className={`w-4 h-4 border-2 rounded-full animate-spin ${
+                            theme === 'dark'
+                              ? 'border-black border-t-transparent'
+                              : 'border-white border-t-transparent'
+                          }`}
+                        />
+                        {loadingLabel}
+                      </span>
+                    ) : (
+                      loadMoreLabel
+                    )}
+                  </motion.button>
                 </div>
               )}
             </>

@@ -1,5 +1,5 @@
 // LanguageSelectorModal.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../contexts/AppContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -14,6 +14,17 @@ interface Props {
 const LanguageSelectorModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const { data, defaultLanguage, setDefaultLanguage } = useApp();
   const { theme } = useTheme();
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
 
   const handleLanguageSelect = (langCode: string) => {
     setDefaultLanguage(langCode);
@@ -32,6 +43,7 @@ const LanguageSelectorModal: React.FC<Props> = ({ isOpen, onClose }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             style={{
               backgroundImage: theme === "dark" ? 'radial-gradient(transparent 1px, #000000 1px)' : 'radial-gradient(transparent 1px, #000000 1px)',
 
@@ -43,37 +55,42 @@ const LanguageSelectorModal: React.FC<Props> = ({ isOpen, onClose }) => {
               maskImage: 'linear-gradient(#ffffff calc(100% - 20px), transparent)',
               WebkitMaskImage: 'linear-gradient(#ffffff calc(100% - 20px), transparent)', // Safari için
             }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-xl z-50"
+            className="fixed inset-0  z-50"
             onClick={onClose}
           />
           
-          {/* Modal */}
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
+          {/* Bottom Sheet / Modal */}
+          <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center pointer-events-none">
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={isDesktop ? { scale: 0.95, opacity: 0 } : { y: '100%' }}
+              animate={isDesktop ? { scale: 1, opacity: 1 } : { y: 0 }}
+              exit={isDesktop ? { scale: 0.95, opacity: 0 } : { y: '100%' }}
               transition={{ 
                 type: 'spring', 
                 stiffness: 400, 
-                damping: 35,
+                damping: 40,
                 mass: 0.8
               }}
-              className={`relative w-full max-w-md ${
+              className={`relative w-full lg:w-auto lg:max-w-md lg:max-h-[600px] max-h-[85vh] ${
                 theme === 'dark' 
-                  ? 'bg-gradient-to-br from-gray-900/98 to-black/98 backdrop-blur-lg border border-white/10' 
-                  : 'bg-gradient-to-br from-white via-gray-50/50 to-white backdrop-blur-lg border border-black/10'
-              } rounded-3xl shadow-2xl pointer-events-auto overflow-hidden`}
+                  ? 'bg-gradient-to-br from-gray-900/98 to-black/98 backdrop-blur-2xl border-t lg:border lg:rounded-3xl rounded-t-3xl border-white/10' 
+                  : 'bg-gradient-to-br from-white via-gray-50/50 to-white backdrop-blur-2xl border-t lg:border lg:rounded-3xl rounded-t-3xl border-black/10'
+              } shadow-2xl pointer-events-auto overflow-hidden flex flex-col`}
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Handle Bar - Mobile Only */}
+              <div className="flex justify-center pt-3 pb-2 lg:hidden">
+                <div className={`w-12 h-1.5 rounded-full ${
+                  theme === 'dark' ? 'bg-white/20' : 'bg-black/20'
+                }`} />
+              </div>
               {/* Header */}
-              <div className={`relative px-6 pt-6 pb-4 border-b ${
+              <div className={`relative px-5 lg:px-6 pt-2 lg:pt-4 pb-4 border-b ${
                 theme === 'dark' ? 'border-white/10' : 'border-black/10'
               }`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${
+                    <div className={`p-2 rounded-xl ${
                       theme === 'dark' 
                         ? 'bg-white/10 text-white' 
                         : 'bg-black/10 text-gray-900'
@@ -81,7 +98,7 @@ const LanguageSelectorModal: React.FC<Props> = ({ isOpen, onClose }) => {
                       <Languages className="w-5 h-5" />
                     </div>
                     <div>
-                      <h2 className={`text-xl font-bold tracking-tight ${
+                      <h2 className={`text-lg font-bold tracking-tight ${
                         theme === 'dark' ? 'text-white' : 'text-gray-900'
                       }`}>
                         Select Language
@@ -110,8 +127,8 @@ const LanguageSelectorModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
-              {/* Language Grid */}
-              <div className="p-4 max-h-[400px] overflow-y-auto scrollbar-hide">
+              {/* Language Grid - Scrollable */}
+              <div className="flex-1 overflow-y-auto scrollbar-hide px-4 lg:px-6 pb-6 lg:pb-6 pt-4 safe-area-inset-bottom">
                 <div className="grid grid-cols-3 gap-2">
                   {languages.map((lang, index) => {
                     const isSelected = defaultLanguage === lang.code;

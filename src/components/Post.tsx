@@ -947,10 +947,10 @@ const Post: React.FC<PostProps> = ({
         }
       `}</style>
       <div className={`relative overflow-hidden rounded-2xl ${className || ''}`}>
-        <div className={`absolute inset-0 rounded-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
+        <div className={`absolute inset-0 rounded-2xl ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-gray-200'
           }`}>
           <div className={`absolute inset-0 rounded-2xl shimmer-animation ${theme === 'dark'
-              ? 'bg-gradient-to-r from-gray-800 via-gray-700/50 to-gray-800'
+              ? 'bg-gradient-to-r from-gray-900/30 via-gray-800/50 to-gray-900/30'
               : 'bg-gradient-to-r from-gray-200 via-gray-300/50 to-gray-200'
             }`}
             style={{
@@ -968,8 +968,8 @@ const Post: React.FC<PostProps> = ({
 className={`
   overflow-hidden border-b transition-all duration-300 ease-out
   ${theme === "dark"
-    ? "bg-gray-950 border-gray-800/40 hover:bg-gray-900"
-    : "bg-white border-gray-100 hover:bg-gray-50"}
+    ? "bg-gray-950 border-gray-900 hover:bg-gray-950/10"
+    : "bg-white border-gray-200/50 hover:bg-gray-50"}
 `}
 >
         {/* Post Header */}
@@ -979,8 +979,8 @@ className={`
               onClick={handleProfileClick}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 overflow-hidden border ${
                 theme === 'dark'
-                  ? 'bg-gray-900/70 hover:bg-gray-800 border-white/10'
-                  : 'bg-white hover:bg-gray-100 border-gray-200'
+                  ? 'bg-gray-900/30 hover:bg-gray-900/50 border-gray-900'
+                  : 'bg-white hover:bg-gray-100 border-gray-200/50'
               }`}
               aria-label={`${post.author.displayname}'s profile`}
             >
@@ -1022,7 +1022,7 @@ className={`
             </div>
           </div>
           <button className={`p-2 rounded-full transition-colors ${theme === 'dark'
-              ? 'hover:bg-gray-800'
+              ? 'hover:bg-gray-900/50'
               : 'hover:bg-gray-100'
             }`}>
             <MoreHorizontal className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
@@ -1104,9 +1104,9 @@ className={`
                     {videoRender}
                     {nonImageVideoAttachments.map((attachment, index) => (
                       <div key={index} className="w-full overflow-hidden mb-2 last:mb-0">
-                        <div className={`w-full h-48 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'
+                        <div className={`w-full h-48 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-gray-100'
                           }`}>
-                          <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <span className={`text-sm ${theme === 'dark' ? 'text-white/70' : 'text-gray-500'}`}>
                             {attachment.file.name}
                           </span>
                         </div>
@@ -1368,9 +1368,9 @@ className={`
                   </div>
                   {nonImageVideoAttachments.map((attachment, index) => (
                     <div key={`non-image-${index}`} className="w-full overflow-hidden mb-2 mt-2 last:mb-0">
-                      <div className={`w-full h-48 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'
+                      <div className={`w-full h-48 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-gray-100'
                         }`}>
-                        <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <span className={`text-sm ${theme === 'dark' ? 'text-white/70' : 'text-gray-500'}`}>
                           {attachment.file.name}
                         </span>
                       </div>
@@ -1403,7 +1403,7 @@ className={`
                     animate={{ scale: 1, opacity: 1 }}
                     className={`px-4 py-2 rounded-full flex items-center gap-2 text-xs font-semibold shadow-lg ${
                       theme === 'dark'
-                        ? 'bg-black/80 text-white border border-white/20'
+                        ? 'bg-gray-950/80 text-white border border-gray-900'
                         : 'bg-white/90 text-gray-700 border border-gray-300'
                     }`}
                   >
@@ -1442,24 +1442,24 @@ className={`
                     transition={{ duration: 0.2, layout: { duration: 0.3 } }}
                     className={`overflow-hidden ${
                       theme === 'dark'
-                        ? 'bg-white/5 border-t border-b border-white/10'
+                        ? 'bg-gray-900/30 border-t border-b border-gray-900'
                         : 'bg-white border-t border-b border-gray-200/50'
                     }`}
                     style={{ willChange: 'auto' }}
                   >
                     {/* Compact Poll Header */}
                     <div className={`px-3 py-2.5 border-b ${
-                      theme === 'dark' ? 'border-white/10' : 'border-gray-200/50'
+                      theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'
                     }`}>
                       <div className="flex items-center justify-between gap-2.5">
                         <div className="flex items-center gap-2.5 flex-1 min-w-0">
                           <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
                             theme === 'dark'
-                              ? 'bg-white/5 border border-white/10'
-                              : 'bg-black/5 border border-black/10'
+                              ? 'bg-gray-900/50 border border-gray-900'
+                              : 'bg-gray-100 border border-gray-200/50'
                           }`}>
                             <BarChart3 className={`w-4 h-4 ${
-                              theme === 'dark' ? 'text-white/80' : 'text-gray-700'
+                              theme === 'dark' ? 'text-white/90' : 'text-gray-700'
                             }`} />
                     </div>
                           <h4 className={`font-semibold text-sm tracking-tight ${
@@ -1525,14 +1525,14 @@ className={`
 
                             if (theme === 'dark') {
                               if (isSelected) {
-                                const base = 'bg-[#0F1726] shadow-[0_8px_26px_rgba(5,11,20,0.55)] cursor-pointer hover:bg-[#141C2D] hover:shadow-[0_10px_28px_rgba(5,11,20,0.65)]';
-                                return isPressing ? `${base} bg-[#141F32] shadow-[0_12px_32px_rgba(5,11,20,0.75)]` : base;
+                                const base = 'bg-gray-900/50 shadow-[0_8px_26px_rgba(0,0,0,0.3)] cursor-pointer hover:bg-gray-900/70 hover:shadow-[0_10px_28px_rgba(0,0,0,0.4)]';
+                                return isPressing ? `${base} bg-gray-900/70 shadow-[0_12px_32px_rgba(0,0,0,0.5)]` : base;
                               }
                               if (isDisabled) {
-                                return 'bg-slate-950/70 opacity-45 cursor-not-allowed';
+                                return 'bg-gray-900/20 opacity-45 cursor-not-allowed';
                               }
-                              const base = 'bg-slate-950/70 hover:bg-[#131B2A] hover:shadow-[0_6px_18px_rgba(3,7,15,0.55)] cursor-pointer transition-all duration-200';
-                              return isPressing ? `${base} bg-[#16243A] shadow-[0_10px_26px_rgba(5,11,20,0.65)]` : base;
+                              const base = 'bg-gray-900/30 hover:bg-gray-900/50 hover:shadow-[0_6px_18px_rgba(0,0,0,0.2)] cursor-pointer transition-all duration-200';
+                              return isPressing ? `${base} bg-gray-900/50 shadow-[0_10px_26px_rgba(0,0,0,0.3)]` : base;
                             }
 
                             if (isSelected) {
@@ -1550,7 +1550,7 @@ className={`
                           const borderBottomClass = isLastChoice 
                             ? '' 
                             : theme === 'dark'
-                              ? 'border-b border-dotted border-white/8'
+                              ? 'border-b border-dotted border-gray-900'
                               : 'border-b border-dotted border-gray-200/60';
 
                         return (
@@ -1625,7 +1625,7 @@ className={`
                             {/* Compact Progress Bar */}
                             <div className="relative mb-2.5" style={{ minHeight: '8px' }}>
                               <div className={`w-full h-2 rounded-full overflow-hidden ${
-                                theme === 'dark' ? 'bg-white/8' : 'bg-gray-200/60'
+                                theme === 'dark' ? 'bg-gray-900' : 'bg-gray-200/60'
                               }`}>
                                 <motion.div
                                   initial={{ width: 0 }}
@@ -1680,8 +1680,8 @@ className={`
                                   key={voter.id}
                                             className={`w-5 h-5 rounded-full border overflow-hidden flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
                                               theme === 'dark'
-                                                ? 'border-white/10 bg-gray-800/80 text-white ring-1 ring-white/10'
-                                                : 'border-black/70 bg-white text-gray-900 ring-1 ring-black/20'
+                                                ? 'border-gray-900 bg-gray-900/50 text-white ring-1 ring-gray-900'
+                                                : 'border-gray-200/50 bg-white text-gray-900 ring-1 ring-gray-200/50'
                                     }`}
                                             style={{ marginLeft: idx === 0 ? 0 : -6 }}
                                   title={voter.displayname}
@@ -1710,8 +1710,8 @@ className={`
                                       {voters.length > 5 && (
                                         <div className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold ml-1 ${
                                           theme === 'dark'
-                                            ? 'border-white/10 bg-gray-800/80 text-gray-300 ring-1 ring-white/10'
-                                            : 'border-black/70 bg-white text-gray-600 ring-1 ring-black/20'
+                                            ? 'border-gray-900 bg-gray-900/50 text-white/80 ring-1 ring-gray-900'
+                                            : 'border-gray-200/50 bg-white text-gray-600 ring-1 ring-gray-200/50'
                                         }`}>
                                           +{voters.length - 5}
                                 </div>
@@ -1748,7 +1748,7 @@ className={`
                         animate={{ opacity: 1 }}
                         className={`px-3 py-2 border-t ${
                           theme === 'dark'
-                            ? 'border-white/10 bg-white/5'
+                            ? 'border-gray-900 bg-gray-900/30'
                             : 'border-gray-200/50 bg-gray-50/50'
                         }`}
                       >
@@ -1777,7 +1777,7 @@ className={`
                               }}
                               className={`text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-200 ${
                                 theme === 'dark'
-                                  ? 'text-white/60 hover:text-white hover:bg-white/10 border border-white/10 hover:border-white/20'
+                                  ? 'text-white/60 hover:text-white hover:bg-gray-900/50 border border-gray-900 hover:border-gray-700'
                                   : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 border border-gray-200/50 hover:border-gray-300'
                               }`}
                               whileHover={{ scale: 1.03 }}
@@ -1794,7 +1794,7 @@ className={`
                   {getTotalVotes(poll) > 0 && (
                       <div className={`px-3 py-2 border-t text-center ${
                         theme === 'dark'
-                          ? 'border-white/10 bg-white/5 text-white/60'
+                          ? 'border-gray-900 bg-gray-900/30 text-white/80'
                           : 'border-gray-200/50 bg-gray-50/50 text-gray-500'
                       }`}>
                         <span className={`text-xs font-medium ${
@@ -1821,23 +1821,23 @@ className={`
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className={`w-full overflow-hidden  ${
                 theme === 'dark'
-                  ? 'bg-white/5 border-t border-b border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
+                  ? 'bg-gray-900/30 border-t border-b border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
                   : 'bg-white border-t border-b border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
               }`}
             >
               {/* Event Header */}
               <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b ${
-                theme === 'dark' ? 'border-white/10' : 'border-gray-200/50'
+                theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'
               }`}>
                 <div className="flex items-center justify-between gap-2 sm:gap-3">
                   <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                     <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${
                       theme === 'dark' 
-                        ? 'bg-white/5 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]' 
-                        : 'bg-black/5 border border-black/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)]'
+                        ? 'bg-gray-900/30 border border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]' 
+                        : 'bg-gray-100 border border-gray-200/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)]'
                     }`}>
                       <Calendar className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                        theme === 'dark' ? 'text-white/90' : 'text-gray-900/90'
+                        theme === 'dark' ? 'text-white/90' : 'text-gray-900'
                     }`} />
                 </div>
                     <div className="min-w-0">
@@ -1930,18 +1930,18 @@ className={`
                       >
                         <div className={`rounded-xl sm:rounded-2xl backdrop-blur-2xl border ${
                           theme === 'dark'
-                            ? 'bg-black/60 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
+                            ? 'bg-gray-950/90 border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
                             : 'bg-white/90 border-gray-200/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]'
                         }`}>
                           <div className="p-3 sm:p-4">
                             <div className="flex items-center gap-3 sm:gap-4">
                               <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${
                                 theme === 'dark' 
-                                  ? 'bg-white/10 border border-white/20' 
+                                  ? 'bg-gray-900/50 border border-gray-900' 
                                   : 'bg-gray-100 border border-gray-200/50'
                               }`}>
                                 <MapPin className={`w-5 h-5 sm:w-6 sm:h-6 ${
-                                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                  theme === 'dark' ? 'text-white/90' : 'text-gray-900'
                                 }`} />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -1956,7 +1956,7 @@ className={`
                                   })()}
                                 </p>
                                 <p className={`text-xs sm:text-sm mt-0.5 sm:mt-1 font-medium tracking-wide truncate ${
-                                  theme === 'dark' ? 'text-white/60' : 'text-gray-500'
+                                  theme === 'dark' ? 'text-white/70' : 'text-gray-500'
                                 }`}>
                                   {(() => {
                                     const parts = post.event.location.address.split(',');
@@ -1979,7 +1979,7 @@ className={`
                               }}
                               className={`w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
                                 theme === 'dark'
-                                  ? 'bg-white/10 border border-white/20 text-white hover:bg-white/20 active:bg-white/20'
+                                  ? 'bg-gray-900/50 border border-gray-700 text-white hover:bg-gray-900/70 active:bg-gray-900/70'
                                   : 'bg-gray-100 border border-gray-200/50 text-gray-900 hover:bg-gray-200 active:bg-gray-200'
                               }`}
                               whileHover={{ scale: 1.02 }}
@@ -2051,8 +2051,8 @@ className={`
                             ? 'bg-white text-black'
                             : 'bg-black text-white'
                           : theme === 'dark'
-                            ? 'border border-gray-600 hover:bg-white/10'
-                            : 'border border-gray-300 hover:bg-gray-50'
+                            ? 'border border-gray-700 text-white/90 hover:bg-gray-900/50'
+                            : 'border border-gray-300/60 hover:bg-gray-50'
                         }`}
                     >
                       Going
@@ -2064,8 +2064,8 @@ className={`
                             ? 'bg-white text-black'
                             : 'bg-black text-white'
                           : theme === 'dark'
-                            ? 'border border-gray-600 hover:bg-white/10'
-                            : 'border border-gray-300 hover:bg-gray-50'
+                            ? 'border border-gray-700 text-white/90 hover:bg-gray-900/50'
+                            : 'border border-gray-300/60 hover:bg-gray-50'
                         }`}
                     >
                       Not Going
@@ -2077,8 +2077,8 @@ className={`
                             ? 'bg-white text-black'
                             : 'bg-black text-white'
                           : theme === 'dark'
-                            ? 'border border-gray-600 hover:bg-white/10'
-                            : 'border border-gray-300 hover:bg-gray-50'
+                            ? 'border border-gray-700 text-white/90 hover:bg-gray-900/50'
+                            : 'border border-gray-300/60 hover:bg-gray-50'
                         }`}
                     >
                       Maybe
@@ -2097,10 +2097,10 @@ className={`
                           <div
                             key={attendee.id}
                             className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${attendee.status === 'going'
-                                ? theme === 'dark' ? 'border-white bg-gray-800 text-white' : 'border-gray-900 bg-gray-100 text-gray-900'
+                                ? theme === 'dark' ? 'border-gray-900 bg-gray-900/50 text-white' : 'border-gray-900 bg-gray-100 text-gray-900'
                                 : attendee.status === 'not_going'
-                                  ? theme === 'dark' ? 'border-gray-500 bg-gray-700 text-gray-400' : 'border-gray-400 bg-gray-200 text-gray-600'
-                                  : theme === 'dark' ? 'border-gray-300 bg-gray-600 text-gray-300' : 'border-gray-500 bg-gray-300 text-gray-700'
+                                  ? theme === 'dark' ? 'border-gray-700 bg-gray-900/30 text-white/60' : 'border-gray-400 bg-gray-200 text-gray-600'
+                                  : theme === 'dark' ? 'border-gray-700 bg-gray-900/30 text-white/80' : 'border-gray-500 bg-gray-300 text-gray-700'
                               }`}
                             style={{ zIndex: 10 - idx }}
                             title={`${attendee.displayname} (${attendee.status === 'going' ? 'Going' : attendee.status === 'not_going' ? 'Not Going' : 'Maybe'})`}
@@ -2109,7 +2109,7 @@ className={`
                           </div>
                         ))}
                         {post.event.attendees.length > 10 && (
-                          <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${theme === 'dark' ? 'border-gray-700 bg-gray-800 text-gray-300' : 'border-gray-300 bg-gray-100 text-gray-600'
+                          <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${theme === 'dark' ? 'border-gray-900 bg-gray-900/50 text-white/80' : 'border-gray-300 bg-gray-100 text-gray-600'
                             }`}>
                             +{post.event.attendees.length - 10}
                           </div>
@@ -2131,9 +2131,9 @@ className={`
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="mb-4 sm:mb-8"
             >
-              <div className={`rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl ${
+              <div               className={`rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl ${
                 theme === 'dark'
-                  ? 'bg-white/5 border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
+                  ? 'bg-gray-900/30 border border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
                   : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
               }`}>
                 {/* Map Preview */}
@@ -2158,18 +2158,18 @@ className={`
                   >
                     <div className={`rounded-xl sm:rounded-2xl backdrop-blur-2xl border ${
                       theme === 'dark'
-                        ? 'bg-black/60 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
+                        ? 'bg-gray-950/90 border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
                         : 'bg-white/90 border-gray-200/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]'
                     }`}>
                       <div className="p-3 sm:p-4">
                         <div className="flex items-center gap-3 sm:gap-4">
                           <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${
                             theme === 'dark' 
-                              ? 'bg-white/10 border border-white/20' 
+                              ? 'bg-gray-900/50 border border-gray-900' 
                               : 'bg-gray-100 border border-gray-200/50'
                           }`}>
                             <MapPin className={`w-5 h-5 sm:w-6 sm:h-6 ${
-                              theme === 'dark' ? 'text-white' : 'text-gray-900'
+                              theme === 'dark' ? 'text-white/90' : 'text-gray-900'
                   }`} />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -2184,7 +2184,7 @@ className={`
                               })()}
                             </p>
                             <p className={`text-xs sm:text-sm mt-0.5 sm:mt-1 font-medium tracking-wide truncate ${
-                              theme === 'dark' ? 'text-white/60' : 'text-gray-500'
+                              theme === 'dark' ? 'text-white/70' : 'text-gray-500'
                             }`}>
                               {(() => {
                                 const parts = post.location.address.split(',');
@@ -2207,7 +2207,7 @@ className={`
                           }}
                           className={`w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
                             theme === 'dark'
-                              ? 'bg-white/10 border border-white/20 text-white hover:bg-white/20 active:bg-white/20'
+                              ? 'bg-gray-900/50 border border-gray-700 text-white hover:bg-gray-900/70 active:bg-gray-900/70'
                               : 'bg-gray-100 border border-gray-200/50 text-gray-900 hover:bg-gray-200 active:bg-gray-200'
                           }`}
                           whileHover={{ scale: 1.02 }}
@@ -2314,8 +2314,8 @@ className={`
       {/* Children (Replies) Section - Outside main post div */}
       {(loadChildren || showChildren) && (
         <div className={`overflow-hidden border-b ${theme === 'dark'
-            ? 'bg-black border-gray-800/40'
-            : 'bg-white border-gray-100'
+            ? 'bg-gray-950 border-gray-900'
+            : 'bg-white border-gray-200/50'
           }`}>
           <div className="px-4 py-3">
             {loadingChildren ? (
@@ -2328,7 +2328,7 @@ className={`
                   Replies ({children.length || post.children?.length || 0})
                 </div>
                 {(children.length > 0 ? children : post.children || []).map((child) => (
-                  <div key={child.id} className={`border-l-2 pl-4 pointer-events-none ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+                  <div key={child.id} className={`border-l-2 pl-4 pointer-events-none ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'
                     }`}>
                     <div className="pointer-events-auto">
                       <Post
@@ -2387,7 +2387,7 @@ className={`
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={`px-3 py-1.5 sm:px-5 sm:py-2 md:px-6 md:py-3 rounded-full backdrop-blur-xl border ${theme === 'dark'
-                      ? 'bg-black/40 border-gray-700/50 text-white'
+                      ? 'bg-gray-950/80 border-gray-900 text-white'
                       : 'bg-white/40 border-gray-300/50 text-gray-900'
                     }`}
                 >
@@ -2405,7 +2405,7 @@ className={`
                   whileTap={{ scale: 0.9 }}
                   whileHover={{ scale: 1.05 }}
                   className={`p-2 sm:p-2.5 md:p-3 rounded-full backdrop-blur-xl border transition-all ${theme === 'dark'
-                      ? 'bg-black/40 hover:bg-black/50 border-gray-700/50 text-white'
+                      ? 'bg-gray-950/80 hover:bg-gray-900/90 border-gray-900 text-white'
                       : 'bg-white/40 hover:bg-white/50 border-gray-300/50 text-gray-900'
                     }`}
                 >
@@ -2477,7 +2477,7 @@ className={`
                     whileTap={{ scale: 0.9 }}
                     whileHover={{ scale: 1.05 }}
                     className={`absolute left-2 sm:left-4 md:left-6 lg:left-8 z-[60] p-2.5 sm:p-3 md:p-4 rounded-full backdrop-blur-xl border transition-all ${theme === 'dark'
-                        ? 'bg-black/40 hover:bg-black/50 border-gray-700/50 text-white'
+                        ? 'bg-gray-950/80 hover:bg-gray-900/90 border-gray-900 text-white'
                         : 'bg-white/40 hover:bg-white/50 border-gray-300/50 text-gray-900'
                       }`}
                   >
@@ -2491,7 +2491,7 @@ className={`
                     whileTap={{ scale: 0.9 }}
                     whileHover={{ scale: 1.05 }}
                     className={`absolute right-2 sm:right-4 md:right-6 lg:right-8 z-[60] p-2.5 sm:p-3 md:p-4 rounded-full backdrop-blur-xl border transition-all ${theme === 'dark'
-                        ? 'bg-black/40 hover:bg-black/50 border-gray-700/50 text-white'
+                        ? 'bg-gray-950/80 hover:bg-gray-900/90 border-gray-900 text-white'
                         : 'bg-white/40 hover:bg-white/50 border-gray-300/50 text-gray-900'
                       }`}
                   >

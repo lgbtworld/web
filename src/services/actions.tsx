@@ -24,6 +24,8 @@ export const Actions = {
 
   // USER
   CMD_USER_GET_NOTIFICATIONS  : "user.fetch.notifications",
+  CMD_USER_MARK_NOTIFICATIONS_SEEN : "user.notifications.mark.seen",
+
   CMD_UPDATE_USER_PROFILE: "user.update_profile",
   CMD_USER_UPDATE_IDENTIFY: "user.update_identify",
   CMD_USER_UPDATE_ATTRIBUTE: "user.update_attribute",
@@ -47,6 +49,7 @@ export const Actions = {
   USER_FETCH_PROFILE: "user.fetch_profile",
 
   POST_CREATE: "post.create",
+  CMD_POST_VOTE     : "post.vote",
   POST_FETCH: "post.fetch",
   POST_TIMELINE: "post.timeline",
   POST_VIBES: "post.vibes",

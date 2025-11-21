@@ -1,295 +1,206 @@
 {
-    "user": {
-        "public_id": "1986597228017356800",
-        "id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-        "socket_id": "9",
-        "username": "can",
-        "displayname": "can",
-        "email": "",
-        "date_of_birth": "2000-11-01T05:45:00+05:45",
-        "gender_identities": [],
-        "sexual_orientations": [],
+    "public_id": "1991787612108492800",
+    "id": "dd3d7f5d-d09c-4c01-bc4e-18ff113c5bf4",
+    "post_kind": "status",
+    "content_category": "normal",
+    "contentable_type": "post",
+    "author_id": "52b03c91-9b74-4d3a-b06a-d7a4a3405d92",
+    "content": {
+        "en": "{\"root\":{\"children\":[{\"children\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"test\",\"type\":\"text\",\"version\":1}],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\"}],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"root\",\"version\":1}}"
+    },
+    "published": true,
+    "created_at": "2025-11-21T14:20:47.008578+05:45",
+    "updated_at": "2025-11-21T14:20:47.014994+05:45",
+    "deleted_at": null,
+    "author": {
+        "public_id": "1991175556829286400",
+        "id": "52b03c91-9b74-4d3a-b06a-d7a4a3405d92",
+        "socket_id": "4",
+        "username": "user1",
+        "displayname": "Trever Lynch",
+        "email": "armandpadberg@greenholt.org",
+        "bio": {
+            "en": "Delay improvised all some those e.g. write Indonesian then listen."
+        },
+        "date_of_birth": "1990-07-29T03:21:06.698533+05:45",
+        "balance": "0",
+        "is_online": false,
+        "privacy_level": "public",
+        "preferences_flags": "",
         "user_role": "",
-        "is_active": false,
-        "created_at": "2025-11-07T06:36:03.008498+05:45",
-        "updated_at": "2025-11-07T07:43:15.341731+05:45",
-        "last_online": "2025-11-07T07:43:15.340213+05:45",
+        "is_active": true,
+        "created_at": "2025-11-19T21:48:41.658072+05:45",
+        "updated_at": "2025-11-21T14:21:58.857758+05:45",
+        "last_online": "2025-11-21T14:21:58.856424+05:45",
         "default_language": "en",
-        "avatar_id": "6b3e59d3-774f-4123-a215-0667039799b4",
+        "avatar_id": "6ec14c4c-c6a3-437e-82f1-9ade15e106d8",
         "avatar": {
-            "public_id": "1986597931674767360",
-            "id": "6b3e59d3-774f-4123-a215-0667039799b4",
-            "file_id": "e4e3a15f-0714-4615-a888-bea860ab6c82",
-            "owner_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
+            "public_id": "1991368029610446848",
+            "id": "6ec14c4c-c6a3-437e-82f1-9ade15e106d8",
+            "file_id": "48553523-de7e-411e-8ba6-a550a1460788",
+            "owner_id": "52b03c91-9b74-4d3a-b06a-d7a4a3405d92",
             "owner_type": "user",
-            "user_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
+            "user_id": "52b03c91-9b74-4d3a-b06a-d7a4a3405d92",
             "role": "avatar",
             "is_public": true,
             "file": {
-                "id": "e4e3a15f-0714-4615-a888-bea860ab6c82",
+                "id": "48553523-de7e-411e-8ba6-a550a1460788",
                 "url": "",
-                "storage_path": "./static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/avatar/2025-11-07/96c113b7-7143-4927-9380-6383aedc3da4.jpeg",
+                "storage_path": "./static/uploads/users/52b03c91-9b74-4d3a-b06a-d7a4a3405d92/avatar/2025-11-20/763874f9-82c4-4594-9a29-59b7b14c4cfb.jpg",
                 "mime_type": "image/jpeg",
-                "size": 215138,
-                "name": "1669041186022.jpeg",
-                "width": 1440,
-                "height": 1080,
+                "size": 224201,
+                "name": "1000_F_343145027_5FAySOOAuX31BVp6BZPIPoWgZDN4U4QP.jpg",
+                "width": 1000,
+                "height": 667,
                 "variants": {
                     "image": {
                         "icon": {
-                            "url": "static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/avatar/2025-11-07/96c113b7-7143-4927-9380-6383aedc3da4_square_icon.webp",
+                            "url": "static/uploads/users/52b03c91-9b74-4d3a-b06a-d7a4a3405d92/avatar/2025-11-20/763874f9-82c4-4594-9a29-59b7b14c4cfb_square_icon.webp",
                             "width": 128,
                             "height": 128,
                             "format": "webp",
-                            "size": 24248
+                            "size": 16258
                         },
                         "thumbnail": {
-                            "url": "static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/avatar/2025-11-07/96c113b7-7143-4927-9380-6383aedc3da4_square_thumb.webp",
+                            "url": "static/uploads/users/52b03c91-9b74-4d3a-b06a-d7a4a3405d92/avatar/2025-11-20/763874f9-82c4-4594-9a29-59b7b14c4cfb_square_thumb.webp",
                             "width": 240,
                             "height": 240,
                             "format": "webp",
-                            "size": 58636
+                            "size": 27070
                         },
                         "small": {
-                            "url": "static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/avatar/2025-11-07/96c113b7-7143-4927-9380-6383aedc3da4_square_sm.webp",
+                            "url": "static/uploads/users/52b03c91-9b74-4d3a-b06a-d7a4a3405d92/avatar/2025-11-20/763874f9-82c4-4594-9a29-59b7b14c4cfb_square_sm.webp",
                             "width": 128,
                             "height": 128,
                             "format": "webp",
-                            "size": 18908
+                            "size": 10080
                         },
                         "medium": {
-                            "url": "static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/avatar/2025-11-07/96c113b7-7143-4927-9380-6383aedc3da4_square_md.webp",
+                            "url": "static/uploads/users/52b03c91-9b74-4d3a-b06a-d7a4a3405d92/avatar/2025-11-20/763874f9-82c4-4594-9a29-59b7b14c4cfb_square_md.webp",
                             "width": 256,
                             "height": 256,
                             "format": "webp",
-                            "size": 65802
+                            "size": 29744
                         },
                         "large": {
-                            "url": "static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/avatar/2025-11-07/96c113b7-7143-4927-9380-6383aedc3da4_square_lg.webp",
+                            "url": "static/uploads/users/52b03c91-9b74-4d3a-b06a-d7a4a3405d92/avatar/2025-11-20/763874f9-82c4-4594-9a29-59b7b14c4cfb_square_lg.webp",
                             "width": 512,
                             "height": 512,
                             "format": "webp",
-                            "size": 218210
+                            "size": 89044
                         },
                         "original": {
-                            "url": "/static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/avatar/2025-11-07/96c113b7-7143-4927-9380-6383aedc3da4.jpeg",
-                            "width": 1440,
-                            "height": 1080,
-                            "format": "jpeg",
-                            "size": 215138
-                        }
-                    }
-                },
-                "created_at": "2025-11-07T06:38:50.773396+05:45"
-            },
-            "created_at": "2025-11-07T06:38:50.773397+05:45",
-            "updated_at": "2025-11-07T06:38:50.773397+05:45"
-        },
-        "cover_id": "d2dc8c0e-2730-4b33-8423-55f7fcf1feba",
-        "cover": {
-            "public_id": "1986597947621511168",
-            "id": "d2dc8c0e-2730-4b33-8423-55f7fcf1feba",
-            "file_id": "505b44c1-4773-4c24-b1e9-508b5122363f",
-            "owner_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-            "owner_type": "user",
-            "user_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-            "role": "cover",
-            "is_public": true,
-            "file": {
-                "id": "505b44c1-4773-4c24-b1e9-508b5122363f",
-                "url": "",
-                "storage_path": "./static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/cover/2025-11-07/cfadf3cd-9299-491f-9c75-38b380a4e846.jpg",
-                "mime_type": "image/jpeg",
-                "size": 112630,
-                "name": "be-yourself-phrase-with-lgbtqia-flag-on-background-vector.jpg",
-                "width": 1920,
-                "height": 672,
-                "variants": {
-                    "image": {
-                        "icon": {
-                            "url": "static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/cover/2025-11-07/cfadf3cd-9299-491f-9c75-38b380a4e846_landscape_icon.webp",
-                            "width": 128,
-                            "height": 128,
-                            "format": "webp",
-                            "size": 10232
-                        },
-                        "thumbnail": {
-                            "url": "static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/cover/2025-11-07/cfadf3cd-9299-491f-9c75-38b380a4e846_landscape_thumb.webp",
-                            "width": 240,
-                            "height": 240,
-                            "format": "webp",
-                            "size": 23986
-                        },
-                        "small": {
-                            "url": "static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/cover/2025-11-07/cfadf3cd-9299-491f-9c75-38b380a4e846_landscape_sm.webp",
-                            "width": 1280,
-                            "height": 720,
-                            "format": "webp",
-                            "size": 352408
-                        },
-                        "medium": {
-                            "url": "static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/cover/2025-11-07/cfadf3cd-9299-491f-9c75-38b380a4e846_landscape_md.webp",
-                            "width": 1920,
-                            "height": 1080,
-                            "format": "webp",
-                            "size": 466872
-                        },
-                        "large": {
-                            "url": "static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/cover/2025-11-07/cfadf3cd-9299-491f-9c75-38b380a4e846_landscape_lg.webp",
-                            "width": 2560,
-                            "height": 1440,
-                            "format": "webp",
-                            "size": 468034
-                        },
-                        "original": {
-                            "url": "/static/uploads/users/45ce99f9-0d32-4669-94b3-98088aaec454/cover/2025-11-07/cfadf3cd-9299-491f-9c75-38b380a4e846.jpg",
-                            "width": 1920,
-                            "height": 672,
+                            "url": "/static/uploads/users/52b03c91-9b74-4d3a-b06a-d7a4a3405d92/avatar/2025-11-20/763874f9-82c4-4594-9a29-59b7b14c4cfb.jpg",
+                            "width": 1000,
+                            "height": 667,
                             "format": "jpg",
-                            "size": 112630
+                            "size": 224201
                         }
                     }
                 },
-                "created_at": "2025-11-07T06:38:54.575474+05:45"
+                "created_at": "2025-11-20T10:33:30.743345+05:45"
             },
-            "created_at": "2025-11-07T06:38:54.575474+05:45",
-            "updated_at": "2025-11-07T06:38:54.575474+05:45"
+            "created_at": "2025-11-20T10:33:30.743345+05:45",
+            "updated_at": "2025-11-20T10:33:30.743345+05:45"
         },
-        "languages": null,
+        "languages": [
+            "en",
+            "tr"
+        ],
+        "hobbies": [
+            "reading",
+            "gaming"
+        ],
+        "movies_genres": [
+            "action",
+            "comedy"
+        ],
+        "tv_shows_genres": [
+            "drama",
+            "thriller"
+        ],
+        "theater_genres": [
+            "musical"
+        ],
+        "cinema_genres": [
+            "sci-fi"
+        ],
+        "art_interests": [
+            "painting",
+            "sculpture"
+        ],
+        "entertainment": [
+            "music",
+            "concerts"
+        ],
         "travel": {
             "visited_countries": null,
             "travel_frequency": "",
             "favorite_places": null
         },
         "social": {},
-        "media": [
+        "subscriptions": [
             {
-                "public_id": "1986597947621511168",
-                "id": "d2dc8c0e-2730-4b33-8423-55f7fcf1feba",
-                "file_id": "505b44c1-4773-4c24-b1e9-508b5122363f",
-                "owner_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "owner_type": "user",
-                "user_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "role": "cover",
-                "is_public": true,
-                "file": {
-                    "id": "00000000-0000-0000-0000-000000000000",
-                    "url": "",
-                    "storage_path": "",
-                    "mime_type": "",
-                    "size": 0,
-                    "name": "",
-                    "created_at": "0001-01-01T00:00:00Z"
+                "keys": {
+                    "auth": "7RBLl0km8nNOT_76rXmYhA",
+                    "p256dh": "BAAYqSQX-YO7gMGiOApypfQkOAZ-H19vNARy2CEvBFlNfXS3lqQ4mSpxLZDr4qNarpFS9yH1PM-N210cGGiHWro"
                 },
-                "created_at": "2025-11-07T06:38:54.575474+05:45",
-                "updated_at": "2025-11-07T06:38:54.575474+05:45"
-            },
-            {
-                "public_id": "1986597931674767360",
-                "id": "6b3e59d3-774f-4123-a215-0667039799b4",
-                "file_id": "e4e3a15f-0714-4615-a888-bea860ab6c82",
-                "owner_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "owner_type": "user",
-                "user_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "role": "avatar",
-                "is_public": true,
-                "file": {
-                    "id": "00000000-0000-0000-0000-000000000000",
-                    "url": "",
-                    "storage_path": "",
-                    "mime_type": "",
-                    "size": 0,
-                    "name": "",
-                    "created_at": "0001-01-01T00:00:00Z"
-                },
-                "created_at": "2025-11-07T06:38:50.773397+05:45",
-                "updated_at": "2025-11-07T06:38:50.773397+05:45"
-            },
-            {
-                "public_id": "1986597280190304256",
-                "id": "769c971b-2f63-4e9b-afb1-552da00f829f",
-                "file_id": "bbfb4f91-1393-40fb-b4cd-df2f61387200",
-                "owner_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "owner_type": "user",
-                "user_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "role": "story",
-                "is_public": true,
-                "file": {
-                    "id": "00000000-0000-0000-0000-000000000000",
-                    "url": "",
-                    "storage_path": "",
-                    "mime_type": "",
-                    "size": 0,
-                    "name": "",
-                    "created_at": "0001-01-01T00:00:00Z"
-                },
-                "created_at": "2025-11-07T06:36:15.44743+05:45",
-                "updated_at": "2025-11-07T06:36:15.44743+05:45"
-            },
-            {
-                "public_id": "1986597312264146944",
-                "id": "c2cdb0a4-b5df-4ebd-9fa4-f9fe6ca25d26",
-                "file_id": "b74b2ee3-deb6-4be3-a35b-1edd7fe86c99",
-                "owner_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "owner_type": "user",
-                "user_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "role": "story",
-                "is_public": true,
-                "file": {
-                    "id": "00000000-0000-0000-0000-000000000000",
-                    "url": "",
-                    "storage_path": "",
-                    "mime_type": "",
-                    "size": 0,
-                    "name": "",
-                    "created_at": "0001-01-01T00:00:00Z"
-                },
-                "created_at": "2025-11-07T06:36:23.095042+05:45",
-                "updated_at": "2025-11-07T06:36:23.095042+05:45"
-            },
-            {
-                "public_id": "1986599627075358720",
-                "id": "5d57c9c8-ef3b-4e7c-b68b-c4b2868956cf",
-                "file_id": "267cfcb8-cc46-4879-b67a-d7f6e48a604f",
-                "owner_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "owner_type": "user",
-                "user_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "role": "story",
-                "is_public": true,
-                "file": {
-                    "id": "00000000-0000-0000-0000-000000000000",
-                    "url": "",
-                    "storage_path": "",
-                    "mime_type": "",
-                    "size": 0,
-                    "name": "",
-                    "created_at": "0001-01-01T00:00:00Z"
-                },
-                "created_at": "2025-11-07T06:45:34.989077+05:45",
-                "updated_at": "2025-11-07T06:45:34.989077+05:45"
-            },
-            {
-                "public_id": "1986603850965979136",
-                "id": "14c797c5-181d-4a67-b067-5704179e2eaa",
-                "file_id": "f34cd55a-0c97-4cd1-8051-238260f3da26",
-                "owner_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "owner_type": "user",
-                "user_id": "45ce99f9-0d32-4669-94b3-98088aaec454",
-                "role": "story",
-                "is_public": true,
-                "file": {
-                    "id": "00000000-0000-0000-0000-000000000000",
-                    "url": "",
-                    "storage_path": "",
-                    "mime_type": "",
-                    "size": 0,
-                    "name": "",
-                    "created_at": "0001-01-01T00:00:00Z"
-                },
-                "created_at": "2025-11-07T07:02:22.042943+05:45",
-                "updated_at": "2025-11-07T07:02:22.042943+05:45"
+                "endpoint": "https://fcm.googleapis.com/fcm/send/cANzFdiVTVY:APA91bHO24QXf6HLS3hO4q98xQxLZjt5SCGypmKLFpFUTZm_519ap_h7hH_d3XtYtNpLVJEm47SOshtii6KihlU10LR6bqrsTXk6w8nJ3hIHV_NO7ghRN2vKHXqrYIUb96b67DvK0i0C"
             }
         ],
         "deleted_at": null
-    }
+    },
+    "poll": [
+        {
+            "id": "39ea42c6-0fb4-4e15-992f-47a7e039999a",
+            "contentable_id": "dd3d7f5d-d09c-4c01-bc4e-18ff113c5bf4",
+            "contentable_type": "post",
+            "question": {
+                "en": "meyve"
+            },
+            "duration": "0",
+            "kind": "multiple",
+            "max_selectable": 4,
+            "created_at": "2025-11-21T14:20:47.011352+05:45",
+            "updated_at": "2025-11-21T14:20:47.011352+05:45",
+            "choices": [
+                {
+                    "id": "348c06e8-1c4d-470c-96de-6afa78a8e5e4",
+                    "poll_id": "39ea42c6-0fb4-4e15-992f-47a7e039999a",
+                    "display_order": 0,
+                    "label": {
+                        "en": "elma"
+                    },
+                    "vote_count": 0
+                },
+                {
+                    "id": "80c474f4-3299-47ba-a376-d793f4760f45",
+                    "poll_id": "39ea42c6-0fb4-4e15-992f-47a7e039999a",
+                    "display_order": 1,
+                    "label": {
+                        "en": "armut"
+                    },
+                    "vote_count": 0
+                },
+                {
+                    "id": "ae8f73b1-441c-42f5-bbcc-3996ad1977d6",
+                    "poll_id": "39ea42c6-0fb4-4e15-992f-47a7e039999a",
+                    "display_order": 2,
+                    "label": {
+                        "en": "kavun"
+                    },
+                    "vote_count": 0
+                },
+                {
+                    "id": "8e37ff0a-f28f-4641-a9ca-9600fb8915af",
+                    "poll_id": "39ea42c6-0fb4-4e15-992f-47a7e039999a",
+                    "display_order": 3,
+                    "label": {
+                        "en": "karpuz"
+                    },
+                    "vote_count": 0
+                }
+            ]
+        }
+    ]
 }

@@ -68,17 +68,13 @@ export interface GroupedAttribute {
 }
 
 interface InitialData {
-  fantasies: Fantasy[];
+  vapid_public_key: string;
+  preferences: any;
+  event_kinds: any[];
   countries: Record<string, any>;
-  interests: Interest[];
-  sexual_orientations: SexualOrientation[];
-  gender_identities: GenderIdentity[];
-  sexual_roles: SexualRole[];
   languages: Record<string, any>;
-  attributes: GroupedAttribute[];
   status: string;
 }
-
 
 interface AppContextType {
   data: InitialData | null;

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Image,
   Smile,
@@ -12,16 +12,23 @@ import {
   Sparkles,
   Search,
   Plus,
+  Minus,
   Clock,
   Navigation,
   Calendar,
   Maximize2,
-  Minimize2
+  Minimize2,
+  CircleCheck,
+  CheckSquare,
+  ListOrdered,
+  Scale,
+  HandCoins
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { ToolbarContext } from '../contexts/ToolbarContext';
 import { api } from '../services/api';
+import { useApp } from '../contexts/AppContext';
 import L from 'leaflet';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
@@ -103,16 +110,27 @@ const CreatePost: React.FC<CreatePostProps> = ({
   const [selectedVideos, setSelectedVideos] = useState<File[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [audience] = useState<'public' | 'community' | 'private'>('public');
-  const [polls, setPolls] = useState<Array<{id: string, question: string, options: string[], duration: string}>>([]);
+  const [polls, setPolls] = useState<Array<{id: string, question: string, options: string[], duration: string, kind: 'single' | 'multiple' | 'ranked' | 'weighted', maxSelectable: number}>>([]);
   const [isPollActive, setIsPollActive] = useState(false);
   const [isEventActive, setIsEventActive] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
   const [eventDescription, setEventDescription] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [eventTime, setEventTime] = useState('');
+  const [eventKind, setEventKind] = useState<string>('');
+  const [eventCapacity, setEventCapacity] = useState<string>('');
+  const [eventIsPaid, setEventIsPaid] = useState(false);
+  const [eventPrice, setEventPrice] = useState<string>('');
+  const [eventCurrency, setEventCurrency] = useState<string>('');
+  const [eventIsOnline, setEventIsOnline] = useState(false);
+  const [eventOnlineURL, setEventOnlineURL] = useState('');
+  const [isEventKindPickerOpen, setIsEventKindPickerOpen] = useState(false);
+  const [eventKindSearchQuery, setEventKindSearchQuery] = useState('');
+  const eventKindPickerRef = useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [charCount, setCharCount] = useState(0);
   const [location, setLocation] = useState<{ address: string; lat: number; lng: number } | null>(null);
+  const [pollErrors, setPollErrors] = useState<Record<string, string>>({});
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
   const [emojiSearchQuery, setEmojiSearchQuery] = useState('');
@@ -120,6 +138,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(fullScreen);
   const { theme } = useTheme();
+  const { data: appData, defaultLanguage } = useApp();
   const maxChars = 500;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -157,6 +176,105 @@ const CreatePost: React.FC<CreatePostProps> = ({
     // Check if there's any content to post
     if (!hasEditorContent && selectedImages.length === 0 && selectedVideos.length === 0) return;
     
+    // Validate polls
+    const errors: Record<string, string> = {};
+    polls.forEach((poll, index) => {
+      // Check if question is empty
+      if (!poll.question || poll.question.trim() === '') {
+        errors[`poll-${poll.id}-question`] = 'Poll question is required';
+      }
+      
+      // Check if at least 2 options are filled
+      const filledOptions = poll.options.filter(opt => opt && opt.trim() !== '');
+      if (filledOptions.length < 2) {
+        errors[`poll-${poll.id}-options`] = 'At least 2 options are required';
+      }
+    });
+    
+    // Validate event if active
+    if (isEventActive) {
+      // Check if title is empty
+      if (!eventTitle || eventTitle.trim() === '') {
+        errors['event-title'] = 'Event title is required';
+      }
+      
+      // Check if description is empty
+      if (!eventDescription || eventDescription.trim() === '') {
+        errors['event-description'] = 'Event description is required';
+      }
+      
+      // Check if event kind is selected
+      if (!eventKind || eventKind.trim() === '') {
+        errors['event-kind'] = 'Event type is required';
+      }
+      
+      // Check if date is provided
+      if (!eventDate || eventDate.trim() === '') {
+        errors['event-date'] = 'Event date is required';
+      }
+      
+      // Check if time is provided
+      if (!eventTime || eventTime.trim() === '') {
+        errors['event-time'] = 'Event time is required';
+      }
+      
+      // Validate date range (not in the past, not more than 2 years in the future)
+      if (eventDate) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const maxDate = new Date(today);
+        maxDate.setFullYear(maxDate.getFullYear() + 2);
+        
+        const [year, month, day] = eventDate.split('-').map(Number);
+        const eventDateOnly = new Date(year, month - 1, day);
+        eventDateOnly.setHours(0, 0, 0, 0);
+        
+        // Check if date is in the past
+        if (eventDateOnly < today) {
+          errors['event-date'] = 'Event date cannot be in the past';
+        }
+        
+        // Check if date is more than 2 years in the future
+        if (eventDateOnly > maxDate) {
+          errors['event-date'] = 'Event date cannot be more than 2 years in the future';
+        }
+      }
+      
+      // Check if date and time are not in the past
+      if (eventDate && eventTime) {
+        const now = new Date();
+        // Reset seconds and milliseconds for accurate comparison
+        now.setSeconds(0, 0);
+        
+        const [year, month, day] = eventDate.split('-').map(Number);
+        const [hours, minutes] = eventTime.split(':').map(Number);
+        const eventDateTime = new Date(year, month - 1, day, hours, minutes);
+        eventDateTime.setSeconds(0, 0);
+        
+        if (eventDateTime < now) {
+          errors['event-datetime'] = 'Event date and time cannot be in the past';
+        }
+      } else if (!eventDate && eventTime) {
+        // If time is provided but date is not, it's invalid
+        errors['event-date'] = 'Event date is required when time is provided';
+      }
+    }
+    
+    // If there are validation errors, show them and stop submission
+    if (Object.keys(errors).length > 0) {
+      setPollErrors(errors);
+      // Scroll to first error
+      const firstErrorKey = Object.keys(errors)[0];
+      const errorElement = document.querySelector(`[data-poll-error="${firstErrorKey}"]`);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+    
+    // Clear any previous errors
+    setPollErrors({});
     setIsSubmitting(true);
     
     // Get HTML content, hashtags, and mentions from editor if available
@@ -227,6 +345,8 @@ const CreatePost: React.FC<CreatePostProps> = ({
       ...(polls.length > 0 && polls.reduce((acc, poll, pollIndex) => {
         acc[`polls[${pollIndex}].question`] = poll.question;
         acc[`polls[${pollIndex}].duration`] = poll.duration;
+        acc[`polls[${pollIndex}].kind`] = poll.kind;
+        acc[`polls[${pollIndex}].max_selectable`] = poll.maxSelectable;
         poll.options.forEach((option, optionIndex) => {
           acc[`polls[${pollIndex}].options[${optionIndex}]`] = option;
         });
@@ -235,8 +355,15 @@ const CreatePost: React.FC<CreatePostProps> = ({
       event: isEventActive ? {
         title: eventTitle,
         description: eventDescription,
+        kind: eventKind,
         date: eventDate,
-        time: eventTime
+        time: eventTime,
+        capacity: eventCapacity ? parseInt(eventCapacity) : undefined,
+        is_paid: eventIsPaid,
+        price: eventPrice ? parseFloat(eventPrice) : undefined,
+        currency: eventCurrency || undefined,
+        is_online: eventIsOnline,
+        online_url: eventOnlineURL || undefined
       } : null,
       location: location
     };
@@ -269,9 +396,17 @@ const CreatePost: React.FC<CreatePostProps> = ({
       setIsEventActive(false);
       setEventTitle('');
       setEventDescription('');
+      setEventKind('');
       setEventDate('');
       setEventTime('');
+      setEventCapacity('');
+      setEventIsPaid(false);
+      setEventPrice('');
+      setEventCurrency('');
+      setEventIsOnline(false);
+      setEventOnlineURL('');
       setPolls([]);
+      setPollErrors({});
       setCharCount(0);
       setLocation(null);
       
@@ -387,13 +522,25 @@ const CreatePost: React.FC<CreatePostProps> = ({
       id: Date.now().toString(),
       question: '',
       options: ['', ''],
-      duration: '0'
+      duration: '0',
+      kind: 'single' as 'single' | 'multiple' | 'ranked' | 'weighted',
+      maxSelectable: 1
     };
     setPolls([...polls, newPoll]);
   };
 
   const removePoll = (pollId: string) => {
     setPolls(polls.filter(poll => poll.id !== pollId));
+    // Clear errors for removed poll
+    setPollErrors(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(key => {
+        if (key.includes(`poll-${pollId}-`)) {
+          delete updated[key];
+        }
+      });
+      return updated;
+    });
   };
 
   const addPollOption = (pollId: string) => {
@@ -442,6 +589,22 @@ const CreatePost: React.FC<CreatePostProps> = ({
     setPolls(polls.map(poll => 
       poll.id === pollId 
         ? { ...poll, question }
+        : poll
+    ));
+  };
+
+  const updatePollKind = (pollId: string, kind: 'single' | 'multiple' | 'ranked' | 'weighted') => {
+    setPolls(polls.map(poll => 
+      poll.id === pollId 
+        ? { ...poll, kind, maxSelectable: kind === 'single' ? 1 : poll.maxSelectable }
+        : poll
+    ));
+  };
+
+  const updatePollMaxSelectable = (pollId: string, maxSelectable: number) => {
+    setPolls(polls.map(poll => 
+      poll.id === pollId 
+        ? { ...poll, maxSelectable: Math.max(1, Math.min(maxSelectable, poll.options.length || 1)) }
         : poll
     ));
   };
@@ -567,6 +730,23 @@ const CreatePost: React.FC<CreatePostProps> = ({
     };
   }, [location]);
 
+  // Close event kind picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (eventKindPickerRef.current && !eventKindPickerRef.current.contains(event.target as Node)) {
+        setIsEventKindPickerOpen(false);
+      }
+    };
+
+    if (isEventKindPickerOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isEventKindPickerOpen]);
+
 
 
 
@@ -622,6 +802,27 @@ const CreatePost: React.FC<CreatePostProps> = ({
     { value: 'community', icon: Users, label: 'Community', description: 'Only community members can see this post' },
     { value: 'private', icon: Lock, label: 'Private', description: 'Only you can see this post' },
   ];
+
+  // Event Kinds from context - show all without hardcoded categories
+  const eventKinds = useMemo(() => {
+    if (!appData?.event_kinds || !Array.isArray(appData.event_kinds)) {
+      return [];
+    }
+
+    // Process all event kinds from context, sorted by display_order
+    return appData.event_kinds
+      .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+      .map((eventKind: any) => {
+        const label = eventKind.name?.[defaultLanguage] || eventKind.name?.en || eventKind.kind;
+        const desc = eventKind.description?.[defaultLanguage] || eventKind.description?.en || '';
+        
+        return {
+          value: eventKind.kind,
+          label: label,
+          desc: desc
+        };
+      });
+  }, [appData?.event_kinds, defaultLanguage]);
 
 
   
@@ -680,7 +881,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
   return (
     <div style={{
       zIndex:100,
-    }} className={`${isFullScreen ? "fixed left-[0] right-[0] bottom-[0] top-[65] scrollbar-hide md:top-0 w-full z-[999] min-h-[100dvh] h-[100dvh] max-h-[100dvh] overflow-y-scroll scrollbar-hide" : "scrollbar-hide"} ${theme === 'dark' ? "bg-black" : "bg-white"}`}>
+    }} className={`${isFullScreen ? "fixed left-[0] right-[0] bottom-[0] top-[65] scrollbar-hide md:top-0 w-full z-[999] min-h-[100dvh] h-[100dvh] max-h-[100dvh] overflow-y-scroll scrollbar-hide" : "scrollbar-hide"} ${theme === 'dark' ? "bg-gray-950" : "bg-white"}`}>
 
 
 
@@ -689,7 +890,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
         className={`w-full ${isFullScreen ? 'h-full flex  max-h-[calc(100dvh - 200px)] scrollbar-hide overflow-y-scroll  flex-col' : 'flex flex-col'} transition-all duration-500 `}>
         {/* Compact Professional Header */}
         <div className={`${isFullScreen ? 'px-3 sm:px-6 py-2 mb-[400px] lg:mb-0' : 'px-3 sm:px-4 py-2 sm:py-3'} border-b flex-shrink-0 ${
-          theme === 'dark' ? 'border-gray-800/30' : 'border-gray-200/30'
+          theme === 'dark' ? 'border-gray-900' : 'border-gray-200/30'
         }`}>
       
           <div className="flex items-center justify-between">
@@ -708,7 +909,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
               <motion.button
                 className={`flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border transition-all duration-200 ${
                   theme === 'dark' 
-                    ? 'bg-gray-800/40 border-gray-700/50 text-gray-300 hover:bg-gray-700/50 hover:text-white active:bg-gray-700/50' 
+                    ? 'bg-gray-900/50 border-gray-900 text-gray-300 hover:bg-gray-900/70 hover:text-white active:bg-gray-900/70' 
                     : 'bg-gray-50/60 border-gray-200/60 text-gray-600 hover:bg-gray-100/80 hover:text-gray-800 active:bg-gray-100/80'
                 }`}
                 onClick={() => setIsExpanded(true)}
@@ -733,10 +934,10 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 className={`flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg transition-all duration-200 ${
                   isFullScreen
                     ? theme === 'dark'
-                      ? 'bg-white/15 text-white border border-white/20 active:bg-white/20'
+                      ? 'bg-gray-900/60 text-white border border-gray-900 active:bg-gray-900/70'
                       : 'bg-black/8 text-black border border-black/15 active:bg-black/15'
                     : theme === 'dark'
-                    ? 'text-gray-400 hover:text-white hover:bg-gray-800/40 active:bg-gray-800/40'
+                    ? 'text-gray-400 hover:text-white hover:bg-gray-900/50 active:bg-gray-900/50'
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/60 active:bg-gray-100/60'
                 }`}
                 whileHover={{ scale: 1.05 }}
@@ -756,7 +957,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                   onClick={onClose}
                   className={`flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg transition-all duration-200 ${
                     theme === 'dark'
-                      ? 'text-gray-400 hover:text-white hover:bg-gray-800/40 active:bg-gray-800/40'
+                      ? 'text-gray-400 hover:text-white hover:bg-gray-900/50 active:bg-gray-900/50'
                       : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/60 active:bg-gray-100/60'
                   }`}
                   whileHover={{ scale: 1.05 }}
@@ -832,7 +1033,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                           : charCount > maxChars * 0.7 
                           ? 'bg-orange-500/20 border border-orange-500/30'
                           : theme === 'dark'
-                          ? 'bg-gray-800/80 border border-gray-700/50'
+                          ? 'bg-gray-950/90 border border-gray-900'
                           : 'bg-white/80 border border-gray-200/50'
                       }`}
                     >
@@ -884,7 +1085,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
         </div>
 
         {/* Professional Attachments Section - Scrollable */}
-        <div className={`w-full ${isFullScreen ? 'flex-1' : ''} ${isFullScreen ? 'px-3 sm:px-6 py-2' : 'px-3 sm:p-4'} ${isFullScreen ? 'overflow-y-auto' : ''} scrollbar-hide`}>
+        <div className={`w-full ${isFullScreen ? 'flex-1' : ''}  ${isFullScreen ? 'overflow-y-auto' : ''} scrollbar-hide`}>
         <AnimatePresence>
           {(selectedImages.length > 0 || selectedVideos.length > 0 || location || polls.length > 0 || isEventActive || isEmojiPickerOpen || isLocationPickerOpen) && (
             <motion.div
@@ -906,7 +1107,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                     <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                       <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${
                         theme === 'dark' 
-                          ? 'bg-white/5 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]' 
+                          ? 'bg-gray-900/30 border border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]' 
                           : 'bg-black/5 border border-black/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)]'
                       }`}>
                         <Image className={`w-4 h-4 sm:w-5 sm:h-5 ${
@@ -963,7 +1164,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                           className={`relative group rounded-2xl sm:rounded-3xl overflow-hidden ${
                             theme === 'dark' 
-                              ? 'bg-white/5 border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]' 
+                              ? 'bg-gray-900/30 border border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]' 
                               : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
                           }`}
                         >
@@ -976,7 +1177,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                               />
                               <motion.button
                                 onClick={() => removeImage(media.index)}
-                                className="absolute top-3 right-3 sm:top-5 sm:right-5 w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-black/60 border border-white/20 hover:bg-black/80 active:bg-black/80 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] transition-all duration-300"
+                                className="absolute top-3 right-3 sm:top-5 sm:right-5 w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-gray-950/80 border border-gray-900 hover:bg-gray-950 active:bg-gray-950 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] transition-all duration-300"
                                 whileHover={{ scale: 1.08, rotate: 90 }}
                                 whileTap={{ scale: 0.92 }}
                               >
@@ -991,7 +1192,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                     initial={{ scale: 0.8, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     transition={{ delay: 0.2, duration: 0.5 }}
-                                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl backdrop-blur-2xl bg-white/10 border border-white/20 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
+                                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl backdrop-blur-2xl bg-gray-900/50 border border-gray-900 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
                                   >
                                     <Video className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                                   </motion.div>
@@ -1002,7 +1203,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                 </div>
                                 <motion.button
                                   onClick={() => removeVideo(media.index)}
-                                  className="absolute top-3 right-3 sm:top-5 sm:right-5 w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-black/60 border border-white/20 hover:bg-black/80 active:bg-black/80 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] transition-all duration-300"
+                                  className="absolute top-3 right-3 sm:top-5 sm:right-5 w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-gray-950/80 border border-gray-900 hover:bg-gray-950 active:bg-gray-950 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] transition-all duration-300"
                                   whileHover={{ scale: 1.08, rotate: 90 }}
                                   whileTap={{ scale: 0.92 }}
                                 >
@@ -1027,7 +1228,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                               transition={{ delay: idx * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                               className={`relative group rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl ${
                                 theme === 'dark' 
-                                  ? 'bg-white/5 border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]' 
+                                  ? 'bg-gray-900/30 border border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]' 
                                   : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
                               }`}
                             >
@@ -1040,7 +1241,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                   />
                                   <motion.button
                                     onClick={() => removeImage(media.index)}
-                                    className="absolute top-2 right-2 sm:top-4 sm:right-4 w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-black/60 border border-white/20 hover:bg-black/80 active:bg-black/80 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
+                                    className="absolute top-2 right-2 sm:top-4 sm:right-4 w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-gray-950/80 border border-gray-900 hover:bg-gray-950 active:bg-gray-950 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
                                     whileHover={{ scale: 1.08, rotate: 90 }}
                                     whileTap={{ scale: 0.92 }}
                                   >
@@ -1055,7 +1256,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                         initial={{ scale: 0.8, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
                                         transition={{ delay: idx * 0.2 + 0.2, duration: 0.5 }}
-                                        className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl backdrop-blur-2xl bg-white/10 border border-white/20 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
+                                        className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl backdrop-blur-2xl bg-gray-900/50 border border-gray-900 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
                                       >
                                         <Video className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                                       </motion.div>
@@ -1066,7 +1267,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                     </div>
                                     <motion.button
                                       onClick={() => removeVideo(media.index)}
-                                      className="absolute top-2 right-2 sm:top-4 sm:right-4 w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-black/60 border border-white/20 hover:bg-black/80 active:bg-black/80 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
+                                      className="absolute top-2 right-2 sm:top-4 sm:right-4 w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-gray-950/80 border border-gray-900 hover:bg-gray-950 active:bg-gray-950 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
                                       whileHover={{ scale: 1.08, rotate: 90 }}
                                       whileTap={{ scale: 0.92 }}
                                     >
@@ -1092,7 +1293,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                             className={`row-span-2 relative group rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl ${
                               theme === 'dark' 
-                                ? 'bg-white/5 border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]' 
+                                ? 'bg-gray-900/30 border border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]' 
                                 : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
                             }`}
                           >
@@ -1105,7 +1306,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                 />
                                 <motion.button
                                   onClick={() => removeImage(allMedia[0].index)}
-                                  className="absolute top-2 right-2 sm:top-4 sm:right-4 w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-black/60 border border-white/20 hover:bg-black/80 active:bg-black/80 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
+                                  className="absolute top-2 right-2 sm:top-4 sm:right-4 w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-gray-950/80 border border-gray-900 hover:bg-gray-950 active:bg-gray-950 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
                                   whileHover={{ scale: 1.08, rotate: 90 }}
                                   whileTap={{ scale: 0.92 }}
                                 >
@@ -1120,7 +1321,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                       initial={{ scale: 0.8, opacity: 0 }}
                                       animate={{ scale: 1, opacity: 1 }}
                                       transition={{ delay: 0.2, duration: 0.5 }}
-                                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl backdrop-blur-2xl bg-white/10 border border-white/20 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
+                                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl backdrop-blur-2xl bg-gray-900/50 border border-gray-900 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
                                     >
                                       <Video className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                                     </motion.div>
@@ -1131,7 +1332,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                   </div>
                                   <motion.button
                                     onClick={() => removeVideo(allMedia[0].index)}
-                                    className="absolute top-2 right-2 sm:top-4 sm:right-4 w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-black/60 border border-white/20 hover:bg-black/80 active:bg-black/80 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
+                                    className="absolute top-2 right-2 sm:top-4 sm:right-4 w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-gray-950/80 border border-gray-900 hover:bg-gray-950 active:bg-gray-950 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
                                     whileHover={{ scale: 1.08, rotate: 90 }}
                                     whileTap={{ scale: 0.92 }}
                                   >
@@ -1150,7 +1351,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                               transition={{ delay: (idx + 1) * 0.15, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                               className={`relative group rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl ${
                                 theme === 'dark' 
-                                  ? 'bg-white/5 border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]' 
+                                  ? 'bg-gray-900/30 border border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]' 
                                   : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
                               }`}
                             >
@@ -1163,7 +1364,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                   />
                                   <motion.button
                                     onClick={() => removeImage(media.index)}
-                                    className="absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-black/60 border border-white/20 hover:bg-black/80 active:bg-black/80 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
+                                    className="absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-gray-950/80 border border-gray-900 hover:bg-gray-950 active:bg-gray-950 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
                                     whileHover={{ scale: 1.08, rotate: 90 }}
                                     whileTap={{ scale: 0.92 }}
                                   >
@@ -1178,7 +1379,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                         initial={{ scale: 0.8, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
                                         transition={{ delay: (idx + 1) * 0.2 + 0.3, duration: 0.5 }}
-                                        className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl sm:rounded-3xl backdrop-blur-2xl bg-white/10 border border-white/20 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
+                                        className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl sm:rounded-3xl backdrop-blur-2xl bg-gray-900/50 border border-gray-900 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
                                       >
                                         <Video className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
                                       </motion.div>
@@ -1189,7 +1390,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                     </div>
                                     <motion.button
                                       onClick={() => removeVideo(media.index)}
-                                      className="absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-black/60 border border-white/20 hover:bg-black/80 active:bg-black/80 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
+                                      className="absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-gray-950/80 border border-gray-900 hover:bg-gray-950 active:bg-gray-950 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
                                       whileHover={{ scale: 1.08, rotate: 90 }}
                                       whileTap={{ scale: 0.92 }}
                                     >
@@ -1218,7 +1419,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                               transition={{ delay: idx * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                               className={`relative group rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl ${
                                 theme === 'dark' 
-                                  ? 'bg-white/5 border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]' 
+                                  ? 'bg-gray-900/30 border border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]' 
                                   : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
                               }`}
                             >
@@ -1240,7 +1441,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                   {!showOverlay && (
                                     <motion.button
                                       onClick={() => removeImage(media.index)}
-                                      className="absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-black/60 border border-white/20 hover:bg-black/80 active:bg-black/80 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
+                                      className="absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-gray-950/80 border border-gray-900 hover:bg-gray-950 active:bg-gray-950 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
                                       whileHover={{ scale: 1.08, rotate: 90 }}
                                       whileTap={{ scale: 0.92 }}
                                     >
@@ -1256,7 +1457,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                         initial={{ scale: 0.8, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
                                         transition={{ delay: idx * 0.1 + 0.2, duration: 0.5 }}
-                                        className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl sm:rounded-3xl backdrop-blur-2xl bg-white/10 border border-white/20 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
+                                        className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl sm:rounded-3xl backdrop-blur-2xl bg-gray-900/50 border border-gray-900 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]"
                                       >
                                         <Video className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
                                       </motion.div>
@@ -1276,7 +1477,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                     {!showOverlay && (
                                       <motion.button
                                         onClick={() => removeVideo(media.index)}
-                                        className="absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-black/60 border border-white/20 hover:bg-black/80 active:bg-black/80 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
+                                        className="absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl backdrop-blur-2xl bg-gray-950/80 border border-gray-900 hover:bg-gray-950 active:bg-gray-950 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
                                         whileHover={{ scale: 1.08, rotate: 90 }}
                                         whileTap={{ scale: 0.92 }}
                                       >
@@ -1303,81 +1504,119 @@ const CreatePost: React.FC<CreatePostProps> = ({
                   transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                   className="mb-4 sm:mb-8"
                 >
-                  {/* Apple-Style Header */}
-                  <div className="flex items-center justify-between mb-3 sm:mb-5 gap-2">
-                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${
-                        theme === 'dark' 
-                          ? 'bg-white/5 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]' 
-                          : 'bg-black/5 border border-black/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)]'
-                      }`}>
-                        <BarChart3 className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                          theme === 'dark' ? 'text-white/90' : 'text-gray-900/90'
-                        }`} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className={`text-sm sm:text-base font-semibold tracking-tight truncate ${
-                          theme === 'dark' ? 'text-white' : 'text-gray-900'
-                        }`}>
-                          Poll{polls.length > 1 ? 's' : ''}
-                        </h3>
-                        <p className={`text-[10px] sm:text-xs font-medium tracking-wide truncate ${
-                          theme === 'dark' ? 'text-white/50' : 'text-gray-500'
-                        }`}>
-                          {polls.length} question{polls.length > 1 ? 's' : ''}
-                        </p>
+                  <div className={`w-full overflow-visible  ${
+                    theme === 'dark'
+                      ? 'bg-gray-950 border border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
+                      : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
+                  }`}>
+                    {/* Apple-Style Header */}
+                    <div className={`px-4  sm:px-6 py-3 sm:py-4 border-b ${
+                      theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'
+                    }`}>
+                      <div className="flex items-center justify-between gap-2 sm:gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                          <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${
+                            theme === 'dark' 
+                              ? 'bg-gray-900/30 border border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]' 
+                              : 'bg-black/5 border border-black/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)]'
+                          }`}>
+                            <BarChart3 className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                              theme === 'dark' ? 'text-white/90' : 'text-gray-900/90'
+                            }`} />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className={`font-semibold text-sm sm:text-base tracking-tight truncate ${
+                              theme === 'dark' ? 'text-white' : 'text-gray-900'
+                            }`}>
+                              Poll{polls.length > 1 ? 's' : ''}
+                            </h3>
+                            <p className={`text-[10px] sm:text-xs font-medium tracking-wide truncate ${
+                              theme === 'dark' ? 'text-white/50' : 'text-gray-500'
+                            }`}>
+                              {polls.length} question{polls.length > 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        </div>
+                        <motion.button
+                          onClick={() => {
+                            setPolls([]);
+                            setPollErrors({});
+                          }}
+                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-xl transition-all duration-300 flex items-center justify-center flex-shrink-0 ${
+                            theme === 'dark'
+                              ? 'bg-gray-900/50 border border-gray-900 hover:bg-gray-900/70 active:bg-gray-900/70'
+                              : 'bg-gray-100 border border-gray-200/50 hover:bg-gray-200 active:bg-gray-200'
+                          }`}
+                          whileHover={{ scale: 1.08, rotate: 90 }}
+                          whileTap={{ scale: 0.92 }}
+                        >
+                          <X className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                            theme === 'dark' ? 'text-white' : 'text-gray-900'
+                          }`} />
+                        </motion.button>
                       </div>
                     </div>
-                    <motion.button
-                      onClick={() => setPolls([])}
-                      className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-semibold transition-all duration-300 backdrop-blur-xl flex-shrink-0 ${
-                        theme === 'dark'
-                          ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/40'
-                          : 'bg-red-50 text-red-600 border border-red-200/50 hover:bg-red-100 hover:border-red-300'
-                      }`}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      Clear All
-                    </motion.button>
-                  </div>
 
-                  <div className="space-y-3 sm:space-y-4">
+                    <div className="w-full py-2 flex flex-col gap-2 sm:py-2 space-y-2 sm:space-y-2">
                     {polls.map((poll, pollIndex) => (
                       <motion.div
                         key={poll.id}
                         initial={{ opacity: 0, y: 20, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{ delay: pollIndex * 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className={`rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl ${
+                        className={`w-full overflow-hidden  ${
                           theme === 'dark'
-                            ? 'bg-white/5 border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
-                            : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
+                            ? 'bg-gray-950 border-t border-b border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
+                            : 'bg-white border-t border-b border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
                         }`}
                       >
                         {/* Apple-Style Poll Header */}
-                        <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b ${
-                          theme === 'dark' ? 'border-white/10' : 'border-gray-200/50'
-                        }`}>
-                          <div className="flex items-start justify-between gap-2 sm:gap-3">
+                        <div className={`px-4 sm:px-6 py-4 sm:py-5 border-b ${
+                          theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'
+                        }`} data-poll-error={`poll-${poll.id}-question`}>
+                          <div className="flex items-start justify-between gap-3 sm:gap-4">
                             <div className="flex-1 min-w-0">
+                              <label className={`block text-xs sm:text-sm font-medium mb-2 ${
+                                theme === 'dark' ? 'text-white/70' : 'text-gray-600'
+                              }`}>
+                                Question
+                              </label>
                               <input
                                 type="text"
                                 placeholder="What would you like to ask?"
                                 value={poll.question}
-                                onChange={(e) => updatePollQuestion(poll.id, e.target.value)}
-                                className={`w-full px-0 py-1.5 sm:py-2 text-sm sm:text-base font-semibold tracking-tight bg-transparent border-none focus:outline-none ${
-                                  theme === 'dark' 
-                                    ? 'text-white placeholder:text-white/40' 
-                                    : 'text-gray-900 placeholder:text-gray-400'
+                                onChange={(e) => {
+                                  updatePollQuestion(poll.id, e.target.value);
+                                  // Clear error when user starts typing
+                                  if (pollErrors[`poll-${poll.id}-question`]) {
+                                    setPollErrors(prev => {
+                                      const updated = { ...prev };
+                                      delete updated[`poll-${poll.id}-question`];
+                                      return updated;
+                                    });
+                                  }
+                                }}
+                                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-semibold tracking-tight rounded-xl sm:rounded-2xl border transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl ${
+                                  pollErrors[`poll-${poll.id}-question`]
+                                    ? theme === 'dark'
+                                      ? 'bg-red-500/10 border-red-500/50 text-white placeholder:text-white/40 focus:border-red-500 focus:ring-red-500/20'
+                                      : 'bg-red-50 border-red-500/50 text-gray-900 placeholder:text-gray-400 focus:border-red-500 focus:ring-red-500/20'
+                                    : theme === 'dark'
+                                    ? 'bg-gray-900/30 border-gray-900 text-white placeholder:text-white/40 focus:border-gray-900 focus:ring-gray-900/30'
+                                    : 'bg-gray-50 border-gray-200/50 text-gray-900 placeholder:text-gray-400 focus:border-gray-300 focus:ring-gray-200'
                                 }`}
                               />
+                              {pollErrors[`poll-${poll.id}-question`] && (
+                                <p className={`text-xs mt-1.5 ${theme === 'dark' ? 'text-red-400' : 'text-red-600'}`}>
+                                  {pollErrors[`poll-${poll.id}-question`]}
+                                </p>
+                              )}
                             </div>
                             <motion.button
                               onClick={() => removePoll(poll.id)}
-                              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-xl transition-all duration-300 flex items-center justify-center flex-shrink-0 ${
+                              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-xl transition-all duration-300 flex items-center justify-center flex-shrink-0 mt-7 ${
                                 theme === 'dark'
-                                  ? 'bg-white/10 border border-white/20 hover:bg-white/20 active:bg-white/20'
+                                  ? 'bg-gray-900/50 border border-gray-900 hover:bg-gray-900/70 active:bg-gray-900/70'
                                   : 'bg-gray-100 border border-gray-200/50 hover:bg-gray-200 active:bg-gray-200'
                               }`}
                               whileHover={{ scale: 1.08, rotate: 90 }}
@@ -1391,118 +1630,296 @@ const CreatePost: React.FC<CreatePostProps> = ({
                         </div>
 
                         {/* Apple-Style Poll Options */}
-                        <div className="px-4 sm:px-6 py-4 sm:py-5 space-y-2 sm:space-y-3">
-                          {poll.options.map((option, optionIndex) => (
-                            <motion.div
-                              key={optionIndex}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: optionIndex * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                              className="flex items-center gap-2 sm:gap-3"
-                            >
-                              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 backdrop-blur-xl ${
-                                theme === 'dark' 
-                                  ? 'bg-white/5 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]' 
-                                  : 'bg-gray-100 border border-gray-200/50'
-                              }`}>
-                                <span className={`text-xs sm:text-sm font-bold tracking-tight ${
-                                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                        <div className="px-4 sm:px-6 py-4 sm:py-5" data-poll-error={`poll-${poll.id}-options`}>
+                          <label className={`block text-xs sm:text-sm font-medium mb-3 ${
+                            theme === 'dark' ? 'text-white/70' : 'text-gray-600'
+                          }`}>
+                            Options
+                          </label>
+                          {pollErrors[`poll-${poll.id}-options`] && (
+                            <p className={`text-xs mb-2 ${theme === 'dark' ? 'text-red-400' : 'text-red-600'}`}>
+                              {pollErrors[`poll-${poll.id}-options`]}
+                            </p>
+                          )}
+                          <div className="space-y-2.5 sm:space-y-3">
+                            {poll.options.map((option, optionIndex) => (
+                              <motion.div
+                                key={optionIndex}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: optionIndex * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                                className="flex items-center gap-2 sm:gap-3"
+                              >
+                                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 backdrop-blur-xl ${
+                                  theme === 'dark' 
+                                    ? 'bg-gray-900/30 border border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]' 
+                                    : 'bg-gray-100 border border-gray-200/50'
                                 }`}>
-                                  {optionIndex + 1}
-                                </span>
-                              </div>
-                              <input
-                                type="text"
-                                placeholder={`Option ${optionIndex + 1}`}
-                                value={option}
-                                onChange={(e) => updatePollOption(poll.id, optionIndex, e.target.value)}
-                                className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl sm:rounded-2xl border transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl ${
-                                  theme === 'dark'
-                                    ? 'bg-white/5 border-white/10 text-white placeholder-white/40 focus:border-white/30 focus:ring-white/20'
-                                    : 'bg-gray-50 border-gray-200/50 text-gray-900 placeholder-gray-400 focus:border-gray-300 focus:ring-gray-200'
-                                }`}
-                              />
-                              {poll.options.length > 2 && (
-                                <motion.button
-                                  onClick={() => removePollOption(poll.id, optionIndex)}
-                                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-xl transition-all duration-300 flex items-center justify-center flex-shrink-0 ${
-                                    theme === 'dark'
-                                      ? 'bg-white/10 border border-white/20 hover:bg-white/20 active:bg-white/20'
-                                      : 'bg-gray-100 border border-gray-200/50 hover:bg-gray-200 active:bg-gray-200'
-                                  }`}
-                                  whileHover={{ scale: 1.08, rotate: 90 }}
-                                  whileTap={{ scale: 0.92 }}
-                                >
-                                  <X className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                                  <span className={`text-xs sm:text-sm font-bold tracking-tight ${
                                     theme === 'dark' ? 'text-white' : 'text-gray-900'
-                                  }`} />
-                                </motion.button>
-                              )}
-                            </motion.div>
-                          ))}
+                                  }`}>
+                                    {optionIndex + 1}
+                                  </span>
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder={`Option ${optionIndex + 1}`}
+                                  value={option}
+                                  onChange={(e) => {
+                                    updatePollOption(poll.id, optionIndex, e.target.value);
+                                    // Clear error when user starts typing
+                                    if (pollErrors[`poll-${poll.id}-options`]) {
+                                      const filledOptions = poll.options.map((opt, idx) => 
+                                        idx === optionIndex ? e.target.value : opt
+                                      ).filter(opt => opt && opt.trim() !== '');
+                                      if (filledOptions.length >= 2) {
+                                        setPollErrors(prev => {
+                                          const updated = { ...prev };
+                                          delete updated[`poll-${poll.id}-options`];
+                                          return updated;
+                                        });
+                                      }
+                                    }
+                                  }}
+                                  className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl sm:rounded-2xl border transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl ${
+                                    pollErrors[`poll-${poll.id}-options`] && (!option || option.trim() === '')
+                                      ? theme === 'dark'
+                                        ? 'bg-red-500/10 border-red-500/50 text-white placeholder:text-white/40 focus:border-red-500 focus:ring-red-500/20'
+                                        : 'bg-red-50 border-red-500/50 text-gray-900 placeholder:text-gray-400 focus:border-red-500 focus:ring-red-500/20'
+                                      : theme === 'dark'
+                                      ? 'bg-gray-900/30 border-gray-900 text-white placeholder-white/40 focus:border-gray-900 focus:ring-gray-900/30'
+                                      : 'bg-gray-50 border-gray-200/50 text-gray-900 placeholder-gray-400 focus:border-gray-300 focus:ring-gray-200'
+                                  }`}
+                                />
+                                {poll.options.length > 2 && (
+                                  <motion.button
+                                    onClick={() => removePollOption(poll.id, optionIndex)}
+                                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl backdrop-blur-xl transition-all duration-300 flex items-center justify-center flex-shrink-0 ${
+                                      theme === 'dark'
+                                        ? 'bg-gray-900/50 border border-gray-900 hover:bg-gray-900/70 active:bg-gray-900/70'
+                                        : 'bg-gray-100 border border-gray-200/50 hover:bg-gray-200 active:bg-gray-200'
+                                    }`}
+                                    whileHover={{ scale: 1.08, rotate: 90 }}
+                                    whileTap={{ scale: 0.92 }}
+                                  >
+                                    <X className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                                      theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                    }`} />
+                                  </motion.button>
+                                )}
+                              </motion.div>
+                            ))}
 
-                          {/* Apple-Style Add Option Button */}
-                          <motion.button
-                            onClick={() => addPollOption(poll.id)}
-                            className={`w-full flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl border transition-all duration-300 backdrop-blur-xl ${
-                              theme === 'dark'
-                                ? 'border-white/10 text-white/60 hover:text-white hover:bg-white/10 hover:border-white/20 active:bg-white/10'
-                                : 'border-gray-200/50 text-gray-500 hover:text-gray-900 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-50'
-                            }`}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="text-xs sm:text-sm font-semibold tracking-tight">Add option</span>
-                          </motion.button>
+                            {/* Apple-Style Add Option Button */}
+                            <motion.button
+                              onClick={() => addPollOption(poll.id)}
+                              className={`w-full flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border transition-all duration-300 backdrop-blur-xl mt-3 ${
+                                theme === 'dark'
+                                  ? 'border-gray-900 text-white/60 hover:text-white hover:bg-gray-900/50 hover:border-gray-900 active:bg-gray-900/50'
+                                  : 'border-gray-200/50 text-gray-500 hover:text-gray-900 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-50'
+                              }`}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                              <span className="text-xs sm:text-sm font-semibold tracking-tight">Add option</span>
+                            </motion.button>
+                          </div>
                         </div>
 
-                        {/* Apple-Style Poll Duration */}
-                        <div className={`px-4 sm:px-6 py-3 sm:py-4 border-t backdrop-blur-xl ${
-                          theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-gray-200/50 bg-gray-50/50'
+                        {/* Poll Settings - Combined Section */}
+                        <div className={`px-4 sm:px-6 py-4 sm:py-5 border-t backdrop-blur-xl ${
+                          theme === 'dark' ? 'border-gray-900 bg-gray-950' : 'border-gray-200/50 bg-gray-50/50'
                         }`}>
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                            <div className="flex items-center gap-2 sm:gap-3">
-                              <Clock className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                                theme === 'dark' ? 'text-white/60' : 'text-gray-500'
-                              }`} />
-                              <span className={`text-xs sm:text-sm font-semibold tracking-tight ${
-                                theme === 'dark' ? 'text-white' : 'text-gray-900'
-                              }`}>
-                                Duration
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                              {[
-                                { value: '0', label: '∞' },
-                                { value: '1', label: '1d' },
-                                { value: '3', label: '3d' },
-                                { value: '7', label: '1w' },
-                                { value: '30', label: '1m' }
-                              ].map((duration) => (
-                                <motion.button
-                                  key={duration.value}
-                                  onClick={() => updatePollDuration(poll.id, duration.value)}
-                                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 backdrop-blur-xl ${
-                                    poll.duration === duration.value
-                                      ? theme === 'dark'
+                          <div className="space-y-4 sm:space-y-5">
+                            {/* Poll Type Selection */}
+                            <div className="flex flex-col gap-2.5 sm:gap-3">
+                              <div className="flex items-center gap-2 sm:gap-3">
+                                <BarChart3 className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                                  theme === 'dark' ? 'text-white/70' : 'text-gray-600'
+                                }`} />
+                                <span className={`text-xs sm:text-sm font-semibold tracking-tight ${
+                                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                }`}>
+                                  Poll Type
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                {[
+                                  { value: 'single', label: 'Single', icon: CircleCheck, desc: 'One choice' },
+                                  { value: 'multiple', label: 'Multiple', icon: CheckSquare, desc: 'Many choices' },
+                                  { value: 'ranked', label: 'Ranked', icon: ListOrdered, desc: 'Ordered' },
+                                  { value: 'weighted', label: 'Weighted', icon: Scale, desc: 'Prioritized' }
+                                ].map((kind) => {
+                                  const IconComponent = kind.icon;
+                                  return (
+                                    <motion.button
+                                      key={kind.value}
+                                      onClick={() => updatePollKind(poll.id, kind.value as 'single' | 'multiple' | 'ranked' | 'weighted')}
+                                      className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-300 backdrop-blur-xl flex items-center gap-1.5 sm:gap-2 ${
+                                        poll.kind === kind.value
+                                          ? theme === 'dark'
                                         ? 'bg-white text-black shadow-[0_8px_32px_0_rgba(255,255,255,0.2)]'
                                         : 'bg-black text-white shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]'
                                       : theme === 'dark'
-                                      ? 'bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 active:bg-white/10'
+                                      ? 'bg-gray-900/30 border border-gray-900 text-white/60 hover:text-white hover:bg-gray-900/50 active:bg-gray-900/50'
                                       : 'bg-gray-100 border border-gray-200/50 text-gray-500 hover:text-gray-900 hover:bg-gray-200 active:bg-gray-200'
-                                  }`}
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                >
-                                  {duration.label}
-                                </motion.button>
-                              ))}
+                                      }`}
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      title={kind.desc}
+                                    >
+                                      <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" />
+                                      <span>{kind.label}</span>
+                                    </motion.button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Duration Selection */}
+                            <div className="flex flex-col gap-2.5 sm:gap-3">
+                              <div className="flex items-center gap-2 sm:gap-3">
+                                <Clock className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                                  theme === 'dark' ? 'text-white/70' : 'text-gray-600'
+                                }`} />
+                                <span className={`text-xs sm:text-sm font-semibold tracking-tight ${
+                                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                }`}>
+                                  Duration
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                {[
+                                  { value: '0', label: '∞', desc: 'Never ends' },
+                                  { value: '1', label: '1d', desc: '1 day' },
+                                  { value: '3', label: '3d', desc: '3 days' },
+                                  { value: '7', label: '1w', desc: '1 week' },
+                                  { value: '30', label: '1m', desc: '1 month' }
+                                ].map((duration) => (
+                                  <motion.button
+                                    key={duration.value}
+                                    onClick={() => updatePollDuration(poll.id, duration.value)}
+                                    className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-300 backdrop-blur-xl ${
+                                      poll.duration === duration.value
+                                        ? theme === 'dark'
+                                          ? 'bg-white text-black shadow-[0_8px_32px_0_rgba(255,255,255,0.2)]'
+                                          : 'bg-black text-white shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]'
+                                        : theme === 'dark'
+                                        ? 'bg-gray-900/30 border border-gray-900 text-white/60 hover:text-white hover:bg-gray-900/50 active:bg-gray-900/50'
+                                        : 'bg-gray-100 border border-gray-200/50 text-gray-500 hover:text-gray-900 hover:bg-gray-200 active:bg-gray-200'
+                                    }`}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    title={duration.desc}
+                                  >
+                                    {duration.label}
+                                  </motion.button>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </div>
+
+                        {/* Max Selectable - Only show for multiple, ranked, or weighted */}
+                        {(poll.kind === 'multiple' || poll.kind === 'ranked' || poll.kind === 'weighted') && (
+                          <div className={`px-4 sm:px-6 py-4 sm:py-5 border-t backdrop-blur-xl ${
+                            theme === 'dark' ? 'border-gray-900 bg-gray-950' : 'border-gray-200/50 bg-gray-50/50'
+                          }`}>
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-center gap-2 sm:gap-3">
+                                <Users className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                                  theme === 'dark' ? 'text-white/70' : 'text-gray-600'
+                                }`} />
+                                <span className={`text-xs sm:text-sm font-semibold tracking-tight ${
+                                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                }`}>
+                                  Max Selections
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 sm:gap-3">
+                                {/* Decrease Button */}
+                                <motion.button
+                                  onClick={() => {
+                                    const current = poll.maxSelectable;
+                                    if (current > 1) {
+                                      updatePollMaxSelectable(poll.id, current - 1);
+                                    }
+                                  }}
+                                  disabled={poll.maxSelectable <= 1}
+                                  className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl backdrop-blur-xl transition-all duration-300 flex items-center justify-center flex-shrink-0 ${
+                                    poll.maxSelectable <= 1
+                                      ? theme === 'dark'
+                                        ? 'bg-gray-900/20 border border-gray-900 text-white/30 cursor-not-allowed'
+                                        : 'bg-gray-100 border border-gray-200/50 text-gray-300 cursor-not-allowed'
+                                      : theme === 'dark'
+                                      ? 'bg-gray-900/50 border border-gray-900 text-white hover:bg-gray-900/70 active:bg-gray-900/70'
+                                      : 'bg-gray-100 border border-gray-200/50 text-gray-900 hover:bg-gray-200 active:bg-gray-200'
+                                  }`}
+                                  whileHover={poll.maxSelectable > 1 ? { scale: 1.05 } : {}}
+                                  whileTap={poll.maxSelectable > 1 ? { scale: 0.95 } : {}}
+                                >
+                                  <Minus className={`w-4 h-4 sm:w-5 sm:h-5`} />
+                                </motion.button>
+
+                                {/* Value Display - Clickable Stepper */}
+                                <motion.button
+                                  onClick={() => {
+                                    const maxOptions = poll.options.filter(opt => opt.trim() !== '').length || 1;
+                                    const nextValue = poll.maxSelectable >= maxOptions ? 1 : poll.maxSelectable + 1;
+                                    updatePollMaxSelectable(poll.id, nextValue);
+                                  }}
+                                  className={`flex-1 min-w-[100px] sm:min-w-[120px] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border transition-all duration-300 backdrop-blur-xl flex items-center justify-center gap-2 ${
+                                    theme === 'dark'
+                                    ? 'bg-gray-900/30 border-gray-900 text-white hover:bg-gray-900/50 hover:border-gray-900 active:bg-gray-900/50'
+                                    : 'bg-gray-50 border-gray-200/50 text-gray-900 hover:bg-gray-100 hover:border-gray-300 active:bg-gray-100'
+                                  }`}
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
+                                >
+                                  <span className={`text-lg sm:text-xl font-bold tracking-tight ${
+                                    theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                  }`}>
+                                    {poll.maxSelectable}
+                                  </span>
+                                  <span className={`text-xs sm:text-sm font-medium ${
+                                    theme === 'dark' ? 'text-white/50' : 'text-gray-400'
+                                  }`}>
+                                    of {poll.options.filter(opt => opt.trim() !== '').length || 1}
+                                  </span>
+                                </motion.button>
+
+                                {/* Increase Button */}
+                                <motion.button
+                                  onClick={() => {
+                                    const maxOptions = poll.options.filter(opt => opt.trim() !== '').length || 1;
+                                    const current = poll.maxSelectable;
+                                    if (current < maxOptions) {
+                                      updatePollMaxSelectable(poll.id, current + 1);
+                                    }
+                                  }}
+                                  disabled={poll.maxSelectable >= (poll.options.filter(opt => opt.trim() !== '').length || 1)}
+                                  className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl backdrop-blur-xl transition-all duration-300 flex items-center justify-center flex-shrink-0 ${
+                                    poll.maxSelectable >= (poll.options.filter(opt => opt.trim() !== '').length || 1)
+                                      ? theme === 'dark'
+                                        ? 'bg-gray-900/20 border border-gray-900 text-white/30 cursor-not-allowed'
+                                        : 'bg-gray-100 border border-gray-200/50 text-gray-300 cursor-not-allowed'
+                                      : theme === 'dark'
+                                      ? 'bg-gray-900/50 border border-gray-900 text-white hover:bg-gray-900/70 active:bg-gray-900/70'
+                                      : 'bg-gray-100 border border-gray-200/50 text-gray-900 hover:bg-gray-200 active:bg-gray-200'
+                                  }`}
+                                  whileHover={poll.maxSelectable < (poll.options.filter(opt => opt.trim() !== '').length || 1) ? { scale: 1.05 } : {}}
+                                  whileTap={poll.maxSelectable < (poll.options.filter(opt => opt.trim() !== '').length || 1) ? { scale: 0.95 } : {}}
+                                >
+                                  <Plus className={`w-4 h-4 sm:w-5 sm:h-5`} />
+                                </motion.button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </motion.div>
                     ))}
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -1517,7 +1934,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 >
                   <div className={`rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl ${
                     theme === 'dark'
-                      ? 'bg-white/5 border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
+                      ? 'bg-gray-900/30 border border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
                       : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
                   }`}>
                     {/* Map Preview */}
@@ -1542,14 +1959,14 @@ const CreatePost: React.FC<CreatePostProps> = ({
                       >
                         <div className={`rounded-xl sm:rounded-2xl backdrop-blur-2xl border ${
                           theme === 'dark'
-                            ? 'bg-black/60 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
+                            ? 'bg-gray-950/80 border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
                             : 'bg-white/90 border-gray-200/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]'
                         }`}>
                           <div className="p-3 sm:p-4">
                             <div className="flex items-center gap-3 sm:gap-4">
                               <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${
                                 theme === 'dark' 
-                                  ? 'bg-white/10 border border-white/20' 
+                                  ? 'bg-gray-900/50 border border-gray-900' 
                                   : 'bg-gray-100 border border-gray-200/50'
                               }`}>
                                 <MapPin className={`w-5 h-5 sm:w-6 sm:h-6 ${
@@ -1580,7 +1997,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                 onClick={() => setLocation(null)}
                                 className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-xl transition-all duration-300 flex items-center justify-center flex-shrink-0 ${
                                   theme === 'dark'
-                                    ? 'bg-white/10 border border-white/20 hover:bg-white/20 active:bg-white/20'
+                                    ? 'bg-gray-900/50 border border-gray-900 hover:bg-gray-900/70 active:bg-gray-900/70'
                                     : 'bg-gray-100 border border-gray-200/50 hover:bg-gray-200 active:bg-gray-200'
                                 }`}
                                 whileHover={{ scale: 1.08, rotate: 90 }}
@@ -1608,19 +2025,19 @@ const CreatePost: React.FC<CreatePostProps> = ({
                   transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                   className="mb-4 sm:mb-8"
                 >
-                  <div className={`rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl ${
+                  <div className={`w-full overflow-visible ${
                     theme === 'dark'
-                      ? 'bg-white/5 border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
+                      ? 'bg-gray-950 border border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
                       : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
                   }`}>
                     <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b ${
-                      theme === 'dark' ? 'border-white/10' : 'border-gray-200/50'
+                      theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'
                     }`}>
                       <div className="flex items-center justify-between gap-2 sm:gap-3">
                         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                           <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${
                             theme === 'dark' 
-                              ? 'bg-white/5 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]' 
+                              ? 'bg-gray-900/30 border border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]' 
                               : 'bg-black/5 border border-black/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)]'
                           }`}>
                             <Calendar className={`w-4 h-4 sm:w-5 sm:h-5 ${
@@ -1644,7 +2061,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                           onClick={() => setIsEventActive(false)}
                           className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl backdrop-blur-xl transition-all duration-300 flex items-center justify-center flex-shrink-0 ${
                             theme === 'dark'
-                              ? 'bg-white/10 border border-white/20 hover:bg-white/20 active:bg-white/20'
+                                        ? 'bg-gray-900/50 border border-gray-900 hover:bg-gray-900/70 active:bg-gray-900/70'
                               : 'bg-gray-100 border border-gray-200/50 hover:bg-gray-200 active:bg-gray-200'
                           }`}
                           whileHover={{ scale: 1.08, rotate: 90 }}
@@ -1657,52 +2074,545 @@ const CreatePost: React.FC<CreatePostProps> = ({
                       </div>
                     </div>
 
-                    <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-3 sm:space-y-4">
+                    <div className="px-4 w-full py-4 sm:py-6 space-y-3 sm:space-y-4">
+                      <div>
                       <input
                         type="text"
-                        placeholder="Event title"
+                          placeholder="Event title *"
                         value={eventTitle}
-                        onChange={(e) => setEventTitle(e.target.value)}
+                          onChange={(e) => {
+                            setEventTitle(e.target.value);
+                            // Clear error when user starts typing
+                            if (pollErrors['event-title']) {
+                              setPollErrors(prev => {
+                                const updated = { ...prev };
+                                delete updated['event-title'];
+                                return updated;
+                              });
+                            }
+                          }}
+                          data-poll-error="event-title"
                         className={`w-full px-3 sm:px-4 py-3 sm:py-3.5 text-sm sm:text-base rounded-xl sm:rounded-2xl border transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl ${
-                          theme === 'dark'
-                            ? 'bg-white/5 border-white/10 text-white placeholder-white/40 focus:border-white/30 focus:ring-white/20'
+                            pollErrors['event-title']
+                              ? theme === 'dark'
+                                ? 'bg-gray-900/30 border-red-500/50 text-white placeholder-white/40 focus:border-red-500 focus:ring-red-500/20'
+                                : 'bg-gray-50 border-red-500/50 text-gray-900 placeholder-gray-400 focus:border-red-500 focus:ring-red-500/20'
+                              : theme === 'dark'
+                            ? 'bg-gray-900/30 border-gray-900 text-white placeholder-white/40 focus:border-gray-900 focus:ring-gray-900/30'
                             : 'bg-gray-50 border-gray-200/50 text-gray-900 placeholder-gray-400 focus:border-gray-300 focus:ring-gray-200'
                         }`}
                       />
+                        {pollErrors['event-title'] && (
+                          <p className="mt-1.5 text-xs text-red-500">{pollErrors['event-title']}</p>
+                        )}
+                      </div>
 
+                      <div>
                       <textarea
-                        placeholder="Description (optional)"
+                          placeholder="Event description *"
                         value={eventDescription}
-                        onChange={(e) => setEventDescription(e.target.value)}
+                          onChange={(e) => {
+                            setEventDescription(e.target.value);
+                            // Clear error when user starts typing
+                            if (pollErrors['event-description']) {
+                              setPollErrors(prev => {
+                                const updated = { ...prev };
+                                delete updated['event-description'];
+                                return updated;
+                              });
+                            }
+                          }}
+                          data-poll-error="event-description"
                         rows={4}
                         className={`w-full px-3 sm:px-4 py-3 sm:py-3.5 text-sm sm:text-base rounded-xl sm:rounded-2xl border transition-all duration-300 focus:outline-none focus:ring-2 resize-none backdrop-blur-xl ${
-                          theme === 'dark'
-                            ? 'bg-white/5 border-white/10 text-white placeholder-white/40 focus:border-white/30 focus:ring-white/20'
+                            pollErrors['event-description']
+                              ? theme === 'dark'
+                                ? 'bg-gray-900/30 border-red-500/50 text-white placeholder-white/40 focus:border-red-500 focus:ring-red-500/20'
+                                : 'bg-gray-50 border-red-500/50 text-gray-900 placeholder-gray-400 focus:border-red-500 focus:ring-red-500/20'
+                              : theme === 'dark'
+                            ? 'bg-gray-900/30 border-gray-900 text-white placeholder-white/40 focus:border-gray-900 focus:ring-gray-900/30'
                             : 'bg-gray-50 border-gray-200/50 text-gray-900 placeholder-gray-400 focus:border-gray-300 focus:ring-gray-200'
                         }`}
                       />
+                        {pollErrors['event-description'] && (
+                          <p className="mt-1.5 text-xs text-red-500">{pollErrors['event-description']}</p>
+                        )}
+                      </div>
 
-                      <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                        <input
-                          type="date"
-                          value={eventDate}
-                          onChange={(e) => setEventDate(e.target.value)}
-                          className={`px-3 sm:px-4 py-3 sm:py-3.5 text-sm sm:text-base rounded-xl sm:rounded-2xl border transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl ${
-                            theme === 'dark'
-                              ? 'bg-white/5 border-white/10 text-white focus:border-white/30 focus:ring-white/20'
-                              : 'bg-gray-50 border-gray-200/50 text-gray-900 focus:border-gray-300 focus:ring-gray-200'
+                      {/* Event Type Selection */}
+                      <div className="w-full h-full]">
+                        <label className={`flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-3 ${
+                          theme === 'dark' ? 'text-white/80' : 'text-gray-700'
+                        }`}>
+                          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <span className="text-xs sm:text-sm font-semibold tracking-tight">Event Type *</span>
+                        </label>
+                        <motion.button
+                          type="button"
+                          onClick={() => {
+                            setIsEventKindPickerOpen(!isEventKindPickerOpen);
+                            if (!isEventKindPickerOpen) {
+                              setEventKindSearchQuery('');
+                            }
+                          }}
+                          data-poll-error="event-kind"
+                          className={`w-full px-4 sm:px-5 py-4 sm:py-4.5 text-base sm:text-lg rounded-xl sm:rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl font-medium text-left flex items-center justify-between ${
+                            pollErrors['event-kind']
+                              ? theme === 'dark'
+                                ? 'bg-gray-900/30 border-red-500/60 text-white focus:border-red-500 focus:ring-red-500/30'
+                                : 'bg-gray-50 border-red-500/60 text-gray-900 focus:border-red-500 focus:ring-red-500/30'
+                              : theme === 'dark'
+                              ? 'bg-gray-900/30 border-gray-900 text-white focus:border-gray-900 focus:ring-gray-900/30 hover:border-gray-900'
+                              : 'bg-gray-50 border-gray-300/60 text-gray-900 focus:border-gray-400 focus:ring-gray-300/40 hover:border-gray-400'
                           }`}
-                        />
-                        <input
-                          type="time"
-                          value={eventTime}
-                          onChange={(e) => setEventTime(e.target.value)}
-                          className={`px-3 sm:px-4 py-3 sm:py-3.5 text-sm sm:text-base rounded-xl sm:rounded-2xl border transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl ${
-                            theme === 'dark'
-                              ? 'bg-white/5 border-white/10 text-white focus:border-white/30 focus:ring-white/20'
-                              : 'bg-gray-50 border-gray-200/50 text-gray-900 focus:border-gray-300 focus:ring-gray-200'
-                          }`}
-                        />
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                        >
+                          <span className={eventKind ? '' : 'opacity-60'}>
+                            {eventKind 
+                              ? (() => {
+                                  const found = eventKinds.find(k => k.value === eventKind);
+                                  return found ? found.label : eventKind;
+                                })()
+                              : 'Select event type'
+                            }
+                          </span>
+                          <motion.div
+                            animate={{ rotate: isEventKindPickerOpen ? 180 : 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <X className={`w-5 h-5 transform ${isEventKindPickerOpen ? 'rotate-45' : ''}`} />
+                          </motion.div>
+                        </motion.button>
+                        {pollErrors['event-kind'] && (
+                          <p className="mt-2 text-xs text-red-500 font-medium">{pollErrors['event-kind']}</p>
+                        )}
+
+                        {/* Event Kind Picker - Dropdown below button */}
+                        <AnimatePresence>
+                          {isEventKindPickerOpen && (
+                            <motion.div
+                              ref={eventKindPickerRef}
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.2 }}
+                              className={`w-full h-full max-h-[50dvh] overflow-y-scroll scrollbar-hide top-full  mt-2 rounded-xl border border-2  ${
+                                theme === 'dark'
+                                  ? 'bg-gray-950 border-gray-900'
+                                  : 'bg-white border-gray-200/60'
+                              }`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {/* Search Bar */}
+                              <div className={`p-3 sm:p-4 border-b ${
+                                theme === 'dark' ? 'border-gray-900 bg-gray-950' : 'border-gray-200/50 bg-white'
+                              }`}>
+                                <div className="relative">
+                                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
+                                    theme === 'dark' ? 'text-white/50' : 'text-gray-400'
+                                  }`} />
+                                  <input
+                                    type="text"
+                                    placeholder="Search event types..."
+                                    value={eventKindSearchQuery}
+                                    onChange={(e) => setEventKindSearchQuery(e.target.value)}
+                                    className={`w-full pl-10 pr-4 py-2.5 rounded-lg text-sm border transition-all duration-200 focus:outline-none focus:ring-2 ${
+                                      theme === 'dark'
+                                        ? 'bg-gray-900 border-gray-900 text-white placeholder-white/40 focus:border-gray-900 focus:ring-gray-900/30'
+                                        : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-gray-300 focus:ring-gray-200'
+                                    }`}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* All Event Kinds - Single column, no grid */}
+                              <div className="p-2 sm:p-3">
+                                {eventKinds
+                                  .filter(kind =>
+                                    kind.label.toLowerCase().includes(eventKindSearchQuery.toLowerCase()) ||
+                                    kind.desc.toLowerCase().includes(eventKindSearchQuery.toLowerCase()) ||
+                                    kind.value.toLowerCase().includes(eventKindSearchQuery.toLowerCase())
+                                  )
+                                  .map((kind) => (
+                                    <motion.button
+                                      key={kind.value}
+                                      onClick={() => {
+                                        setEventKind(kind.value);
+                                        setIsEventKindPickerOpen(false);
+                                        setEventKindSearchQuery('');
+                                        // Clear error when user selects
+                                        if (pollErrors['event-kind']) {
+                                          setPollErrors(prev => {
+                                            const updated = { ...prev };
+                                            delete updated['event-kind'];
+                                            return updated;
+                                          });
+                                        }
+                                      }}
+                                      className={`w-full px-3 py-2.5 rounded-lg text-sm text-left transition-all duration-200 mb-1.5 ${
+                                        eventKind === kind.value
+                                          ? theme === 'dark'
+                                            ? 'bg-white text-black shadow-lg'
+                                            : 'bg-black text-white shadow-lg'
+                                          : theme === 'dark'
+                                          ? 'bg-gray-900/30 hover:bg-gray-900/50 text-white/80 hover:text-white'
+                                          : 'bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-900'
+                                      }`}
+                                      whileHover={{ scale: 1.01 }}
+                                      whileTap={{ scale: 0.99 }}
+                                    >
+                                      <div className="font-semibold">{kind.label}</div>
+                                      {kind.desc && (
+                                        <div className={`text-xs mt-0.5 ${
+                                          eventKind === kind.value
+                                            ? theme === 'dark' ? 'text-black/70' : 'text-white/80'
+                                            : theme === 'dark' ? 'text-white/50' : 'text-gray-500'
+                                        }`}>
+                                          {kind.desc}
+                                        </div>
+                                      )}
+                                    </motion.button>
+                                  ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* Professional Date & Time Selection */}
+                      <div className="space-y-4 sm:space-y-5">
+                        {/* Date Selection */}
+                        <div>
+                          <label className={`flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-3 ${
+                            theme === 'dark' ? 'text-white/80' : 'text-gray-700'
+                          }`}>
+                            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <span className="text-xs sm:text-sm font-semibold tracking-tight">Date *</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="date"
+                              value={eventDate}
+                              onChange={(e) => {
+                                const selectedDate = e.target.value;
+                                
+                                // Validate maximum date (2 years from now)
+                                if (selectedDate) {
+                                  const today = new Date();
+                                  const maxDate = new Date(today);
+                                  maxDate.setFullYear(maxDate.getFullYear() + 2);
+                                  const selected = new Date(selectedDate);
+                                  
+                                  if (selected > maxDate) {
+                                    setPollErrors(prev => ({
+                                      ...prev,
+                                      'event-date': 'Event date cannot be more than 2 years in the future'
+                                    }));
+                                    return;
+                                  }
+                                }
+                                
+                                setEventDate(selectedDate);
+                                
+                                // Clear errors when user selects date
+                                if (pollErrors['event-date'] || pollErrors['event-datetime']) {
+                                  setPollErrors(prev => {
+                                    const updated = { ...prev };
+                                    delete updated['event-date'];
+                                    delete updated['event-datetime'];
+                                    return updated;
+                                  });
+                                }
+                                
+                                // If today is selected and time is set, validate time
+                                if (selectedDate && eventTime) {
+                                  const today = new Date().toISOString().split('T')[0];
+                                  if (selectedDate === today) {
+                                    const now = new Date();
+                                    const [hours, minutes] = eventTime.split(':').map(Number);
+                                    const selectedTime = new Date();
+                                    selectedTime.setHours(hours, minutes, 0, 0);
+                                    
+                                    if (selectedTime < now) {
+                                      setPollErrors(prev => ({
+                                        ...prev,
+                                        'event-datetime': 'Event date and time cannot be in the past'
+                                      }));
+                                    }
+                                  }
+                                }
+                              }}
+                              min={new Date().toISOString().split('T')[0]}
+                              max={(() => {
+                                const maxDate = new Date();
+                                maxDate.setFullYear(maxDate.getFullYear() + 2);
+                                return maxDate.toISOString().split('T')[0];
+                              })()}
+                              data-poll-error="event-date"
+                              className={`w-full px-4 sm:px-5 pr-12 sm:pr-14 py-4 sm:py-4.5 text-base sm:text-lg rounded-xl sm:rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl font-medium ${
+                                pollErrors['event-date'] || pollErrors['event-datetime']
+                                  ? theme === 'dark'
+                                    ? 'bg-gray-900/30 border-red-500/60 text-white focus:border-red-500 focus:ring-red-500/30'
+                                    : 'bg-gray-50 border-red-500/60 text-gray-900 focus:border-red-500 focus:ring-red-500/30'
+                                : theme === 'dark'
+                                ? 'bg-gray-900/30 border-gray-900 text-white focus:border-gray-900 focus:ring-gray-900/30 hover:border-gray-900'
+                                : 'bg-gray-50 border-gray-300/60 text-gray-900 focus:border-gray-400 focus:ring-gray-300/40 hover:border-gray-400'
+                            }`}
+                            />
+                            <div className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none">
+                              <Calendar className={`w-5 h-5 sm:w-6 sm:h-6 ${
+                                theme === 'dark' ? 'text-white/70' : 'text-gray-500'
+                              }`} />
+                            </div>
+                          </div>
+                          {pollErrors['event-date'] && !pollErrors['event-datetime'] && (
+                            <p className="mt-2 text-xs text-red-500 font-medium">{pollErrors['event-date']}</p>
+                          )}
+                        </div>
+
+                        {/* Time Selection */}
+                        <div>
+                          <label className={`flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-3 ${
+                            theme === 'dark' ? 'text-white/80' : 'text-gray-700'
+                          }`}>
+                            <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <span className="text-xs sm:text-sm font-semibold tracking-tight">Time *</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="time"
+                              value={eventTime}
+                              onChange={(e) => {
+                                const selectedTime = e.target.value;
+                                setEventTime(selectedTime);
+                                
+                                // Clear errors when user selects time
+                                if (pollErrors['event-time'] || pollErrors['event-datetime']) {
+                                  setPollErrors(prev => {
+                                    const updated = { ...prev };
+                                    delete updated['event-time'];
+                                    delete updated['event-datetime'];
+                                    return updated;
+                                  });
+                                }
+                                
+                                // If today is selected and time is set, validate time
+                                if (eventDate && selectedTime) {
+                                  const today = new Date().toISOString().split('T')[0];
+                                  if (eventDate === today) {
+                                    const now = new Date();
+                                    const [hours, minutes] = selectedTime.split(':').map(Number);
+                                    const selectedDateTime = new Date();
+                                    selectedDateTime.setHours(hours, minutes, 0, 0);
+                                    
+                                    if (selectedDateTime < now) {
+                                      setPollErrors(prev => ({
+                                        ...prev,
+                                        'event-datetime': 'Event date and time cannot be in the past'
+                                      }));
+                                    }
+                                  }
+                                }
+                              }}
+                              data-poll-error="event-time"
+                              className={`w-full px-4 sm:px-5 pr-12 sm:pr-14 py-4 sm:py-4.5 text-base sm:text-lg rounded-xl sm:rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl font-medium ${
+                                pollErrors['event-time'] || pollErrors['event-datetime']
+                                  ? theme === 'dark'
+                                    ? 'bg-gray-900/30 border-red-500/60 text-white focus:border-red-500 focus:ring-red-500/30'
+                                    : 'bg-gray-50 border-red-500/60 text-gray-900 focus:border-red-500 focus:ring-red-500/30'
+                                  : theme === 'dark'
+                                  ? 'bg-gray-900/30 border-gray-900 text-white focus:border-gray-900 focus:ring-gray-900/30 hover:border-gray-900'
+                                  : 'bg-gray-50 border-gray-300/60 text-gray-900 focus:border-gray-400 focus:ring-gray-300/40 hover:border-gray-400'
+                            }`}
+                            />
+                            <div className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none">
+                              <Clock className={`w-5 h-5 sm:w-6 sm:h-6 ${
+                                theme === 'dark' ? 'text-white/70' : 'text-gray-500'
+                              }`} />
+                            </div>
+                          </div>
+                          {pollErrors['event-time'] && !pollErrors['event-datetime'] && (
+                            <p className="mt-2 text-xs text-red-500 font-medium">{pollErrors['event-time']}</p>
+                          )}
+                          {pollErrors['event-datetime'] && (
+                            <p className="mt-2 text-xs text-red-500 font-medium">{pollErrors['event-datetime']}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Event Additional Fields */}
+                      <div className="space-y-4 sm:space-y-5">
+                        {/* Capacity */}
+                        <div>
+                          <label className={`flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-3 ${
+                            theme === 'dark' ? 'text-white/80' : 'text-gray-700'
+                          }`}>
+                            <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <span className="text-xs sm:text-sm font-semibold tracking-tight">Capacity</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="Maximum number of attendees"
+                            value={eventCapacity}
+                            onChange={(e) => setEventCapacity(e.target.value)}
+                            className={`w-full px-4 sm:px-5 py-4 sm:py-4.5 text-base sm:text-lg rounded-xl sm:rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl font-medium ${
+                              theme === 'dark'
+                                ? 'bg-gray-900/30 border-gray-900 text-white placeholder-white/40 focus:border-gray-900 focus:ring-gray-900/30 hover:border-gray-900'
+                                : 'bg-gray-50 border-gray-300/60 text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:ring-gray-300/40 hover:border-gray-400'
+                            }`}
+                          />
+                        </div>
+
+                        {/* Is Online Toggle */}
+                        <div>
+                          <label className={`flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-3 ${
+                            theme === 'dark' ? 'text-white/80' : 'text-gray-700'
+                          }`}>
+                            <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <span className="text-xs sm:text-sm font-semibold tracking-tight">Online Event</span>
+                          </label>
+                          <motion.button
+                            type="button"
+                            onClick={() => setEventIsOnline(!eventIsOnline)}
+                            className={`w-full px-4 sm:px-5 py-4 sm:py-4.5 text-base sm:text-lg rounded-xl sm:rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl font-medium flex items-center justify-between ${
+                              eventIsOnline
+                                ? theme === 'dark'
+                                ? 'bg-gray-900/50 border-gray-700 text-white'
+                                : 'bg-gray-100 border-gray-400 text-gray-900'
+                              : theme === 'dark'
+                              ? 'bg-gray-900/30 border-gray-700 text-white/90 focus:border-gray-700 focus:ring-gray-700/30 hover:border-gray-700'
+                              : 'bg-gray-50 border-gray-300/60 text-gray-900 focus:border-gray-400 focus:ring-gray-300/40 hover:border-gray-400'
+                            }`}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                          >
+                            <span className={theme === 'dark' && !eventIsOnline ? 'text-white/80' : ''}>{eventIsOnline ? 'Yes' : 'No'}</span>
+                            <div className={`w-12 h-6 rounded-full transition-all duration-300 ${
+                              eventIsOnline
+                                ? theme === 'dark' ? 'bg-white' : 'bg-black'
+                                : theme === 'dark' ? 'bg-gray-600/60' : 'bg-gray-300'
+                            }`}>
+                              <motion.div
+                                className={`w-5 h-5 rounded-full mt-0.5 ${
+                                  theme === 'dark' ? 'bg-white' : 'bg-white'
+                                }`}
+                                animate={{ x: eventIsOnline ? 26 : 2 }}
+                                transition={{ duration: 0.2 }}
+                              />
+                            </div>
+                          </motion.button>
+                        </div>
+
+                        {/* Online URL - Only show if IsOnline is true */}
+                        {eventIsOnline && (
+                          <div>
+                            <label className={`flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-3 ${
+                              theme === 'dark' ? 'text-white/80' : 'text-gray-700'
+                            }`}>
+                              <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
+                              <span className="text-xs sm:text-sm font-semibold tracking-tight">Online URL</span>
+                            </label>
+                            <input
+                              type="url"
+                              placeholder="https://example.com/meeting"
+                              value={eventOnlineURL}
+                              onChange={(e) => setEventOnlineURL(e.target.value)}
+                              className={`w-full px-4 sm:px-5 py-4 sm:py-4.5 text-base sm:text-lg rounded-xl sm:rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl font-medium ${
+                                theme === 'dark'
+                                  ? 'bg-gray-900/30 border-gray-900 text-white placeholder-white/40 focus:border-gray-900 focus:ring-gray-900/30 hover:border-gray-900'
+                                  : 'bg-gray-50 border-gray-300/60 text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:ring-gray-300/40 hover:border-gray-400'
+                              }`}
+                            />
+                          </div>
+                        )}
+
+                        {/* Is Paid Toggle */}
+                        <div>
+                          <label className={`flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-3 ${
+                            theme === 'dark' ? 'text-white/80' : 'text-gray-700'
+                          }`}>
+                            <HandCoins className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <span className="text-xs sm:text-sm font-semibold tracking-tight">Paid Event</span>
+                          </label>
+                          <motion.button
+                            type="button"
+                            onClick={() => setEventIsPaid(!eventIsPaid)}
+                            className={`w-full px-4 sm:px-5 py-4 sm:py-4.5 text-base sm:text-lg rounded-xl sm:rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl font-medium flex items-center justify-between ${
+                              eventIsPaid
+                                ? theme === 'dark'
+                                ? 'bg-gray-900/50 border-gray-700 text-white'
+                                : 'bg-gray-100 border-gray-400 text-gray-900'
+                              : theme === 'dark'
+                              ? 'bg-gray-900/30 border-gray-700 text-white/90 focus:border-gray-700 focus:ring-gray-700/30 hover:border-gray-700'
+                              : 'bg-gray-50 border-gray-300/60 text-gray-900 focus:border-gray-400 focus:ring-gray-300/40 hover:border-gray-400'
+                            }`}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                          >
+                            <span className={theme === 'dark' && !eventIsPaid ? 'text-white/80' : ''}>{eventIsPaid ? 'Yes' : 'No'}</span>
+                            <div className={`w-12 h-6 rounded-full transition-all duration-300 ${
+                              eventIsPaid
+                                ? theme === 'dark' ? 'bg-white' : 'bg-black'
+                                : theme === 'dark' ? 'bg-gray-600/60' : 'bg-gray-300'
+                            }`}>
+                              <motion.div
+                                className={`w-5 h-5 rounded-full mt-0.5 ${
+                                  theme === 'dark' ? 'bg-white' : 'bg-white'
+                                }`}
+                                animate={{ x: eventIsPaid ? 26 : 2 }}
+                                transition={{ duration: 0.2 }}
+                              />
+                            </div>
+                          </motion.button>
+                        </div>
+
+                        {/* Price and Currency - Only show if IsPaid is true */}
+                        {eventIsPaid && (
+                          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                            <div>
+                              <label className={`flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-3 ${
+                                theme === 'dark' ? 'text-white/80' : 'text-gray-700'
+                              }`}>
+                                <span className="text-xs sm:text-sm font-semibold tracking-tight">Price</span>
+                              </label>
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                placeholder="0.00"
+                                value={eventPrice}
+                                onChange={(e) => setEventPrice(e.target.value)}
+                                className={`w-full px-4 sm:px-5 py-4 sm:py-4.5 text-base sm:text-lg rounded-xl sm:rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl font-medium ${
+                                  theme === 'dark'
+                                    ? 'bg-gray-900/30 border-gray-900 text-white placeholder-white/40 focus:border-gray-900 focus:ring-gray-900/30 hover:border-gray-900'
+                                    : 'bg-gray-50 border-gray-300/60 text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:ring-gray-300/40 hover:border-gray-400'
+                                }`}
+                              />
+                            </div>
+                            <div>
+                              <label className={`flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-3 ${
+                                theme === 'dark' ? 'text-white/80' : 'text-gray-700'
+                              }`}>
+                                <span className="text-xs sm:text-sm font-semibold tracking-tight">Currency</span>
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="USD"
+                                maxLength={8}
+                                value={eventCurrency}
+                                onChange={(e) => setEventCurrency(e.target.value.toUpperCase())}
+                                className={`w-full px-4 sm:px-5 py-4 sm:py-4.5 text-base sm:text-lg rounded-xl sm:rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl font-medium ${
+                                  theme === 'dark'
+                                    ? 'bg-gray-900/30 border-gray-900 text-white placeholder-white/40 focus:border-gray-900 focus:ring-gray-900/30 hover:border-gray-900'
+                                    : 'bg-gray-50 border-gray-300/60 text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:ring-gray-300/40 hover:border-gray-400'
+                                }`}
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1717,16 +2627,16 @@ const CreatePost: React.FC<CreatePostProps> = ({
                   exit={{ opacity: 0, y: 10 }}
                   className="mb-6"
                 >
-                  <div className={`p-6 rounded-2xl border ${
+                  <div                   className={`p-6 rounded-2xl border ${
                     theme === 'dark'
-                      ? 'bg-gray-800/50 border-gray-700'
+                      ? 'bg-gray-950/80 border-gray-900'
                       : 'bg-white border-gray-200'
                   }`}>
                     {/* Emoji Header */}
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                          theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
+                          theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-100'
                         }`}>
                           <Smile className={`w-5 h-5 ${
                             theme === 'dark' ? 'text-yellow-400' : 'text-yellow-600'
@@ -1749,7 +2659,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                         onClick={() => setIsEmojiPickerOpen(false)}
                         className={`p-2 rounded-lg transition-colors ${
                           theme === 'dark'
-                            ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/10'
+                            ? 'text-gray-400 hover:text-red-400 hover:bg-gray-900/50'
                             : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
                         }`}
                       >
@@ -1770,7 +2680,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                           onChange={(e) => setEmojiSearchQuery(e.target.value)}
                           className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${
                             theme === 'dark'
-                              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-gray-500 focus:ring-gray-500'
+                              ? 'bg-gray-900/50 border-gray-900 text-white placeholder-gray-400 focus:border-gray-900 focus:ring-gray-900/30'
                               : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-gray-400 focus:ring-gray-400'
                           }`}
                         />
@@ -1789,7 +2699,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                                 ? 'bg-white text-black'
                                 : 'bg-black text-white'
                               : theme === 'dark'
-                              ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                              ? 'bg-gray-900/50 text-gray-300 hover:bg-gray-900/70'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -1815,7 +2725,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                               }}
                               className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-200 ${
                                 theme === 'dark'
-                                  ? 'hover:bg-gray-700'
+                                  ? 'hover:bg-gray-900/50'
                                   : 'hover:bg-gray-100'
                               }`}
                               whileHover={{ scale: 1.1 }}
@@ -1838,18 +2748,18 @@ const CreatePost: React.FC<CreatePostProps> = ({
                   exit={{ opacity: 0, y: 10 }}
                   className="mb-4"
                 >
-                  <div className={`rounded-xl border overflow-hidden ${
+                  <div                   className={`rounded-xl border overflow-hidden ${
                     theme === 'dark'
-                      ? 'bg-gray-900 border-gray-800'
+                      ? 'bg-gray-950 border-gray-900'
                       : 'bg-white border-gray-200'
                   }`}>
                     {/* Compact Header */}
                     <div className={`flex items-center justify-between px-3 py-2 border-b ${
-                      theme === 'dark' ? 'border-gray-800' : 'border-gray-200'
+                      theme === 'dark' ? 'border-gray-900' : 'border-gray-200'
                     }`}>
                       <div className="flex items-center gap-2">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                          theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'
+                        <div                         className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                          theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-100'
                         }`}>
                           <MapPin className={`w-3.5 h-3.5 ${
                             theme === 'dark' ? 'text-white' : 'text-black'
@@ -1865,7 +2775,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                         onClick={() => setIsLocationPickerOpen(false)}
                         className={`p-1 rounded-lg transition-colors ${
                           theme === 'dark'
-                            ? 'text-gray-500 hover:text-white hover:bg-gray-800'
+                            ? 'text-gray-500 hover:text-white hover:bg-gray-900/50'
                             : 'text-gray-400 hover:text-black hover:bg-gray-100'
                         }`}
                       >
@@ -1881,10 +2791,10 @@ const CreatePost: React.FC<CreatePostProps> = ({
                         className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                           isGettingLocation
                             ? theme === 'dark'
-                              ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                              ? 'bg-gray-900/50 text-gray-500 cursor-not-allowed'
                               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             : theme === 'dark'
-                            ? 'bg-gray-800 text-white hover:bg-gray-700 border border-gray-700'
+                            ? 'bg-gray-900/50 text-white hover:bg-gray-900/70 border border-gray-900'
                             : 'bg-gray-100 text-black hover:bg-gray-200 border border-gray-300'
                         }`}
                         whileHover={!isGettingLocation ? { scale: 1.02 } : {}}
@@ -1893,7 +2803,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                         {isGettingLocation ? (
                           <>
                             <div className={`w-3.5 h-3.5 border-2 border-t-transparent rounded-full animate-spin ${
-                              theme === 'dark' ? 'border-gray-500' : 'border-gray-400'
+                              theme === 'dark' ? 'border-gray-900' : 'border-gray-400'
                             }`} />
                             <span>Getting location...</span>
                           </>
@@ -1915,7 +2825,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
 
         {/* Compact Action Bar */}
         <div className={`flex items-center justify-between ${isFullScreen ? 'px-3 sm:px-6 py-2' : 'px-3 sm:px-4 py-2 sm:py-2.5'} ${parentPostId ? 'pb-3 sm:pb-2.5' : ''} border-t w-full max-w-full mt-auto flex-shrink-0 ${
-          theme === 'dark' ? 'bg-black border-gray-800/30' : 'bg-white border-gray-200/30'
+          theme === 'dark' ? 'bg-gray-950 border-gray-900' : 'bg-white border-gray-200/30'
         }`}>
           {/* Compact Action Buttons */}
           <div className="flex items-center space-x-0.5 sm:space-x-1 flex-shrink-0">
@@ -1928,7 +2838,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                     ? 'bg-blue-500/15 text-blue-400'
                     : 'bg-blue-50 text-blue-600'
                   : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 active:bg-gray-800/50'
+                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-900/50 active:bg-gray-900/50'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 active:bg-gray-100/50'
               }`}
               whileHover={{ scale: 1.03 }}
@@ -1947,7 +2857,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                     ? 'bg-purple-500/15 text-purple-400'
                     : 'bg-purple-50 text-purple-600'
                   : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 active:bg-gray-800/50'
+                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-900/50 active:bg-gray-900/50'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 active:bg-gray-100/50'
               }`}
               whileHover={{ scale: 1.03 }}
@@ -1963,10 +2873,10 @@ const CreatePost: React.FC<CreatePostProps> = ({
               className={`flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-lg transition-all duration-200 flex-shrink-0 ${
                 polls.length > 0
                   ? theme === 'dark'
-                    ? 'bg-white/15 text-white'
+                    ? 'bg-gray-900/60 text-white'
                     : 'bg-black/10 text-black'
                   : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 active:bg-gray-800/50'
+                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-900/50 active:bg-gray-900/50'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 active:bg-gray-100/50'
               }`}
               whileHover={{ scale: 1.03 }}
@@ -1985,7 +2895,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                     ? 'bg-yellow-500/15 text-yellow-400'
                     : 'bg-yellow-50 text-yellow-600'
                   : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 active:bg-gray-800/50'
+                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-900/50 active:bg-gray-900/50'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 active:bg-gray-100/50'
               }`}
               whileHover={{ scale: 1.03 }}
@@ -2004,7 +2914,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                     ? 'bg-purple-500/15 text-purple-400'
                     : 'bg-purple-50 text-purple-600'
                   : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 active:bg-gray-800/50'
+                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-900/50 active:bg-gray-900/50'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 active:bg-gray-100/50'
               }`}
               whileHover={{ scale: 1.03 }}
@@ -2023,7 +2933,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                     ? 'bg-orange-500/15 text-orange-400'
                     : 'bg-orange-50 text-orange-600'
                   : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 active:bg-gray-800/50'
+                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-900/50 active:bg-gray-900/50'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 active:bg-gray-100/50'
               }`}
               whileHover={{ scale: 1.03 }}
@@ -2041,9 +2951,9 @@ const CreatePost: React.FC<CreatePostProps> = ({
               hasEditorContent || selectedImages.length > 0 || selectedVideos.length > 0
                 ? theme === 'dark'
                   ? 'bg-white text-black hover:bg-gray-100 active:bg-gray-100'
-                  : 'bg-black text-white hover:bg-gray-800 active:bg-gray-800'
+                  : 'bg-black text-white hover:bg-gray-900 active:bg-gray-900'
                 : theme === 'dark'
-                  ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed'
+                  ? 'bg-gray-900/50 text-gray-500 cursor-not-allowed'
                   : 'bg-gray-200/50 text-gray-400 cursor-not-allowed'
             } ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
             whileHover={(!hasEditorContent && selectedImages.length === 0 && selectedVideos.length === 0) || isSubmitting ? {} : { scale: 1.02 }}
@@ -2053,7 +2963,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
             {isSubmitting ? (
               <div className="flex items-center space-x-1 sm:space-x-1.5">
                 <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 border-2 border-t-transparent rounded-full animate-spin ${
-                  theme === 'dark' ? 'border-black' : 'border-white'
+                  theme === 'dark' ? 'border-gray-900' : 'border-white'
                 }`} />
                 <span className="text-xs sm:text-sm">Publishing...</span>
               </div>

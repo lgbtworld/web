@@ -266,7 +266,7 @@ const HomeScreen: React.FC = () => {
                   // Refresh the specific post when a reply is posted
                   const refreshPost = async () => {
                     try {
-                      const response = await api.fetchPost(selectedPostData.id);
+                      const response = await api.fetchPost(selectedPostData.public_id);
                       setSelectedPostData(response);
                     } catch (err) {
                       console.error('Error refreshing post:', err);

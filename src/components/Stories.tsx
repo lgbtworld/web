@@ -332,7 +332,7 @@ const Stories: React.FC = () => {
     };
 
   return (
-    <>
+    <div className='w-full h-full'>
       {/* Hidden File Input */}
       <input
         type="file"
@@ -343,7 +343,7 @@ const Stories: React.FC = () => {
       />
 
       {/* Stories List - Fixed Own Story + Infinite Scrollable Others */}
-      <div className="py-1 relative flex px-1" ref={containerRef}>
+      <div className="relative flex px-1" ref={containerRef}>
         {/* Loading State */}
         {loadingStories && stories.length === 0 && (
           <div className="flex gap-3 px-1">
@@ -922,7 +922,7 @@ const Stories: React.FC = () => {
       )}
 
 
-    </>
+    </div>
   );
 };
 

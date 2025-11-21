@@ -55,6 +55,25 @@ export class ApiService {
     });
   }
 
+  async handleVote(credentials: { choice_id: string; weight?: number; rank?: number }) {
+    const body: Record<string, any> = {
+      choice_id: credentials.choice_id,
+    };
+    
+    if (credentials.weight !== undefined && credentials.weight !== null) {
+      body.weight = credentials.weight;
+    }
+    
+    if (credentials.rank !== undefined && credentials.rank !== null) {
+      body.rank = credentials.rank;
+    }
+    
+    return this.call(Actions.CMD_POST_VOTE, {
+      method: "POST",
+      body: body,
+    });
+  }
+
 
   async fetchTimeline({ limit = 10, cursor = "" }: { limit?: number; cursor?: string }) {
     return this.call(Actions.POST_TIMELINE, {

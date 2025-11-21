@@ -8,7 +8,6 @@ import {
   UserMinus,
   Heart, 
   MessageCircle, 
-  MoreVertical,
   Settings,
   CheckCheck,
   Gift,
@@ -21,30 +20,10 @@ import Container from './Container';
 import { api } from '../services/api';
 import { useAtom } from 'jotai';
 import { globalState } from '../state/nearby';
-
-interface Notification {
-  id: string;
-  sender_id: string;
-  sender: {
-    public_id: string;
-    id: string;
-    username: string;
-    displayname: string;
-    [key: string]: any;
-  };
-  user_id: string;
-  type: string;
-  title: string;
-  message: string;
-  payload: {
-    title: string;
-    body: string;
-    [key: string]: any;
-  };
-  is_read: boolean;
-  is_shown: boolean;
-  created_at: string;
-}
+import { useSocket } from '../contexts/SocketContext';
+import { useAuth } from '../contexts/AuthContext';
+import NotificationItem, { Notification } from './NotificationItem';
+import { Actions } from '../services/actions';
 
 const NotificationsScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -52,6 +31,8 @@ const NotificationsScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'messages' | 'matches' | 'likes' | 'follows' | 'gifts' | 'other'>('all');
   const [state, setState] = useAtom(globalState);
   const notifications: Notification[] = state.notifications || [];
+  const { socket } = useSocket();
+  const { isAuthenticated, user } = useAuth();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -140,6 +121,27 @@ const NotificationsScreen: React.FC = () => {
   };
 
 
+    useEffect(() => {
+      if (!socket) return;
+  
+ 
+    const onConnect = () => {
+      if (user?.public_id) {
+        const savedToken = localStorage.getItem("authToken")
+      if(savedToken){
+        socket.emit('auth', savedToken);
+      }
+      }
+    };
+
+      onConnect()
+      socket.on('notifications', onConnect);
+  
+      return () => {
+        socket.off('notifications');        
+      };
+    }, [socket,isAuthenticated]); // Removed selectedChat from dependencies - use ref instead
+  
 
   const fetchNotifications = async(reset: boolean = false) => {
     const res = await api.checkNewNotifications(
@@ -162,6 +164,39 @@ const NotificationsScreen: React.FC = () => {
   useEffect(() => {
     fetchNotifications(true); // İlk yüklemede sıfırla
   }, []);
+
+  const markAsRead = async (notificationId: string) => {
+      if(isAuthenticated && socket){
+        const savedToken = localStorage.getItem("authToken")
+        let payload  = {
+          action : Actions.CMD_USER_MARK_NOTIFICATIONS_SEEN,
+          token:savedToken,
+          notification_id:notificationId
+        }
+        socket?.emit("notifications",JSON.stringify(payload));
+      }
+
+    // Mark notification as read in the state
+    setState(prev => ({
+      ...prev,
+      notifications: prev.notifications?.map(n => 
+        n.id === notificationId ? { ...n, is_read: true } : n
+      ) || []
+    }));
+    
+    // TODO: Make API call to mark as read
+    // await api.markNotificationAsRead(notificationId);
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    if (notification.type === 'chat_message') {
+      navigate('/messages');
+    } else if (notification.type === 'new_match' || notification.type === 'match_unmatch') {
+      navigate('/matches');
+    } else if (notification.sender?.username) {
+      navigate(`/${notification.sender.username}`);
+    }
+  };
 
   return (
     <Container>
@@ -478,122 +513,21 @@ const NotificationsScreen: React.FC = () => {
               </p>
             </motion.div>
           ) : (
-            <div>
+            <div className='w-full'>
               {filteredNotifications.map((notification, index) => {
-                const Icon = getNotificationIcon(notification.type);
                 const isLast = index === filteredNotifications.length - 1;
                 return (
-                  <motion.div
+                  <NotificationItem
                     key={notification.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ delay: index * 0.02, duration: 0.2 }}
-                    onClick={() => {
-                      if (notification.type === 'chat_message') {
-                        navigate('/messages');
-                      } else if (notification.type === 'new_match' || notification.type === 'match_unmatch') {
-                        navigate('/matches');
-                      } else if (notification.sender?.username) {
-                        navigate(`/${notification.sender.username}`);
-                      }
-                    }}
-                    className={`group relative px-4 lg:px-6 py-5 cursor-pointer transition-all duration-200 ${
-                      !isLast ? `border-b ${theme === 'dark' ? 'border-gray-900/30' : 'border-gray-100/50'}` : ''
-                    } ${
-                      !notification.is_read 
-                        ? theme === 'dark' 
-                          ? 'bg-white/[0.03] hover:bg-white/[0.05]' 
-                          : 'bg-black/[0.02] hover:bg-black/[0.04]'
-                        : theme === 'dark'
-                          ? 'hover:bg-white/[0.02]'
-                          : 'hover:bg-black/[0.02]'
-                    }`}
-                  >
-                    <div className="flex items-start space-x-4">
-                      {/* Icon Container */}
-                      <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
-                        theme === 'dark'
-                          ? 'bg-gray-950 group-hover:bg-gray-900'
-                          : 'bg-gray-50 group-hover:bg-gray-100'
-                      }`}>
-                        <Icon className={`w-5 h-5 ${
-                          theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
-                        }`} strokeWidth={2} />
-                      </div>
-
-                      {/* User Avatar */}
-                      <div className="flex-shrink-0">
-                        <div className="relative">
-                          <div className={`w-12 h-12 rounded-full overflow-hidden ring-2 ${
-                            theme === 'dark' ? 'ring-gray-800' : 'ring-gray-200'
-                          }`}>
-                            {notification.sender?.avatar ? (
-                              <img
-                                src={notification.sender.avatar}
-                                alt={notification.sender.displayname || notification.sender.username}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className={`w-full h-full flex items-center justify-center ${
-                                theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
-                              }`}>
-                                <span className={`text-lg font-bold ${
-                                  theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                                }`}>
-                                  {(notification.sender?.displayname || notification.sender?.username || 'U')[0].toUpperCase()}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-1.5 mb-1 flex-wrap">
-                              <span className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                                {notification.sender?.displayname || notification.sender?.username || 'Unknown User'}
-                              </span>
-                            </div>
-                            <p className={`text-sm leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                              {notification.message}
-                            </p>
-                            <span className={`text-xs mt-2 block ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                              {formatTime(notification.created_at)}
-                            </span>
-                          </div>
-                          
-                          {/* Actions */}
-                          <div className="flex items-center space-x-1 flex-shrink-0">
-                            {!notification.is_read && (
-                              <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className={`w-2 h-2 rounded-full ${
-                                  theme === 'dark' ? 'bg-white' : 'bg-black'
-                                }`}
-                              />
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className={`p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
-                                theme === 'dark' 
-                                  ? 'hover:bg-white/10 text-gray-500 hover:text-white' 
-                                  : 'hover:bg-black/10 text-gray-400 hover:text-gray-900'
-                              }`}
-                            >
-                              <MoreVertical className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                    notification={notification}
+                    markAsRead={markAsRead}
+                    onClick={() => handleNotificationClick(notification)}
+                    theme={theme}
+                    getNotificationIcon={getNotificationIcon}
+                    formatTime={formatTime}
+                    index={index}
+                    isLast={isLast}
+                  />
                 );
               })}
             </div>

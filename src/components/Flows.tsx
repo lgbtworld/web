@@ -2,148 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import CreatePost from './CreatePost';
-import Post from './Post';
+import Post, { type ApiPost as PostComponentApiPost } from './Post';
 import { api } from '../services/api';
-import Container from './Container';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 
-interface ApiPost {
-  id: string;
-  public_id: string;
-  author_id: string;
-  type: string;
-  content: {
-    en: string;
-  };
-  published: boolean;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-  author: {
-    id: string;
-    public_id: number;
-    username: string;
-    displayname: string;
-    email: string;
-    date_of_birth: string;
-    gender: string;
-    sexual_orientation: {
-      id: string;
-      key: string;
-      order: number;
-    };
-    sex_role: string;
-    relationship_status: string;
-    user_role: string;
-    is_active: boolean;
-    created_at: string;
-    updated_at: string;
-    default_language: string;
-    languages: unknown;
-    fantasies: unknown[];
-    travel: unknown;
-    social: unknown;
-    deleted_at: string | null;
-  };
-  attachments: Array<{
-    id: string;
-    file_id: string;
-    owner_id: string;
-    owner_type: string;
-    role: string;
-    is_public: boolean;
-    file: {
-      id: string;
-      url: string;
-      storage_path: string;
-      mime_type: string;
-      size: number;
-      name: string;
-      created_at: string;
-    };
-    created_at: string;
-    updated_at: string;
-  }>;
-  poll?: Array<{
-    id: string;
-    post_id: string;
-    contentable_id: string;
-    contentable_type: string;
-    question: {
-      en: string;
-    };
-    duration: string;
-    created_at: string;
-    updated_at: string;
-    choices: Array<{
-      id: string;
-      poll_id: string;
-      label: {
-        en: string;
-      };
-      vote_count: number;
-      voters?: Array<{
-        id: string;
-        username: string;
-        displayname: string;
-      }>;
-    }>;
-  }>;
-  event?: {
-    id: string;
-    post_id: string;
-    title: {
-      en: string;
-    };
-    description: {
-      en: string;
-    };
-    start_time: string;
-    location: {
-      id: string;
-      contentable_id: string;
-      contentable_type: string;
-      country_code: string | null;
-      address: string;
-      display: string | null;
-      latitude: number;
-      longitude: number;
-      location_point: {
-        lng: number;
-        lat: number;
-      };
-      created_at: string;
-      updated_at: string;
-      deleted_at: string | null;
-    };
-    type: string;
-    created_at: string;
-    updated_at: string;
-    attendees?: Array<{
-      id: string;
-      username: string;
-      displayname: string;
-      status: 'going' | 'not_going' | 'maybe';
-    }>;
-  };
-  location?: {
-    id: string;
-    contentable_id: string;
-    contentable_type: string;
-    country_code: string | null;
-    address: string;
-    display: string | null;
-    latitude: number;
-    longitude: number;
-    location_point: {
-      lng: number;
-      lat: number;
-    };
-    created_at: string;
-    updated_at: string;
-    deleted_at: string | null;
-  };
-}
+type ApiPost = PostComponentApiPost;
 
 interface TimelineResponse {
   posts: ApiPost[];
@@ -248,6 +111,12 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
     }
   };
 
+  const handlePostUpdate = useCallback((updatedPost: ApiPost) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post => (post.id === updatedPost.id ? updatedPost : post))
+    );
+  }, []);
+
   return (
     <div className='w-full'>
       {/* Create Post - Hidden on mobile */}
@@ -348,6 +217,7 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
                 onRefreshParent={() => {
                   refreshPosts();
                 }}
+                  onUpdatePost={handlePostUpdate}
               />
             </motion.div>
           ))

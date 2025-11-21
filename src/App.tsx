@@ -143,7 +143,7 @@ function AppContent() {
         <div className={`max-h-[100dvh] w-full  flex mx-auto  max-w-7xl min-h-[100dvh] overflow-y-hidden overflow-x-hidden scrollbar-hide `}>
 
           {/* Mobile Header - Top Navigation */}
-          <header className={`lg:hidden fixed top-0 left-0 right-0 z-50 ${theme === 'dark' ? 'bg-black/95 backdrop-blur-xl border-b border-gray-800/50' : 'bg-white/95 backdrop-blur-xl border-b border-gray-100/50'}`}>
+          <header className={`lg:hidden fixed top-0 left-0 right-0 z-50 ${theme === 'dark' ? 'bg-gray-950 backdrop-blur-xl border-b border-gray-800/50' : 'bg-white/95 backdrop-blur-xl border-b border-gray-100/50'}`}>
             <div className="flex items-center justify-between px-4 py-3">
               <button
                 onClick={() => setIsMobileMenuOpen(true)}

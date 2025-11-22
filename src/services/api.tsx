@@ -48,6 +48,36 @@ export class ApiService {
     console.log("handleCreatePost", data)
   }
 
+  async handlePostLike(postId : any){
+    return this.call(Actions.CMD_POST_LIKE, {
+      method: "POST",
+      body: {postId:postId},
+    });
+  }
+
+  async handlePostAddToBookmarks(postId : any){
+    return this.call(Actions.CMD_POST_BOOKMARK, {
+      method: "POST",
+      body: {postId:postId},
+    });
+  }
+
+  async handlePostReport(postId : any,reason:any,description:any){
+    return this.call(Actions.CMD_POST_REPORT, {
+      method: "POST",
+      body: {postId:postId,reason:reason,description:description},
+    });
+  }
+
+  async handlePostView(postId : any){
+    return this.call(Actions.CMD_POST_VIEW, {
+      method: "POST",
+      body: {postId:postId},
+    });
+  }
+
+
+
   async handleLogin(credentials: { nickname: string; password: string; location?: any }) {
     return this.call(Actions.AUTH_LOGIN, {
       method: "POST",

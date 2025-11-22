@@ -279,8 +279,8 @@ const ProfileEngagementsScreen: React.FC = () => {
         <div
           className={`sticky top-0 z-30 backdrop-blur-xl border-b ${
             theme === 'dark'
-              ? 'bg-black/90 border-white/10'
-              : 'bg-white/90 border-black/10'
+              ? 'bg-gray-950/90 border-gray-900'
+              : 'bg-white/90 border-gray-200/50'
           }`}
         >
           <div className="flex items-center justify-between px-4 py-4">
@@ -290,8 +290,8 @@ const ProfileEngagementsScreen: React.FC = () => {
                 onClick={handleNavigateBack}
                 className={`p-2 rounded-full transition-all duration-200 ${
                   theme === 'dark'
-                    ? 'hover:bg-white/10 text-white active:scale-95'
-                    : 'hover:bg-black/10 text-gray-700 active:scale-95'
+                    ? 'hover:bg-gray-900/50 text-white active:scale-95'
+                    : 'hover:bg-gray-100 text-gray-700 active:scale-95'
                 }`}
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -319,8 +319,8 @@ const ProfileEngagementsScreen: React.FC = () => {
               disabled={loadingEngagements}
               className={`p-2 rounded-full transition-all duration-200 ${
                 theme === 'dark'
-                  ? 'hover:bg-white/10 text-gray-400 hover:text-white active:scale-95'
-                  : 'hover:bg-black/10 text-gray-500 hover:text-black active:scale-95'
+                  ? 'hover:bg-gray-900/50 text-gray-400 hover:text-white active:scale-95'
+                  : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900 active:scale-95'
               } ${loadingEngagements ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <RefreshCw
@@ -366,8 +366,8 @@ const ProfileEngagementsScreen: React.FC = () => {
                   transition={{ duration: 0.3 }}
                   className={`rounded-2xl px-4 py-3.5 flex items-center gap-3 ${
                     theme === 'dark'
-                      ? 'bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10'
-                      : 'bg-gradient-to-br from-black/[0.04] to-black/[0.02] border border-black/[0.06]'
+                      ? 'bg-gray-950 border border-gray-900'
+                      : 'bg-white border border-gray-200/50'
                   }`}
                 >
                   <div className="relative">
@@ -379,8 +379,8 @@ const ProfileEngagementsScreen: React.FC = () => {
                       )}&background=random`
                     }
                     alt={profile.displayname || profile.username}
-                      className={`w-14 h-14 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ${
-                        theme === 'dark' ? 'ring-white/10' : 'ring-black/10'
+                          className={`w-14 h-14 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ${
+                        theme === 'dark' ? 'ring-gray-900' : 'ring-gray-200/50'
                       }`}
                   />
                   </div>
@@ -403,8 +403,8 @@ const ProfileEngagementsScreen: React.FC = () => {
                   <span
                     className={`text-xs font-semibold px-3 py-1.5 rounded-full ${
                       theme === 'dark'
-                        ? 'bg-white/10 text-white border border-white/20'
-                        : 'bg-black/10 text-gray-900 border border-black/20'
+                        ? 'bg-gray-900/50 text-white border border-gray-900'
+                        : 'bg-gray-100 text-gray-900 border border-gray-200/50'
                     }`}
                   >
                     {badgeLabel}
@@ -447,8 +447,8 @@ const ProfileEngagementsScreen: React.FC = () => {
                     <div
                       className={`w-20 h-20 rounded-full flex items-center justify-center ${
                         theme === 'dark'
-                          ? 'bg-white/5 border border-white/10'
-                          : 'bg-black/5 border border-black/10'
+                          ? 'bg-gray-900/30 border border-gray-900'
+                          : 'bg-gray-100 border border-gray-200/50'
                       }`}
                     >
                       {resolvedType === 'followers' ? (
@@ -499,8 +499,8 @@ const ProfileEngagementsScreen: React.FC = () => {
                       transition={{ duration: 0.3, delay: index * 0.03 }}
                       className={`group flex items-center gap-3 rounded-2xl px-4 py-3.5 transition-all duration-200 ${
                         theme === 'dark'
-                          ? 'bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/10 hover:bg-white/5 hover:border-white/20'
-                          : 'bg-gradient-to-br from-black/[0.02] to-black/[0.01] border border-black/10 hover:bg-black/5 hover:border-black/20'
+                          ? 'bg-gray-950 border border-gray-900 hover:bg-gray-900/50 hover:border-gray-800'
+                          : 'bg-white border border-gray-200/50 hover:bg-gray-50 hover:border-gray-300'
                       }`}
                     >
                       <div className="relative flex-shrink-0">
@@ -508,7 +508,7 @@ const ProfileEngagementsScreen: React.FC = () => {
                         src={renderAvatar(engagementUser)}
                         alt={engagementUser.displayname || engagementUser.username}
                           className={`w-14 h-14 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent transition-all duration-200 group-hover:ring-opacity-50 ${
-                            theme === 'dark' ? 'ring-white/10' : 'ring-black/10'
+                            theme === 'dark' ? 'ring-gray-900' : 'ring-gray-200/50'
                           }`}
                       />
                       </div>
@@ -544,7 +544,7 @@ const ProfileEngagementsScreen: React.FC = () => {
                         className={`px-4 py-2 text-xs font-semibold rounded-full transition-all duration-200 flex-shrink-0 ${
                           theme === 'dark'
                             ? 'bg-white text-black hover:bg-gray-200 hover:scale-105 active:scale-95'
-                            : 'bg-black text-white hover:bg-gray-900 hover:scale-105 active:scale-95'
+                            : 'bg-gray-900 text-white hover:bg-gray-800 hover:scale-105 active:scale-95'
                         }`}
                       >
                         {viewProfileLabel}
@@ -581,7 +581,7 @@ const ProfileEngagementsScreen: React.FC = () => {
                         ? 'opacity-50 cursor-not-allowed'
                         : theme === 'dark'
                         ? 'bg-white text-black hover:bg-gray-200 shadow-lg shadow-white/10'
-                        : 'bg-black text-white hover:bg-gray-900 shadow-lg shadow-black/10'
+                        : 'bg-gray-900 text-white hover:bg-gray-800 shadow-lg shadow-gray-900/10'
                     }`}
                   >
                     {loadingEngagements ? (
@@ -589,7 +589,7 @@ const ProfileEngagementsScreen: React.FC = () => {
                         <div
                           className={`w-4 h-4 border-2 rounded-full animate-spin ${
                             theme === 'dark'
-                              ? 'border-black border-t-transparent'
+                              ? 'border-gray-900 border-t-transparent'
                               : 'border-white border-t-transparent'
                           }`}
                         />

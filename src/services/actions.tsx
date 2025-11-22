@@ -53,6 +53,11 @@ export const Actions = {
   POST_FETCH: "post.fetch",
   POST_TIMELINE: "post.timeline",
   POST_VIBES: "post.vibes",
+  
+	CMD_POST_LIKE     : "post.like",
+	CMD_POST_BOOKMARK : "post.bookmark",
+	CMD_POST_REPORT   : "post.report",
+	CMD_POST_VIEW     : "post.view",
 
   CMD_USER_UPLOAD_AVATAR: "user.upload_avatar",
   CMD_USER_UPLOAD_COVER: "user.upload_cover",

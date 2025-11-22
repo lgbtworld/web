@@ -604,7 +604,7 @@ const BirthdatePicker: React.FC<BirthdatePickerProps> = ({ value, onChange, them
       </div>
 
       <div
-        className={`rounded-2xl border p-4 ${theme === 'dark' ? 'bg-gray-900/60 border-gray-800' : 'bg-white border-gray-200 shadow-sm'
+        className={`rounded-2xl border p-4 ${theme === 'dark' ? 'bg-gray-950 border-gray-900' : 'bg-white border-gray-200/50 shadow-sm'
           }`}
       >
         <div className="flex items-center justify-between mb-4">
@@ -612,7 +612,7 @@ const BirthdatePicker: React.FC<BirthdatePickerProps> = ({ value, onChange, them
             type="button"
             className={`p-2 rounded-full transition-colors ${canGoPrevMonth
                 ? theme === 'dark'
-                  ? 'hover:bg-gray-800 text-gray-300'
+                  ? 'hover:bg-gray-900/50 text-gray-300'
                   : 'hover:bg-gray-100 text-gray-600'
                 : 'opacity-30 cursor-not-allowed'
               }`}
@@ -630,7 +630,7 @@ const BirthdatePicker: React.FC<BirthdatePickerProps> = ({ value, onChange, them
                     ? 'bg-indigo-500 text-white'
                     : 'bg-indigo-100 text-indigo-900'
                   : theme === 'dark'
-                    ? 'bg-gray-800 text-white hover:bg-gray-700'
+                    ? 'bg-gray-900/50 text-white hover:bg-gray-900/70'
                     : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                 }`}
               onClick={() => setViewMode(viewMode === 'month' ? 'day' : 'month')}
@@ -647,7 +647,7 @@ const BirthdatePicker: React.FC<BirthdatePickerProps> = ({ value, onChange, them
                     ? 'bg-indigo-500 text-white'
                     : 'bg-indigo-100 text-indigo-900'
                   : theme === 'dark'
-                    ? 'bg-gray-800 text-white hover:bg-gray-700'
+                    ? 'bg-gray-900/50 text-white hover:bg-gray-900/70'
                     : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                 }`}
               onClick={() => setViewMode(viewMode === 'year' ? 'day' : 'year')}
@@ -663,7 +663,7 @@ const BirthdatePicker: React.FC<BirthdatePickerProps> = ({ value, onChange, them
             type="button"
             className={`p-2 rounded-full transition-colors ${canGoNextMonth
                 ? theme === 'dark'
-                  ? 'hover:bg-gray-800 text-gray-300'
+                  ? 'hover:bg-gray-900/50 text-gray-300'
                   : 'hover:bg-gray-100 text-gray-600'
                 : 'opacity-30 cursor-not-allowed'
               }`}
@@ -695,7 +695,7 @@ const BirthdatePicker: React.FC<BirthdatePickerProps> = ({ value, onChange, them
                             ? 'bg-white text-gray-900'
                             : 'bg-gray-900 text-white'
                           : theme === 'dark'
-                            ? 'text-white hover:bg-gray-800'
+                            ? 'text-white hover:bg-gray-900/50'
                             : 'text-gray-900 hover:bg-gray-200'
                         }`}
                     >
@@ -751,7 +751,7 @@ const BirthdatePicker: React.FC<BirthdatePickerProps> = ({ value, onChange, them
                           ? 'bg-white text-gray-900'
                           : 'bg-gray-900 text-white'
                         : theme === 'dark'
-                          ? 'text-white hover:bg-gray-800'
+                          ? 'text-white hover:bg-gray-900/50'
                           : 'text-gray-900 hover:bg-gray-200'
                       }`}
                   >
@@ -992,7 +992,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ value, onChange, theme,
   return (
     <div className={`space-y-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
       <div
-        className={`rounded-2xl border p-4 ${theme === 'dark' ? 'bg-gray-900/60 border-gray-800' : 'bg-white border-gray-200 shadow-sm'}`}
+        className={`rounded-2xl border p-4 ${theme === 'dark' ? 'bg-gray-950 border-gray-900' : 'bg-white border-gray-200/50 shadow-sm'}`}
       >
         <div className="flex items-center justify-between gap-3">
           <div className="text-sm font-medium">
@@ -1020,7 +1020,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ value, onChange, theme,
                 : ''
               } ${theme === 'dark'
                 ? 'bg-white text-black hover:bg-gray-200 disabled:hover:bg-white/90'
-                : 'bg-black text-white hover:bg-gray-900 disabled:hover:bg-black/90'
+                : 'bg-gray-900 text-white hover:bg-gray-800 disabled:hover:bg-gray-900/90'
               }`}
           >
             {isDetecting ? (
@@ -3021,14 +3021,14 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
+      <div className={`min-h-screen flex flex-col items-center justify-center ${theme === 'dark' ? 'bg-gray-950' : 'bg-white'}`}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
           className="flex flex-col items-center gap-4"
         >
-          <div className={`w-16 h-16 border-4 ${theme === 'dark' ? 'border-gray-800 border-t-white' : 'border-gray-200 border-t-black'} rounded-full animate-spin`} />
+          <div className={`w-16 h-16 border-4 ${theme === 'dark' ? 'border-gray-900 border-t-white' : 'border-gray-200 border-t-gray-900'} rounded-full animate-spin`} />
           <p className={`text-base font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
             {t('profile.loading_profile')}
           </p>
@@ -3059,7 +3059,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
 
   if (!user) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
+      <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-gray-950' : 'bg-white'}`}>
         <div className={`text-center ${theme === 'dark' ? 'text-red-400' : 'text-red-500'}`}>
           {t('profile.user_not_found')}
         </div>
@@ -3105,13 +3105,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     <>
       {/* Header */}
       {!inline && (
-        <div ref={headerRef} className={`sticky top-0 z-30 ${theme === 'dark' ? 'bg-black' : 'bg-white'} border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}`}>
+        <div ref={headerRef} className={`sticky top-0 z-30 ${theme === 'dark' ? 'bg-gray-950' : 'bg-white'} border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'}`}>
           <div className="flex items-center px-4 py-3">
             {isEditMode ? (
               <>
                 <button
                   onClick={() => setIsEditMode(false)}
-                  className={`p-2 rounded-full transition-all duration-200 mr-3 ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                  className={`p-2 rounded-full transition-all duration-200 mr-3 ${theme === 'dark' ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'
                     }`}
                 >
                   <ArrowLeft className={`w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} />
@@ -3127,7 +3127,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
               <>
                 <button
                   onClick={handleBackClick}
-                  className={`p-2 rounded-full transition-all duration-200 mr-3 ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                  className={`p-2 rounded-full transition-all duration-200 mr-3 ${theme === 'dark' ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'
                     }`}
                 >
                   <ArrowLeft className={`w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} />
@@ -3140,7 +3140,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     {user.posts_count} {t('profile.posts')}
                   </p>
                 </div>
-                <button className={`p-2 rounded-full transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+                <button className={`p-2 rounded-full transition-colors ${theme === 'dark' ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'
                   }`}>
                   <MoreHorizontal className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
                 </button>
@@ -3153,9 +3153,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
       <div className="max-w-[1380px] mx-auto">
         {isEditMode ? (
           // Edit Profile View
-          <main className={`flex-1 w-full min-w-0 ${theme === 'dark' ? 'border-x border-black' : 'border-x border-gray-100'}`}>
-            <div className={`min-h-screen ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
-              <div className={`max-w-4xl mx-auto border-x ${theme === 'dark' ? 'border-black' : 'border-gray-100'}`}>
+          <main className={`flex-1 w-full min-w-0 ${theme === 'dark' ? 'border-x border-gray-900' : 'border-x border-gray-200/50'}`}>
+            <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-950' : 'bg-white'}`}>
+              <div className={`max-w-4xl mx-auto border-x ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'}`}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -3168,7 +3168,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                       {t('profile.cover_image')}
                     </label>
                     <div className="relative">
-                      <div className={`w-full h-48 rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                      <div className={`w-full h-48 rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-gray-100'}`}>
                         {(coverImagePreview || getCoverImageUrl()) ? (
                           <img
                             src={coverImagePreview || getCoverImageUrl() || ''}
@@ -3189,7 +3189,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                           ? 'opacity-50 cursor-not-allowed'
                           : ''
                           } ${theme === 'dark'
-                            ? 'bg-black/50 hover:bg-black/70 text-white'
+                            ? 'bg-gray-950/50 hover:bg-gray-950/70 text-white'
                             : 'bg-white/90 hover:bg-white text-gray-900'
                           }`}
                       >
@@ -3216,7 +3216,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     </label>
                     <div className="flex items-center gap-4">
                       <div className="relative">
-                        <div className={`w-32 h-32 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                        <div className={`w-32 h-32 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-gray-100'}`}>
                           {(profileImagePreview || getProfileImageUrl()) ? (
                             <img
                               src={profileImagePreview || getProfileImageUrl() || ''}
@@ -3237,7 +3237,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                             ? 'opacity-50 cursor-not-allowed'
                             : ''
                             } ${theme === 'dark'
-                              ? 'bg-black text-white border-gray-700 hover:bg-gray-800'
+                              ? 'bg-gray-950 text-white border-gray-900 hover:bg-gray-900/50'
                               : 'bg-white text-gray-900 border-gray-200 hover:bg-gray-100'
                             }`}
                         >
@@ -3264,7 +3264,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                   </div>
 
                   {/* Edit Tabs */}
-                  <div className={`sticky z-20 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} backdrop-blur-sm ${theme === 'dark' ? 'bg-black/95' : 'bg-white/95'}`} style={{ top: inline || isEmbed ? '0' : `${headerHeight}px` }}>
+                  <div className={`sticky z-20 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'} backdrop-blur-sm ${theme === 'dark' ? 'bg-gray-950/95' : 'bg-white/95'}`} style={{ top: inline || isEmbed ? '0' : `${headerHeight}px` }}>
                     <div className="flex px-4 sm:px-6 relative">
                       {[
                         { id: 'profile', label: t('profile.profile_info') || 'Profile Info' },
@@ -3285,7 +3285,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                           <span className="relative z-10">{tab.label}</span>
                           {editTab === tab.id && (
                             <motion.div
-                              className={`absolute bottom-0 left-0 right-0 h-1 rounded-t-full ${theme === 'dark' ? 'bg-white' : 'bg-black'}`}
+                              className={`absolute bottom-0 left-0 right-0 h-1 rounded-t-full ${theme === 'dark' ? 'bg-white' : 'bg-gray-900'}`}
                               layoutId="editModeTabIndicator"
                               transition={{
                                 type: "spring",
@@ -3328,7 +3328,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               }
                               placeholder={t('auth.placeholder_nickname')}
                               className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:border-opacity-100 transition-all ${theme === 'dark'
-                                ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-white'
+                                ? 'bg-gray-900/30 border-gray-900 text-white placeholder-gray-400 focus:border-gray-700'
                                 : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
                                 }`}
                             />
@@ -3344,7 +3344,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               value={editFormData.displayname || ''}
                               onChange={(e) => setEditFormData({ ...editFormData, displayname: e.target.value })}
                               className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:border-opacity-100 transition-all ${theme === 'dark'
-                                ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-white'
+                                ? 'bg-gray-900/30 border-gray-900 text-white placeholder-gray-400 focus:border-gray-700'
                                 : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
                                 }`}
                             />
@@ -3366,7 +3366,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               }
                               placeholder={t('profile.email_placeholder')}
                               className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:border-opacity-100 transition-all ${theme === 'dark'
-                                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-white'
+                                  ? 'bg-gray-900/30 border-gray-900 text-white placeholder-gray-400 focus:border-white'
                                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
                                 }`}
                               autoComplete="email"
@@ -3379,7 +3379,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               {t('profile.bio')}
                             </label>
                             <div className={`w-full px-2 rounded-xl border-2 focus-within:border-opacity-100 transition-all ${theme === 'dark'
-                              ? 'bg-gray-800 border-gray-700 focus-within:border-white'
+                              ? 'bg-gray-900/30 border-gray-900 focus-within:border-gray-700'
                               : 'bg-gray-50 border-gray-200 focus-within:border-gray-900'
                               }`}>
                               <LexicalComposer initialConfig={bioEditorConfig}>
@@ -3443,7 +3443,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                           {/* Date of Birth */}
                           <div
                             className={`rounded-2xl border p-5 ${theme === 'dark'
-                                ? 'bg-gray-900/60 border-gray-800'
+                                ? 'bg-gray-950 border-gray-900'
                                 : 'bg-white border-gray-200 shadow-sm'
                               }`}
                           >
@@ -3506,7 +3506,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               value={editFormData.website || ''}
                               onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })}
                               className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:border-opacity-100 transition-all ${theme === 'dark'
-                                ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-white'
+                                ? 'bg-gray-900/30 border-gray-900 text-white placeholder-gray-400 focus:border-gray-700'
                                 : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
                                 }`}
                               placeholder="https://example.com"
@@ -3534,9 +3534,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all border ${isActive
                                         ? theme === 'dark'
                                           ? 'bg-white text-black border-white shadow-lg shadow-white/10'
-                                          : 'bg-black text-white border-black shadow-lg shadow-black/10'
+                                          : 'bg-gray-900 text-white border-gray-900 shadow-lg shadow-gray-900/10'
                                         : theme === 'dark'
-                                          ? 'bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800'
+                                          ? 'bg-gray-950 border-gray-900 text-gray-300 hover:bg-gray-900/50'
                                           : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-100'
                                       }`}
                                     whileHover={{ scale: 1.02 }}
@@ -3552,7 +3552,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                           {isOwnProfile && (
                             <div
                               className={`rounded-2xl border p-5 ${theme === 'dark'
-                                  ? 'bg-gray-900/60 border-gray-800'
+                                  ? 'bg-gray-900/30 border-gray-900'
                                   : 'bg-white border-gray-200 shadow-sm'
                                 }`}
                             >
@@ -3628,7 +3628,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                               placeholder={t('profile.password_current_placeholder')}
                                               autoComplete="current-password"
                                               className={`w-full px-4 py-3 pr-11 rounded-xl border-2 focus:outline-none focus:border-opacity-100 transition-all ${theme === 'dark'
-                                                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-white'
+                                                  ? 'bg-gray-900/30 border-gray-900 text-white placeholder-gray-500 focus:border-gray-700'
                                                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
                                                 }`}
                                             />
@@ -3655,7 +3655,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                               placeholder={t('profile.password_new_placeholder')}
                                               autoComplete="new-password"
                                               className={`w-full px-4 py-3 pr-11 rounded-xl border-2 focus:outline-none focus:border-opacity-100 transition-all ${theme === 'dark'
-                                                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-white'
+                                                  ? 'bg-gray-900/30 border-gray-900 text-white placeholder-gray-500 focus:border-gray-700'
                                                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
                                                 }`}
                                             />
@@ -3682,7 +3682,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                               placeholder={t('profile.password_confirm_placeholder')}
                                               autoComplete="new-password"
                                               className={`w-full px-4 py-3 pr-11 rounded-xl border-2 focus:outline-none focus:border-opacity-100 transition-all ${theme === 'dark'
-                                                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-white'
+                                                  ? 'bg-gray-900/30 border-gray-900 text-white placeholder-gray-500 focus:border-gray-700'
                                                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
                                                 }`}
                                             />
@@ -3707,7 +3707,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                               : theme === 'dark'
                                                 ? 'bg-white text-black hover:bg-gray-200'
-                                                : 'bg-black text-white hover:bg-gray-900'
+                                                : 'bg-gray-900 text-white hover:bg-gray-800'
                                             }`}
                                         >
                                           {isUpdatingPassword ? (
@@ -3768,7 +3768,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               </div>
 
                               {/* List Content */}
-                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/50' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
+                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}`}>
                                 {USER_ATTRIBUTES.map((item, index) => {
                                   const isLast = index === USER_ATTRIBUTES.length - 1;
                                   const isLoading = updatingAttributes[item.field] || false;
@@ -3873,8 +3873,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                       type="button"
                                       onClick={() => handleFieldClick(item.field)}
                                       disabled={isLoading}
-                                      className={`w-full px-4 py-4 flex items-center justify-between transition-colors ${isLoading ? 'opacity-50 cursor-default' : ''} ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}` : ''} ${theme === 'dark'
-                                        ? 'text-white hover:bg-gray-800/50 active:bg-gray-800'
+                                      className={`w-full px-4 py-4 flex items-center justify-between transition-colors ${isLoading ? 'opacity-50 cursor-default' : ''} ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-100'}` : ''} ${theme === 'dark'
+                                        ? 'text-white hover:bg-gray-900/50 active:bg-gray-900/50'
                                         : 'text-gray-900 hover:bg-gray-50 active:bg-gray-100'
                                         }`}
                                     >
@@ -3930,7 +3930,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                     setSelectedField(null);
                                   }}
                                   className={`p-2 rounded-full transition-colors ${theme === 'dark'
-                                    ? 'hover:bg-gray-800 text-gray-400 hover:text-gray-300'
+                                    ? 'hover:bg-gray-900/50 text-gray-400 hover:text-gray-300'
                                     : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                                     }`}
                                 >
@@ -3942,7 +3942,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               </div>
 
                               {/* Options List */}
-                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/50' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
+                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}`}>
                                 {selectedField && fieldOptions[selectedField] && fieldOptions[selectedField].length > 0 ? (
                                   fieldOptions[selectedField].map((option, index) => {
                                     // Get current value
@@ -3984,12 +3984,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                       <button
                                         key={option.id}
                                         onClick={() => handleFieldOptionSelect(selectedField, option.id)}
-                                        className={`w-full px-4 py-4 text-left flex items-center justify-between transition-colors ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}` : ''} ${isSelected
+                                        className={`w-full px-4 py-4 text-left flex items-center justify-between transition-colors ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-100'}` : ''} ${isSelected
                                           ? theme === 'dark'
-                                            ? 'bg-gray-800/50 text-white'
+                                            ? 'bg-gray-900/50 text-white'
                                             : 'bg-gray-50 text-gray-900'
                                           : theme === 'dark'
-                                            ? 'border-gray-800 text-gray-300 hover:bg-gray-800/30 active:bg-gray-800'
+                                            ? 'border-gray-900 text-gray-300 hover:bg-gray-900/50 active:bg-gray-900/50'
                                             : 'border-gray-100 text-gray-900 hover:bg-gray-50 active:bg-gray-100'
                                           }`}
                                       >
@@ -4047,7 +4047,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               </div>
 
                               {/* List Content */}
-                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/50' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
+                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}`}>
                                 {interestCategories.map((category, index) => {
                                   const isLast = index === interestCategories.length - 1;
                                   const categoryItems = interestOptions[category.id] || [];
@@ -4061,8 +4061,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                       type="button"
                                       onClick={() => handleInterestCategoryClick(category.id)}
                                       disabled={updatingInterests}
-                                      className={`w-full px-4 py-4 flex items-center justify-between transition-colors ${updatingInterests ? 'opacity-50 cursor-default' : ''} ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}` : ''} ${theme === 'dark'
-                                        ? 'text-white hover:bg-gray-800/50 active:bg-gray-800'
+                                      className={`w-full px-4 py-4 flex items-center justify-between transition-colors ${updatingInterests ? 'opacity-50 cursor-default' : ''} ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-100'}` : ''} ${theme === 'dark'
+                                        ? 'text-white hover:bg-gray-900/50 active:bg-gray-900/50'
                                         : 'text-gray-900 hover:bg-gray-50 active:bg-gray-100'
                                         }`}
                                     >
@@ -4074,7 +4074,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                               <span
                                                 key={item.id}
                                                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
-                                                  ? 'bg-gray-800 text-gray-200 border border-gray-700'
+                                                  ? 'bg-gray-900/30 text-gray-200 border border-gray-900'
                                                   : 'bg-gray-100 text-gray-700 border border-gray-200'
                                                   }`}
                                               >
@@ -4130,7 +4130,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                     setSelectedInterestCategory(null);
                                   }}
                                   className={`p-2 rounded-full transition-colors ${theme === 'dark'
-                                    ? 'hover:bg-gray-800 text-gray-400 hover:text-gray-300'
+                                    ? 'hover:bg-gray-900/50 text-gray-400 hover:text-gray-300'
                                     : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                                     }`}
                                 >
@@ -4142,7 +4142,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               </div>
 
                               {/* Options List */}
-                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/50' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
+                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}`}>
                                 {selectedInterestCategory && interestOptions[selectedInterestCategory] && interestOptions[selectedInterestCategory].length > 0 ? (
                                   interestOptions[selectedInterestCategory].map((item, index) => {
                                     const isSelected = userSelectedInterestIds.includes(item.id);
@@ -4152,13 +4152,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                         key={item.id}
                                         onClick={() => handleInterestItemToggle(item.id)}
                                         disabled={updatingInterests}
-                                        className={`w-full px-4 py-4 text-left flex items-center justify-between transition-colors ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}` : ''} ${isSelected
+                                        className={`w-full px-4 py-4 text-left flex items-center justify-between transition-colors ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'}` : ''} ${isSelected
                                           ? theme === 'dark'
-                                            ? 'bg-gray-800/50 text-white'
+                                            ? 'bg-gray-900/50 text-white'
                                             : 'bg-gray-50 text-gray-900'
                                           : theme === 'dark'
-                                            ? 'border-gray-800 text-gray-300 hover:bg-gray-800/30 active:bg-gray-800'
-                                            : 'border-gray-100 text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                                            ? 'border-gray-900 text-gray-300 hover:bg-gray-900/30 active:bg-gray-900/50'
+                                            : 'border-gray-200/50 text-gray-900 hover:bg-gray-50 active:bg-gray-100'
                                           } ${updatingInterests ? 'opacity-50 cursor-wait' : ''}`}
                                       >
                                         <div className="flex items-center gap-3 flex-1">
@@ -4220,7 +4220,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               </div>
 
                               {/* List Content */}
-                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/50' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
+                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}`}>
                                 {fantasyCategories.map((category, index) => {
                                   const isLast = index === fantasyCategories.length - 1;
                                   const categoryItems = fantasyOptions[category.id] || [];
@@ -4234,8 +4234,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                       type="button"
                                       onClick={() => handleFantasyCategoryClick(category.id)}
                                       disabled={updatingFantasies}
-                                      className={`w-full px-4 py-4 flex items-center justify-between transition-colors ${updatingFantasies ? 'opacity-50 cursor-default' : ''} ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}` : ''} ${theme === 'dark'
-                                        ? 'text-white hover:bg-gray-800/50 active:bg-gray-800'
+                                      className={`w-full px-4 py-4 flex items-center justify-between transition-colors ${updatingFantasies ? 'opacity-50 cursor-default' : ''} ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-100'}` : ''} ${theme === 'dark'
+                                        ? 'text-white hover:bg-gray-900/50 active:bg-gray-900/50'
                                         : 'text-gray-900 hover:bg-gray-50 active:bg-gray-100'
                                         }`}
                                     >
@@ -4247,7 +4247,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                               <span
                                                 key={item.id}
                                                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
-                                                  ? 'bg-gray-800 text-gray-200 border border-gray-700'
+                                                  ? 'bg-gray-900/30 text-gray-200 border border-gray-900'
                                                   : 'bg-gray-100 text-gray-700 border border-gray-200'
                                                   }`}
                                               >
@@ -4302,7 +4302,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                     setSelectedFantasyCategory(null);
                                   }}
                                   className={`p-2 rounded-full transition-colors ${theme === 'dark'
-                                    ? 'hover:bg-gray-800 text-gray-400 hover:text-gray-300'
+                                    ? 'hover:bg-gray-900/50 text-gray-400 hover:text-gray-300'
                                     : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                                     }`}
                                 >
@@ -4314,7 +4314,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               </div>
 
                               {/* Options List */}
-                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/50' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
+                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}`}>
                                 {selectedFantasyCategory && fantasyOptions[selectedFantasyCategory] && fantasyOptions[selectedFantasyCategory].length > 0 ? (
                                   fantasyOptions[selectedFantasyCategory].map((item, index) => {
                                     const isSelected = userSelectedFantasyIds.includes(item.id);
@@ -4324,13 +4324,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                         key={item.id}
                                         onClick={() => handleFantasyItemToggle(item.id)}
                                         disabled={updatingFantasies}
-                                        className={`w-full px-4 py-4 text-left flex items-center justify-between transition-colors ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}` : ''} ${isSelected
+                                        className={`w-full px-4 py-4 text-left flex items-center justify-between transition-colors ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'}` : ''} ${isSelected
                                           ? theme === 'dark'
-                                            ? 'bg-gray-800/50 text-white'
+                                            ? 'bg-gray-900/50 text-white'
                                             : 'bg-gray-50 text-gray-900'
                                           : theme === 'dark'
-                                            ? 'border-gray-800 text-gray-300 hover:bg-gray-800/30 active:bg-gray-800'
-                                            : 'border-gray-100 text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                                            ? 'border-gray-900 text-gray-300 hover:bg-gray-900/30 active:bg-gray-900/50'
+                                            : 'border-gray-200/50 text-gray-900 hover:bg-gray-50 active:bg-gray-100'
                                           } ${updatingFantasies ? 'opacity-50 cursor-wait' : ''}`}
                                       >
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -4376,11 +4376,11 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex items-center justify-end gap-3 pt-6 pb-8 px-4 sm:px-6 border-t border-gray-200 dark:border-gray-800">
+                  <div className="flex items-center justify-end gap-3 pt-6 pb-8 px-4 sm:px-6 border-t ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}">
                     <button
                       onClick={() => setIsEditMode(false)}
                       className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${theme === 'dark'
-                        ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        ? 'bg-gray-900/30 text-gray-300 hover:bg-gray-900/50'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                     >
@@ -4448,7 +4448,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                   <button
                     onClick={() => setIsEditMode(true)}
                     className={`px-4 py-1.5 rounded-full font-bold text-sm transition-colors border relative z-10 ${theme === 'dark'
-                      ? 'border-gray-700 hover:bg-gray-900'
+                      ? 'border-gray-900 hover:bg-gray-900/50'
                       : 'border-gray-300 hover:bg-gray-50'
                       }`}
                   >
@@ -4548,7 +4548,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
             </div>
 
             {/* Tabs - Sticky */}
-            <div className={`sticky z-20 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} backdrop-blur-sm ${theme === 'dark' ? 'bg-black/95' : 'bg-white/95'}`} style={{ top: inline || isEmbed ? '0' : `${headerHeight}px` }}>
+            <div className={`sticky z-20 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'} backdrop-blur-sm ${theme === 'dark' ? 'bg-gray-950/95' : 'bg-white/95'}`} style={{ top: inline || isEmbed ? '0' : `${headerHeight}px` }}>
               <div className="flex relative">
                 {[
                   { id: 'profile', label: t('profile.profile_tab') },
@@ -5130,7 +5130,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     {mediasLoading ? (
                       <div className="flex items-center justify-center py-16">
                         <div className="flex flex-col items-center gap-4">
-                          <div className={`w-12 h-12 border-4 ${theme === 'dark' ? 'border-gray-800 border-t-white' : 'border-gray-200 border-t-black'} rounded-full animate-spin`} />
+                          <div className={`w-12 h-12 border-4 ${theme === 'dark' ? 'border-gray-900 border-t-white' : 'border-gray-200 border-t-black'} rounded-full animate-spin`} />
                           <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                             {t('profile.loading_media')}
                           </p>
@@ -5177,7 +5177,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     {postsLoading ? (
                       <div className="flex items-center justify-center py-16">
                         <div className="flex flex-col items-center gap-4">
-                          <div className={`w-12 h-12 border-4 ${theme === 'dark' ? 'border-gray-800 border-t-white' : 'border-gray-200 border-t-black'} rounded-full animate-spin`} />
+                          <div className={`w-12 h-12 border-4 ${theme === 'dark' ? 'border-gray-900 border-t-white' : 'border-gray-200 border-t-black'} rounded-full animate-spin`} />
                           <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                             {activeTab === 'posts' && t('profile.loading_posts')}
                             {activeTab === 'replies' && t('profile.loading_replies')}

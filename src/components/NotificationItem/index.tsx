@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { MoreVertical } from 'lucide-react';
+import { getSafeImageURL } from '../../helpers/helpers';
 
 export interface Notification {
   id: string;
@@ -111,7 +112,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             }`}>
               {notification.sender?.avatar ? (
                 <img
-                  src={notification.sender.avatar}
+                  src={(getSafeImageURL(notification.sender?.avatar, 'small') || getSafeImageURL(notification.sender?.avatar, 'medium') || '')}
                   alt={notification.sender.displayname || notification.sender.username}
                   className="w-full h-full object-cover"
                 />

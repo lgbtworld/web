@@ -380,7 +380,7 @@ const Post: React.FC<PostProps> = ({
     setAuthorAvatarFailed(false);
   }, [post.author?.id, post.author?.avatar]);
 
-  const editorConfig = {
+  const editorConfig = useMemo(() => ({
     namespace: "CoolVibesEditor",
     editable: true,
     nodes:[HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode,MentionNode],
@@ -413,10 +413,10 @@ const Post: React.FC<PostProps> = ({
     onError(error: Error) {
       console.error("Lexical Error:", error);
     },
-  };
+  }), [theme]);
   
 
-  const  lexicalJsonToHtml = (json: any) : string =>  {
+  const  lexicalJsonToHtml = useCallback((json: any) : string =>  {
     const editor = createEditor(editorConfig);
     const editorState = editor.parseEditorState(json);
     let html = '';
@@ -424,7 +424,7 @@ const Post: React.FC<PostProps> = ({
       html = $generateHtmlFromNodes(editor);
     });
     return html;
-  }
+  }, [editorConfig]);
 
   useEffect(() => {
     const _content = post.content?.en || ""
@@ -442,7 +442,7 @@ const Post: React.FC<PostProps> = ({
       // JSON değil, direkt HTML
       setHtml(_content);
     }
-  }, [post]);
+  }, [post, theme, lexicalJsonToHtml]);
 
   // Initialize Leaflet map when location is set
   useEffect(() => {
@@ -1253,19 +1253,37 @@ const Post: React.FC<PostProps> = ({
   
   return (
     <>
-<div
+<motion.div
 className={`
   overflow-hidden border-b transition-all duration-300 ease-out
   ${theme === "dark"
-    ? "bg-gray-950 border-gray-900 hover:bg-gray-950/10"
+    ? "bg-gray-950 border-gray-900 hover:bg-gray-900/50"
     : "bg-white border-gray-200/50 hover:bg-gray-50"}
+  ${onPostClick ? 'cursor-pointer' : ''}
 `}
+onClick={(e) => {
+  // Only trigger if clicking on non-interactive elements
+  // Interactive elements (buttons, links, etc.) should use stopPropagation
+  if (onPostClick) {
+    const target = e.target as HTMLElement;
+    // Check if click is on an interactive element
+    const isInteractive = target.closest('button, a, input, select, textarea, [role="button"]');
+    if (!isInteractive) {
+      onPostClick(post.public_id, post.author.username);
+    }
+  }
+}}
+whileTap={onPostClick ? { scale: 0.98, opacity: 0.95 } : undefined}
+transition={{ duration: 0.15 }}
 >
         {/* Post Header */}
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <button
-              onClick={handleProfileClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleProfileClick(e);
+              }}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 overflow-hidden border ${
                 theme === 'dark'
                   ? 'bg-gray-900/30 hover:bg-gray-900/50 border-gray-900'
@@ -1290,14 +1308,20 @@ className={`
             <div>
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={handleProfileClick}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleProfileClick(e);
+                  }}
                   className={`font-semibold hover:underline transition-colors duration-200 ${theme === 'dark' ? 'text-white hover:text-gray-300' : 'text-gray-900 hover:text-gray-600'
                     }`}
                 >
                   {post.author.displayname}
                 </button>
                 <button
-                  onClick={handleProfileClick}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleProfileClick(e);
+                  }}
                   className={`text-sm hover:underline transition-colors duration-200 ${theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'
                     }`}
                 >
@@ -1390,15 +1414,7 @@ className={`
         </div>
 
         {/* Post Content */}
-        <div
-          className={`px-4 py-3 ${onPostClick ? 'cursor-pointer' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onPostClick) {
-              onPostClick(post.public_id, post.author.username);
-            }
-          }}
-        >
+        <div className="px-4 py-3">
           <div className={`leading-relaxed  break-words text-[15px] ${theme === 'dark' ? 'text-white' : 'text-gray-900'
             }`} style={{
               color: theme === 'dark' ? '#ffffff' : '#111827'
@@ -2669,7 +2685,7 @@ className={`
           </motion.button>
         </div>
 
-      </div>
+      </motion.div>
 
       {/* PostReply Component - Outside main post div */}
       {showReply && (

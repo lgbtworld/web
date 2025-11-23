@@ -157,7 +157,7 @@ const HomeScreen: React.FC = () => {
               </div>
             ) : (
               // Tab Navigation
-              <div className="flex">
+              <div className="flex z-10">
                 <motion.button
                   onClick={() => {
                     setActiveTab('flows')

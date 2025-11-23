@@ -1,259 +1,364 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>WebGL2 Grid Demo (HTML)</title>
+<meta charset="utf-8" />
+<title>WebGL2 Photo → Real 3D (depth displacement + GLSL normals)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
-  body, html {
-    margin:0; padding:0;
-    width:100%; height:100%;
-    overflow:hidden;
-    background:#000;
-  }
-  #glcanvas {
-    width:100%;
-    height:100%;
-    display:block;
-  }
+  html,body{height:100%;margin:0;background:#111;color:#fff;font-family:system-ui,Arial}
+  #ui { position: absolute; left:12px; top:12px; z-index: 20; }
+  .btn { background: rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px; cursor:pointer; margin-right:8px; display:inline-block }
+  input[type=file]{ display:none }
+  label { cursor: pointer }
+  #help{ position:absolute; right:12px; top:12px; color:#ddd; font-size:13px }
+  #overlay { position: absolute; left:12px; bottom:12px; color:#ddd; font-size:13px; z-index:20 }
+  canvas{ width:100vw; height:100vh; display:block; }
 </style>
 </head>
 <body>
+  <div id="ui">
+    <label class="btn">Photo
+      <input id="photoInput" type="file" accept="image/*">
+    </label>
+    <label class="btn">Depth
+      <input id="depthInput" type="file" accept="image/*">
+    </label>
+    <label class="btn" id="resetBtn">Reset</label>
+    <div style="margin-top:8px">
+      Subdivisions: <input id="subdiv" type="range" min="20" max="600" step="10" value="220">
+      Depth scale: <input id="depthScale" type="range" min="0" max="2" step="0.01" value="0.8">
+    </div>
+  </div>
+  <div id="help">Drag to orbit • Wheel to zoom • Load depth for best result</div>
+  <div id="overlay">Note: Depth map should be grayscale; white = near, black = far</div>
+  <canvas id="gl"></canvas>
 
-<canvas id="glcanvas"></canvas>
+<script type="module">
+(async ()=>{
 
-<script>
+  const canvas = document.getElementById('gl');
+  const gl = canvas.getContext('webgl2', {antialias:true});
+  if(!gl){ alert('WebGL2 required'); return; }
 
-// -------------------------
-//  Images
-// -------------------------
-const ITEMS = [
-  { src: "https://picsum.photos/500/700?1", title:"User 1" },
-  { src: "https://picsum.photos/500/700?2", title:"User 2" },
-  { src: "https://picsum.photos/500/700?3", title:"User 3" },
-  { src: "https://picsum.photos/500/700?4", title:"User 4" },
-  { src: "https://picsum.photos/500/700?5", title:"User 5" },
-  { src: "https://picsum.photos/500/700?6", title:"User 6" },
-  { src: "https://picsum.photos/500/700?7", title:"User 7" },
-  { src: "https://picsum.photos/500/700?8", title:"User 8" }
-];
+  // resize helper
+  function resize(){
+    const dpr = window.devicePixelRatio||1;
+    const w = Math.floor(innerWidth * dpr);
+    const h = Math.floor(innerHeight * dpr);
+    if(canvas.width !== w || canvas.height !== h){
+      canvas.width = w; canvas.height = h;
+      canvas.style.width = innerWidth + 'px';
+      canvas.style.height = innerHeight + 'px';
+      gl.viewport(0,0,canvas.width,canvas.height);
+    }
+  }
+  window.addEventListener('resize', resize);
+  resize();
 
-const columns = 3;
-const cellW = 240;
-const cellH = 300;
+  // --- shader sources (GLSL ES 3.00) ---
+  const vs_src = `#version 300 es
+  precision highp float;
+  in vec3 aPosition;   // model space position
+  in vec2 aUV;
+  out vec3 vWorldPos;
+  out vec2 vUV;
 
-// -------------------------
-//  Build Atlas (HTML Canvas)
-// -------------------------
-async function buildAtlas(items) {
-  const rows = Math.ceil(items.length / columns);
-  const atlas = document.createElement("canvas");
-  atlas.width  = columns * cellW;
-  atlas.height = rows * cellH;
-  const ctx = atlas.getContext("2d");
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0,0,atlas.width, atlas.height);
+  uniform mat4 uModel;
+  uniform mat4 uView;
+  uniform mat4 uProj;
+  uniform sampler2D uDepthTex;
+  uniform sampler2D uColorTex;
+  uniform float uDepthScale;
+  uniform int uHasDepth;
 
-  const loaded = await Promise.all(items.map(i => new Promise(res => {
-    const img = new Image();
-    img.crossOrigin="anonymous";
-    img.onload = () => res(img);
-    img.onerror = () => res(img);
-    img.src = i.src;
-  })));
+  // sample depth at uv in [0..1] (grayscale)
+  float sampleDepth(vec2 uv){
+    if(uHasDepth==1){
+      vec4 d = texture(uDepthTex, uv);
+      // if depth encoded in rgb, convert to luminance
+      return dot(d.rgb, vec3(0.299,0.587,0.114));
+    } else {
+      // fallback: use color luminance
+      vec4 c = texture(uColorTex, uv);
+      return dot(c.rgb, vec3(0.299,0.587,0.114));
+    }
+  }
 
-  loaded.forEach((img, i) => {
-    const col = i % columns;
-    const row = Math.floor(i / columns);
-    const x = col * cellW;
-    const y = row * cellH;
+  void main(){
+    vUV = aUV;
+    float d = sampleDepth(aUV);              // 0..1
+    float z = (d - 0.5) * uDepthScale;       // center around 0
+    // displace along local normal (plane normal is +Z in model space)
+    vec3 displaced = aPosition + vec3(0.0, 0.0, z);
+    vec4 world = uModel * vec4(displaced, 1.0);
+    vWorldPos = world.xyz;
+    gl_Position = uProj * uView * world;
+  }
+  `;
 
-    // draw image cover-fit
-    const r = Math.max(cellW / img.width, (cellH * 0.8) / img.height);
-    const iw = img.width * r;
-    const ih = img.height * r;
-    ctx.drawImage(img, x + (cellW - iw) / 2, y + (cellH * 0.8 - ih) / 2, iw, ih);
+  const fs_src = `#version 300 es
+  precision highp float;
+  in vec3 vWorldPos;
+  in vec2 vUV;
+  uniform sampler2D uColorTex;
+  uniform vec3 uLightDir;
+  out vec4 outColor;
 
-    // simple gradient overlay
-    const g = ctx.createLinearGradient(x, y+cellH*0.4, x, y+cellH);
-    g.addColorStop(0,"rgba(0,0,0,0)");
-    g.addColorStop(1,"rgba(0,0,0,0.85)");
-    ctx.fillStyle = g;
-    ctx.fillRect(x, y+cellH*0.4, cellW, cellH*0.6);
+  void main(){
+    vec3 col = texture(uColorTex, vUV).rgb;
+    // compute normals using screen derivatives of world position
+    vec3 dpdx = dFdx(vWorldPos);
+    vec3 dpdy = dFdy(vWorldPos);
+    vec3 N = normalize(cross(dpdx, dpdy));
+    // simple lambert + rim
+    float diff = max(dot(N, normalize(uLightDir)), 0.0);
+    float rim = pow(max(0.0, 1.0 - dot(N, vec3(0.0,0.0,1.0))), 2.0) * 0.15;
+    vec3 color = col * (0.18 + 0.82 * diff) + rim;
+    outColor = vec4(color, 1.0);
+  }
+  `;
 
-    ctx.fillStyle = "#fff";
-    ctx.font = "18px sans-serif";
-    ctx.fillText(items[i].title, x+10, y+cellH-10);
+  // compile & link
+  function compile(type, src){
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
+      console.error(gl.getShaderInfoLog(s)); throw 'shader compile error';
+    }
+    return s;
+  }
+  function link(vs, fs){
+    const p = gl.createProgram();
+    gl.attachShader(p, vs);
+    gl.attachShader(p, fs);
+    gl.linkProgram(p);
+    if(!gl.getProgramParameter(p, gl.LINK_STATUS)){
+      console.error(gl.getProgramInfoLog(p)); throw 'program link error';
+    }
+    return p;
+  }
+
+  const vs = compile(gl.VERTEX_SHADER, vs_src);
+  const fs = compile(gl.FRAGMENT_SHADER, fs_src);
+  const program = link(vs, fs);
+
+  // attrib/uniform locations
+  const locPos = gl.getAttribLocation(program, 'aPosition');
+  const locUV  = gl.getAttribLocation(program, 'aUV');
+  const uniModel = gl.getUniformLocation(program, 'uModel');
+  const uniView  = gl.getUniformLocation(program, 'uView');
+  const uniProj  = gl.getUniformLocation(program, 'uProj');
+  const uniDepthTex = gl.getUniformLocation(program, 'uDepthTex');
+  const uniColorTex = gl.getUniformLocation(program, 'uColorTex');
+  const uniDepthScale = gl.getUniformLocation(program, 'uDepthScale');
+  const uniHasDepth = gl.getUniformLocation(program, 'uHasDepth');
+  const uniLightDir = gl.getUniformLocation(program, 'uLightDir');
+
+  // create VAO + buffers for grid (we will rebuild when subdivisions change)
+  let vao = null;
+  let indexCount = 0;
+
+  function buildGrid(subdivX, subdivY){
+    if(vao) gl.deleteVertexArray(vao);
+    vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+
+    const nx = subdivX+1;
+    const ny = subdivY+1;
+    const positions = new Float32Array(nx*ny*3);
+    const uvs = new Float32Array(nx*ny*2);
+    let pi=0, ui=0;
+    for(let j=0;j<ny;j++){
+      const v = j/(ny-1);
+      const y = (v - 0.5) * 1.0; // plane 1.0 high
+      for(let i=0;i<nx;i++){
+        const u = i/(nx-1);
+        const x = (u - 0.5) * 1.0; // plane 1.0 wide
+        positions[pi++]=x; positions[pi++]=y; positions[pi++]=0;
+        uvs[ui++]=u; uvs[ui++]=1.0-v; // flip v
+      }
+    }
+    // indices
+    const indices = new Uint32Array(subdivX*subdivY*6);
+    let ii=0;
+    for(let j=0;j<subdivY;j++){
+      for(let i=0;i<subdivX;i++){
+        const a = j*nx + i;
+        const b = a + 1;
+        const c = a + nx;
+        const d = c + 1;
+        indices[ii++]=a; indices[ii++]=b; indices[ii++]=c;
+        indices[ii++]=b; indices[ii++]=d; indices[ii++]=c;
+      }
+    }
+
+    // buffers
+    const posBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(locPos);
+    gl.vertexAttribPointer(locPos, 3, gl.FLOAT, false, 0, 0);
+
+    const uvBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(locUV);
+    gl.vertexAttribPointer(locUV, 2, gl.FLOAT, false, 0, 0);
+
+    const idxBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+    gl.bindVertexArray(null);
+    indexCount = indices.length;
+  }
+
+  // default subdivisions
+  let subdivisions = parseInt(document.getElementById('subdiv').value,10);
+  buildGrid(subdivisions, Math.round(subdivisions * 0.7));
+
+  // textures (color + depth)
+  function makeTexture(){
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    return t;
+  }
+  const colorTex = makeTexture();
+  const depthTex = makeTexture();
+  let hasDepth = false;
+
+  // load image (url or File)
+  async function loadImageToTex(srcOrFile, tex){
+    const img = (typeof srcOrFile === 'string')
+      ? await (new Promise((res,rej)=>{ const i=new Image(); i.crossOrigin='anonymous'; i.onload=()=>res(i); i.onerror=rej; i.src=srcOrFile; }))
+      : await createImageBitmap(srcOrFile);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    return img;
+  }
+
+  // default assets (color + depth)
+  const DEFAULT_COLOR = 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=1600&q=80';
+  const DEFAULT_DEPTH = 'https://raw.githubusercontent.com/ERANSAMPLE/placeholder-assets/main/depth1.png'; // replaceable
+
+  // try load defaults
+  await loadImageToTex(DEFAULT_COLOR, colorTex);
+  try{
+    await loadImageToTex(DEFAULT_DEPTH, depthTex);
+    hasDepth = true;
+  }catch(e){
+    hasDepth = false;
+  }
+
+  // UI handlers
+  document.getElementById('photoInput').addEventListener('change', async (e)=>{
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    await loadImageToTex(f, colorTex);
+  });
+  document.getElementById('depthInput').addEventListener('change', async (e)=>{
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    await loadImageToTex(f, depthTex);
+    hasDepth = true;
+  });
+  document.getElementById('resetBtn').addEventListener('click', async ()=>{
+    await loadImageToTex(DEFAULT_COLOR, colorTex);
+    try{ await loadImageToTex(DEFAULT_DEPTH, depthTex); hasDepth=true; }catch(e){ hasDepth=false; }
+  });
+  document.getElementById('subdiv').addEventListener('input', (e)=>{
+    subdivisions = parseInt(e.target.value,10);
+    buildGrid(subdivisions, Math.round(subdivisions * 0.7));
   });
 
-  return { atlas, rows };
-}
+  let depthScale = parseFloat(document.getElementById('depthScale').value);
+  document.getElementById('depthScale').addEventListener('input', (e)=> depthScale = parseFloat(e.target.value));
 
-// -------------------------
-//  WebGL2
-// -------------------------
-const vsSrc = `#version 300 es
-precision highp float;
+  // camera / controls
+  let yaw = 0, pitch = 0, distance = 2.6;
+  let down=false, lastX=0, lastY=0;
+  canvas.addEventListener('mousedown', (e)=>{ down=true; lastX=e.clientX; lastY=e.clientY; canvas.style.cursor='grabbing'; });
+  window.addEventListener('mouseup', ()=>{ down=false; canvas.style.cursor='default'; });
+  window.addEventListener('mousemove', (e)=>{ if(!down) return; const dx=(e.clientX-lastX)*0.005; const dy=(e.clientY-lastY)*0.005; yaw += dx; pitch += dy; pitch = Math.max(-1.2, Math.min(1.2, pitch)); lastX=e.clientX; lastY=e.clientY; });
+  canvas.addEventListener('wheel', (e)=>{ e.preventDefault(); distance *= (1 + e.deltaY * 0.001); distance = Math.max(0.6, Math.min(6, distance)); });
 
-layout(location=0) in vec2 aPos;     // quad: [0..1]
-layout(location=1) in vec2 aOff;     // instance offset
-layout(location=2) in vec2 aSize;    // instance size
-layout(location=3) in vec4 aUV;      // atlas rect
-
-uniform vec2 uRes;
-
-out vec2 vUv;
-flat out vec4 vRect;
-
-void main() {
-  vec2 posPx = aOff + aPos * aSize;
-  vec2 clip = (posPx / uRes) * 2.0 - 1.0;
-  gl_Position = vec4(clip.x, -clip.y, 0, 1);
-  vUv = aPos;
-  vRect = aUV;
-}
-`;
-
-const fsSrc = `#version 300 es
-precision highp float;
-
-in vec2 vUv;
-flat in vec4 vRect;
-uniform sampler2D uAtlas;
-
-out vec4 outColor;
-
-void main(){
-  vec2 uv = vRect.xy + vRect.zw * vUv;
-  vec4 col = texture(uAtlas, uv);
-
-  // gradient shading
-  float g = smoothstep(0.45,1.0,vUv.y);
-  vec3 rgb = mix(col.rgb, vec3(0,0,0.85), g);
-  outColor = vec4(rgb,1.0);
-}
-`;
-
-function compile(gl, type, src){
-  const sh = gl.createShader(type);
-  gl.shaderSource(sh, src);
-  gl.compileShader(sh);
-  if(!gl.getShaderParameter(sh, gl.COMPILE_STATUS)){
-    console.error(gl.getShaderInfoLog(sh));
+  // math helpers for matrices
+  function identity(){ return new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]); }
+  function multiply(out,a,b){
+    for(let i=0;i<4;i++){
+      for(let j=0;j<4;j++){
+        out[i*4+j] = a[i*4+0]*b[0*4+j] + a[i*4+1]*b[1*4+j] + a[i*4+2]*b[2*4+j] + a[i*4+3]*b[3*4+j];
+      }
+    }
+    return out;
   }
-  return sh;
-}
-
-function createProgram(gl, vsSrc, fsSrc){
-  const vs = compile(gl, gl.VERTEX_SHADER, vsSrc);
-  const fs = compile(gl, gl.FRAGMENT_SHADER, fsSrc);
-  const pr = gl.createProgram();
-  gl.attachShader(pr, vs);
-  gl.attachShader(pr, fs);
-  gl.linkProgram(pr);
-  if(!gl.getProgramParameter(pr, gl.LINK_STATUS)){
-    console.error(gl.getProgramInfoLog(pr));
+  function perspective(out, fovy, aspect, near, far){
+    const f = 1.0/Math.tan(fovy/2);
+    out[0]=f/aspect; out[1]=0; out[2]=0; out[3]=0;
+    out[4]=0; out[5]=f; out[6]=0; out[7]=0;
+    out[8]=0; out[9]=0; out[10]=(far+near)/(near-far); out[11]=-1;
+    out[12]=0; out[13]=0; out[14]=(2*far*near)/(near-far); out[15]=0;
+    return out;
   }
-  return pr;
-}
+  function translate(out, v){ out[12]+=v[0]; out[13]+=v[1]; out[14]+=v[2]; return out; }
+  function rotateX(out,a){ const c=Math.cos(a), s=Math.sin(a); const r=new Float32Array([1,0,0,0, 0,c,-s,0, 0,s,c,0, 0,0,0,1]); multiply(out, r, out); return out;}
+  function rotateY(out,a){ const c=Math.cos(a), s=Math.sin(a); const r=new Float32Array([c,0,s,0, 0,1,0,0, -s,0,c,0, 0,0,0,1]); multiply(out, r, out); return out;}
 
-// -------------------------
-//  Main
-// -------------------------
-(async function(){
+  // lighting
+  const lightDir = new Float32Array([0.3,0.7,0.5]);
 
-  const { atlas, rows } = await buildAtlas(ITEMS);
+  // drawing
+  gl.enable(gl.DEPTH_TEST);
+  gl.disable(gl.CULL_FACE);
 
-  const canvas = document.getElementById("glcanvas");
-  const gl = canvas.getContext("webgl2");
-  const DPR = window.devicePixelRatio || 1;
+  function render(){
+    resize();
+    gl.clearColor(0.03,0.03,0.03,1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  function resize() {
-    canvas.width = innerWidth * DPR;
-    canvas.height = innerHeight * DPR;
-    gl.viewport(0,0,canvas.width,canvas.height);
-  }
-  resize();
-  addEventListener('resize', resize);
+    gl.useProgram(program);
+    gl.bindVertexArray(vao);
 
-  const prog = createProgram(gl, vsSrc, fsSrc);
-  gl.useProgram(prog);
+    // model matrix: scale plane to correct aspect ratio based on color texture size if known
+    const model = identity();
+    // view matrix: camera translate back and rotate by pitch/yaw
+    let view = identity();
+    translate(view, [0,0,-distance]);
+    rotateX(view, pitch);
+    rotateY(view, yaw);
 
-  // upload atlas
-  const tex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlas);
-  gl.generateMipmap(gl.TEXTURE_2D);
+    const proj = new Float32Array(16);
+    perspective(proj, Math.PI/4, canvas.width/canvas.height, 0.1, 100.0);
 
-  // quad
-  const quad = new Float32Array([
-    0,0,  1,0,  0,1,
-    0,1,  1,0,  1,1
-  ]);
-  const quadVBO = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, quadVBO);
-  gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(0);
-  gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+    gl.uniformMatrix4fv(uniModel, false, model);
+    gl.uniformMatrix4fv(uniView, false, view);
+    gl.uniformMatrix4fv(uniProj, false, proj);
 
-  // instance buffers
-  const count = ITEMS.length;
-  const offsets = new Float32Array(count*2);
-  const sizes   = new Float32Array(count*2);
-  const rects   = new Float32Array(count*4);
+    gl.uniform1f(uniDepthScale, depthScale);
+    gl.uniform1i(uniHasDepth, hasDepth ? 1 : 0);
+    gl.uniform3fv(uniLightDir, lightDir);
 
-  // initial layout
-  for(let i=0;i<count;i++){
-    const col = i % columns;
-    const row = Math.floor(i / columns);
-    offsets[i*2+0] = col * (cellW + 20) + 20;
-    offsets[i*2+1] = row * (cellH + 20) + 20;
-    sizes[i*2+0] = cellW;
-    sizes[i*2+1] = cellH;
+    // bind textures: depth -> unit0, color -> unit1
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, depthTex); gl.uniform1i(uniDepthTex, 0);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, colorTex); gl.uniform1i(uniColorTex, 1);
 
-    const u = (col*cellW)/atlas.width;
-    const v = (row*cellH)/atlas.height;
-    const w = cellW/atlas.width;
-    const h = cellH/atlas.height;
-    rects.set([u,v,w,h], i*4);
+    gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_INT, 0);
+
+    gl.bindVertexArray(null);
+    requestAnimationFrame(render);
   }
 
-  // upload instance buffers
-  const offVBO = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, offVBO);
-  gl.bufferData(gl.ARRAY_BUFFER, offsets, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(1);
-  gl.vertexAttribPointer(1,2,gl.FLOAT,false,0,0);
-  gl.vertexAttribDivisor(1,1);
+  requestAnimationFrame(render);
 
-  const sizeVBO = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, sizeVBO);
-  gl.bufferData(gl.ARRAY_BUFFER, sizes, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(2);
-  gl.vertexAttribPointer(2,2,gl.FLOAT,false,0,0);
-  gl.vertexAttribDivisor(2,1);
-
-  const rectVBO = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, rectVBO);
-  gl.bufferData(gl.ARRAY_BUFFER, rects, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(3);
-  gl.vertexAttribPointer(3,4,gl.FLOAT,false,0,0);
-  gl.vertexAttribDivisor(3,1);
-
-  const uRes = gl.getUniformLocation(prog,"uRes");
-
-  function draw(){
-    gl.clearColor(0,0,0,1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.uniform2f(uRes, canvas.width, canvas.height);
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, count);
-    requestAnimationFrame(draw);
-  }
-  draw();
-
-})();
+})(); // IIFE
 </script>
-
 </body>
 </html>

@@ -48,31 +48,59 @@ export class ApiService {
     console.log("handleCreatePost", data)
   }
 
+  async handlePostDelete(postId : any){
+    return this.call(Actions.CMD_POST_DELETE, {
+      method: "POST",
+      body: {post_id:postId},
+    });
+  }
+
   async handlePostLike(postId : any){
     return this.call(Actions.CMD_POST_LIKE, {
       method: "POST",
-      body: {postId:postId},
+      body: {post_id:postId},
+    });
+  }
+
+  async handlePostDislike(postId : any){
+    return this.call(Actions.CMD_POST_DISLIKE, {
+      method: "POST",
+      body: {post_id:postId},
+    });
+  }
+
+  async handlePostBanana(postId : any){
+    return this.call(Actions.CMD_POST_BANANA, {
+      method: "POST",
+      body: {post_id:postId},
     });
   }
 
   async handlePostAddToBookmarks(postId : any){
     return this.call(Actions.CMD_POST_BOOKMARK, {
       method: "POST",
-      body: {postId:postId},
+      body: {post_id:postId},
     });
   }
 
   async handlePostReport(postId : any,reason:any,description:any){
     return this.call(Actions.CMD_POST_REPORT, {
       method: "POST",
-      body: {postId:postId,reason:reason,description:description},
+      body: {post_id:postId,reason:reason,description:description},
+    });
+  }
+
+  async handleUserReport(userId : any,reason:any,description:any){
+    return this.call(Actions.CMD_USER_REPORT, {
+      method: "POST",
+      body: {userId:userId,reason:reason,description:description},
     });
   }
 
   async handlePostView(postId : any){
     return this.call(Actions.CMD_POST_VIEW, {
       method: "POST",
-      body: {postId:postId},
+      body: {post_id:postId},
     });
   }
 

@@ -3,54 +3,6 @@ import { Actions } from "../services/actions";
 import { api } from "../services/api";
 import i18n from "../i18n";
 
-interface Fantasy {
-  id: string;
-  slug: string;
-  category: Record<string, string>;
-  label: Record<string, string>;
-  description: Record<string, string>;
-}
-
-interface OrientationTranslation {
-  id: string;
-  orientation_id: string;
-  language: string;
-  label: string;
-}
-
-interface SexualOrientation {
-  id: string;
-  key?: string;
-  order?: number;
-  name?: Record<string, string>;
-  display_order?: number;
-  translations?: OrientationTranslation[];
-}
-
-interface GenderIdentity {
-  id: string;
-  name: Record<string, string>;
-  display_order: number;
-}
-
-interface SexualRole {
-  id: string;
-  name: Record<string, string>;
-  display_order: number;
-}
-
-interface InterestItem {
-  id: string;
-  interest_id: string;
-  name: Record<string, string>;
-  emoji?: string;
-}
-
-interface Interest {
-  id: string;
-  name: Record<string, string>;
-  items: InterestItem[];
-}
 
 export interface LocalizedString {
   [langCode: string]: string;
@@ -71,6 +23,7 @@ interface InitialData {
   vapid_public_key: string;
   preferences: any;
   event_kinds: any[];
+  report_kinds: any[];
   countries: Record<string, any>;
   languages: Record<string, any>;
   status: string;

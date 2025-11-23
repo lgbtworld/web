@@ -1,8 +1,8 @@
 export const Actions = {
   // SYSTEM
   SYSTEM_INITIAL_SYNC: "system.initial_sync",
-  CMD_GET_VAPID_PUBLIC_KEY : "system_vapid_get_key",
-	CMD_SET_VAPID_SUBSCRIBE  : "system_vapid_subscribe",
+  CMD_GET_VAPID_PUBLIC_KEY: "system_vapid_get_key",
+  CMD_SET_VAPID_SUBSCRIBE: "system_vapid_subscribe",
   CMD_GET_NOTIFICATIONS: "system_notifications",
 
   // AUTH
@@ -23,8 +23,8 @@ export const Actions = {
 
 
   // USER
-  CMD_USER_GET_NOTIFICATIONS  : "user.fetch.notifications",
-  CMD_USER_MARK_NOTIFICATIONS_SEEN : "user.notifications.mark.seen",
+  CMD_USER_GET_NOTIFICATIONS: "user.fetch.notifications",
+  CMD_USER_MARK_NOTIFICATIONS_SEEN: "user.notifications.mark.seen",
 
   CMD_UPDATE_USER_PROFILE: "user.update_profile",
   CMD_USER_UPDATE_IDENTIFY: "user.update_identify",
@@ -37,9 +37,9 @@ export const Actions = {
   CMD_USER_UNFOLLOW: "user.unfollow",
   CMD_USER_TOGGLE_FOLLOW: "user.follow.toggle",
 
-  CMD_USER_BLOCK        : "user.block",
-	CMD_USER_UNBLOCK      : "user.unblock",
-	CMD_USER_TOGGLE_BLOCK : "user.block.toggle",
+  CMD_USER_BLOCK: "user.block",
+  CMD_USER_UNBLOCK: "user.unblock",
+  CMD_USER_TOGGLE_BLOCK: "user.block.toggle",
 
   CMD_USER_POSTS: "user.fetch.posts",
   CMD_USER_POST_REPLIES: "user.fetch.posts.replies",
@@ -49,15 +49,20 @@ export const Actions = {
   USER_FETCH_PROFILE: "user.fetch_profile",
 
   POST_CREATE: "post.create",
-  CMD_POST_VOTE     : "post.vote",
+  CMD_POST_VOTE: "post.vote",
   POST_FETCH: "post.fetch",
   POST_TIMELINE: "post.timeline",
   POST_VIBES: "post.vibes",
-  
-	CMD_POST_LIKE     : "post.like",
-	CMD_POST_BOOKMARK : "post.bookmark",
-	CMD_POST_REPORT   : "post.report",
-	CMD_POST_VIEW     : "post.view",
+
+  CMD_POST_LIKE: "post.like",
+  CMD_POST_DISLIKE: "post.dislike",
+  CMD_POST_BANANA: "post.banana",
+  CMD_POST_BOOKMARK: "post.bookmark",
+  CMD_POST_REPORT: "post.report",
+  CMD_POST_VIEW: "post.view",
+  CMD_POST_DELETE: "post.delete",
+
+  CMD_USER_REPORT: "user.report",
 
   CMD_USER_UPLOAD_AVATAR: "user.upload_avatar",
   CMD_USER_UPLOAD_COVER: "user.upload_cover",
@@ -84,8 +89,8 @@ export const Actions = {
   CMD_USER_DISLIKE: "user.dislike",
   CMD_USER_TOGGLE_LIKE: "user.like.toggle",
   CMD_USER_TOGGLE_DISLIKE: "user.dislike.toggle",
-  
-	CMD_USER_UPDATE_PREFERENCES : "user.update_preferences"
+
+  CMD_USER_UPDATE_PREFERENCES: "user.update_preferences"
 
 
 

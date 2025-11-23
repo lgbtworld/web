@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, MapPin, Calendar, X, ChevronLeft, ChevronRight, CircleCheck, CheckSquare, ListOrdered, Scale, BarChart3, Loader2, ExternalLink, Sparkles, Globe, Users, HandCoins } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { MessageCircle, Share, Bookmark, MapPin, Calendar, X, ChevronLeft, ChevronRight, CircleCheck, CheckSquare, ListOrdered, Scale, BarChart3, Loader2, ExternalLink, Sparkles, Globe, Users, HandCoins, Heart, HeartOff, Banana, MoreVertical, Trash2, Flag } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
 import PostReply from './PostReply';
 import VideoPlayer from './VideoPlayer';
+import ReportButton from './ReportButton';
 import { api } from '../services/api';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { createEditor } from 'lexical';
@@ -221,6 +222,33 @@ interface ApiPost {
     updated_at: string;
     deleted_at: string | null;
   };
+  engagements?: {
+    id: string;
+    contentable_id: string;
+    contentable_type: string;
+    counts: {
+      comment_count?: number;
+      bookmark_count?: number;
+      like_given_count?: number;
+      like_received_count?: number;
+      dislike_received_count?: number;
+      banana_count?: number;
+      banana_received_count?: number;
+      banana_given_count?: number;
+    };
+    engagement_details?: Array<{
+      id: string;
+      engagement_id: string;
+      engager_id: string;
+      engagee_id?: string;
+      kind: string;
+      details?: any;
+      created_at?: string;
+      updated_at?: string;
+    }>;
+    created_at: string;
+    updated_at: string;
+  };
 }
 
 interface PostProps {
@@ -246,6 +274,8 @@ const Post: React.FC<PostProps> = ({
 }) => {
   const [post, setPost] = useState<ApiPost>(postProp);
   const [isLiked, setIsLiked] = useState(false);
+  const [isDisliked, setIsDisliked] = useState(false);
+  const [isBanana, setIsBanana] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [selectedPollChoices, setSelectedPollChoices] = useState<Record<string, string[]>>({});
   const [isPollRefreshing, setIsPollRefreshing] = useState(false);
@@ -258,6 +288,14 @@ const Post: React.FC<PostProps> = ({
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const [pressingChoiceId, setPressingChoiceId] = useState<string | null>(null);
   const [authorAvatarFailed, setAuthorAvatarFailed] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
+  const [isDisliking, setIsDisliking] = useState(false);
+  const [isBananaing, setIsBananaing] = useState(false);
+  const [isBookmarking, setIsBookmarking] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const { theme } = useTheme();
   const { user } = useAuth();
   const { data: appData, defaultLanguage } = useApp();
@@ -266,11 +304,44 @@ const Post: React.FC<PostProps> = ({
   const mapInstanceRef = useRef<L.Map | null>(null);
   const eventMapRef = useRef<HTMLDivElement>(null);
   const eventMapInstanceRef = useRef<L.Map | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Update post when prop changes
   useEffect(() => {
     setPost(postProp);
-  }, [postProp]);
+    // Initialize like/dislike/banana/bookmark state from engagement_details
+    // Check engagement_details first (more accurate), then fallback to counts
+    if (postProp.engagements) {
+      const userId = user?.id;
+      
+      if (postProp.engagements.engagement_details && userId) {
+        // Check engagement_details for user's interactions
+        // engager_id is the user who performed the engagement
+        const userEngagements = postProp.engagements.engagement_details.filter(
+          detail => detail.engager_id === userId
+        );
+        
+        // Check for each interaction type
+        // Backend returns like_received/dislike_received when user gives like/dislike
+        // Also check for like_given/dislike_given for compatibility
+        setIsLiked(userEngagements.some(e => 
+          e.kind === 'like_given' || e.kind === 'like_received'
+        ));
+        setIsDisliked(userEngagements.some(e => 
+          e.kind === 'dislike_given' || e.kind === 'dislike_received'
+        ));
+        setIsBanana(userEngagements.some(e => e.kind === 'banana'));
+        setIsBookmarked(userEngagements.some(e => e.kind === 'bookmark'));
+      } else if (postProp.engagements.counts) {
+        // Fallback to counts if engagement_details is not available
+        const counts = postProp.engagements.counts;
+        setIsLiked((counts.like_given_count || 0) > 0);
+        setIsDisliked((counts as any).dislike_given_count ? (counts as any).dislike_given_count > 0 : false);
+        setIsBanana((counts as any).banana_given_count ? (counts as any).banana_given_count > 0 : false);
+        setIsBookmarked((counts.bookmark_count || 0) > 0);
+      }
+    }
+  }, [postProp, user?.id]);
 
   // Initialize selected poll choices from votes when post loads
   useEffect(() => {
@@ -906,6 +977,224 @@ const Post: React.FC<PostProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isGalleryOpen, imageAttachments.length, prevImage, nextImage, closeGallery]);
 
+
+  // Handle like
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isLiking) return;
+    
+    setIsLiking(true);
+    const wasLiked = isLiked;
+    const wasDisliked = isDisliked;
+    
+    // If currently disliked, remove dislike first
+    if (wasDisliked) {
+      setIsDisliked(false);
+    }
+    
+    setIsLiked(!isLiked);
+    
+    try {
+      await api.handlePostLike(post.public_id);
+      // Refresh post to get updated engagement counts
+      if (post.public_id) {
+        try {
+          const updatedPost = await api.fetchPost(post.public_id);
+          setPost(updatedPost);
+          if (onUpdatePost) {
+            onUpdatePost(updatedPost);
+          } else if (onRefreshParent) {
+            onRefreshParent();
+          }
+        } catch (reloadError) {
+          console.error('Error reloading post after like:', reloadError);
+        }
+      }
+    } catch (error) {
+      console.error('Error liking post:', error);
+      setIsLiked(wasLiked); // Revert on error
+      setIsDisliked(wasDisliked); // Revert dislike state
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
+  // Handle dislike
+  const handleDislike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isDisliking) return;
+    
+    setIsDisliking(true);
+    const wasDisliked = isDisliked;
+    const wasLiked = isLiked;
+    
+    // If currently liked, remove like first
+    if (wasLiked) {
+      setIsLiked(false);
+    }
+    
+    setIsDisliked(!isDisliked);
+    
+    try {
+      await api.handlePostDislike(post.public_id);
+      // Refresh post to get updated engagement counts
+      if (post.public_id) {
+        try {
+          const updatedPost = await api.fetchPost(post.public_id);
+          setPost(updatedPost);
+          if (onUpdatePost) {
+            onUpdatePost(updatedPost);
+          } else if (onRefreshParent) {
+            onRefreshParent();
+          }
+        } catch (reloadError) {
+          console.error('Error reloading post after dislike:', reloadError);
+        }
+      }
+    } catch (error) {
+      console.error('Error disliking post:', error);
+      setIsDisliked(wasDisliked); // Revert on error
+      setIsLiked(wasLiked); // Revert like state
+    } finally {
+      setIsDisliking(false);
+    }
+  };
+
+  // Handle banana
+  const handleBanana = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isBananaing) return;
+    
+    setIsBananaing(true);
+    const wasBanana = isBanana;
+    
+    setIsBanana(!isBanana);
+    
+    try {
+      await api.handlePostBanana(post.public_id);
+      // Refresh post to get updated engagement counts
+      if (post.public_id) {
+        try {
+          const updatedPost = await api.fetchPost(post.public_id);
+          setPost(updatedPost);
+          if (onUpdatePost) {
+            onUpdatePost(updatedPost);
+          } else if (onRefreshParent) {
+            onRefreshParent();
+          }
+        } catch (reloadError) {
+          console.error('Error reloading post after banana:', reloadError);
+        }
+      }
+    } catch (error) {
+      console.error('Error banana post:', error);
+      setIsBanana(wasBanana); // Revert on error
+    } finally {
+      setIsBananaing(false);
+    }
+  };
+
+  // Handle bookmark
+  const handleBookmark = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isBookmarking) return;
+    
+    setIsBookmarking(true);
+    const wasBookmarked = isBookmarked;
+    setIsBookmarked(!isBookmarked);
+    
+    try {
+      await api.handlePostAddToBookmarks(post.public_id);
+      // Refresh post to get updated engagement counts
+      if (post.public_id) {
+        try {
+          const updatedPost = await api.fetchPost(post.public_id);
+          setPost(updatedPost);
+          if (onUpdatePost) {
+            onUpdatePost(updatedPost);
+          } else if (onRefreshParent) {
+            onRefreshParent();
+          }
+        } catch (reloadError) {
+          console.error('Error reloading post after bookmark:', reloadError);
+        }
+      }
+    } catch (error) {
+      console.error('Error bookmarking post:', error);
+      setIsBookmarked(wasBookmarked); // Revert on error
+    } finally {
+      setIsBookmarking(false);
+    }
+  };
+
+  // Handle delete post confirmation
+  const handleDeleteClick = () => {
+    setIsMenuOpen(false);
+    setShowDeleteModal(true);
+    setDeleteError(null); // Reset error when opening modal
+  };
+
+  // Handle delete post
+  const handleDeletePost = async () => {
+    if (isDeleting) return;
+    if (!user || user.id !== post.author_id) return;
+    
+    setIsDeleting(true);
+    setDeleteError(null);
+    
+    try {
+      await api.handlePostDelete(post.public_id);
+      // Success - close modal and refresh
+      setShowDeleteModal(false);
+      // Refresh parent to remove deleted post
+      if (onRefreshParent) {
+        onRefreshParent();
+      }
+      // If this is a child post, notify parent
+      if (onUpdatePost) {
+        // Post deleted, parent should handle removal
+        onUpdatePost({ ...post, deleted_at: new Date().toISOString() } as ApiPost);
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      setDeleteError('Failed to delete post. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Close menu when clicking outside or pressing Escape
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (isMenuOpen) {
+          setIsMenuOpen(false);
+        }
+        if (showDeleteModal) {
+          setShowDeleteModal(false);
+          setDeleteError(null);
+        }
+      }
+    };
+
+    if (isMenuOpen || showDeleteModal) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isMenuOpen, showDeleteModal]);
+
+
   // Touch swipe support
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
@@ -1021,13 +1310,83 @@ className={`
               </div>
             </div>
           </div>
-          <button className={`p-2 rounded-full transition-colors ${theme === 'dark'
-              ? 'hover:bg-gray-900/50'
-              : 'hover:bg-gray-100'
-            }`}>
-            <MoreHorizontal className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-              }`} />
-          </button>
+          <div className="relative" ref={menuRef}>
+            <motion.button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMenuOpen(!isMenuOpen);
+              }}
+              whileTap={{ scale: 0.9 }}
+              className={`p-2 rounded-full transition-colors duration-200 ${
+                theme === 'dark'
+                  ? 'hover:bg-gray-900/50 text-gray-400 hover:text-white'
+                  : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
+              }`}
+              aria-label="More options"
+            >
+              <MoreVertical className="w-5 h-5" />
+            </motion.button>
+            
+            {/* Dropdown Menu */}
+            {isMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className={`absolute right-0 top-full mt-2 w-48 rounded-xl shadow-lg border z-50 ${
+                  theme === 'dark'
+                    ? 'bg-gray-900 border-gray-800'
+                    : 'bg-white border-gray-200'
+                }`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {user && user.id === post.author_id && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick();
+                    }}
+                    disabled={isDeleting}
+                    className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors duration-200 first:rounded-t-xl ${
+                      theme === 'dark'
+                        ? 'hover:bg-gray-800 text-red-400 hover:text-red-300'
+                        : 'hover:bg-gray-50 text-red-600 hover:text-red-700'
+                    } ${isDeleting ? 'opacity-50 cursor-wait' : ''}`}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span className="text-sm font-medium">
+                      Delete Post
+                    </span>
+                  </button>
+                )}
+                <ReportButton
+                  type="post"
+                  id={post.public_id}
+                  onReportSuccess={() => {
+                    setIsMenuOpen(false);
+                  }}
+                  trigger={
+                    <div 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsMenuOpen(false);
+                      }}
+                      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors duration-200 ${
+                        user && user.id === post.author_id ? 'rounded-b-xl' : 'rounded-xl'
+                      } ${
+                        theme === 'dark'
+                          ? 'hover:bg-gray-800 text-gray-300 hover:text-white'
+                          : 'hover:bg-gray-50 text-gray-700 hover:text-gray-900'
+                      }`}>
+                      <Flag className="w-4 h-4" />
+                      <span className="text-sm font-medium">Report</span>
+                    </div>
+                  }
+                />
+              </motion.div>
+            )}
+          </div>
         </div>
 
         {/* Post Content */}
@@ -1909,12 +2268,11 @@ className={`
                   {post.event.location && (
                   <div className="space-y-3">
                     {/* Map Preview */}
-                    <div className="relative h-64 sm:h-80 overflow-hidden rounded-xl sm:rounded-2xl">
+                    <div className="relative z-0 h-64 sm:h-80 overflow-hidden rounded-xl sm:rounded-2xl">
                       <div
                         ref={eventMapRef}
                         className="w-full h-full relative"
                         style={{
-                          zIndex: 1,
                           minHeight: '256px',
                           height: '256px',
                           width: '100%'
@@ -1926,7 +2284,7 @@ className={`
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                        className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-10"
+                        className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-1"
                       >
                         <div className={`rounded-xl sm:rounded-2xl backdrop-blur-2xl border ${
                           theme === 'dark'
@@ -2154,7 +2512,7 @@ className={`
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-10"
+                    className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-1"
                   >
                     <div className={`rounded-xl sm:rounded-2xl backdrop-blur-2xl border ${
                       theme === 'dark'
@@ -2228,54 +2586,87 @@ className={`
         {/* Engagement Bar */}
         <div className="px-4 py-2 flex items-center justify-between">
           <div className="flex items-center space-x-1 -ml-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsLiked(!isLiked);
-              }}
+            <motion.button
+              onClick={handleLike}
+              disabled={isLiking}
+              whileTap={{ scale: 0.9 }}
               className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${isLiked
-                  ? theme === 'dark' ? 'text-red-500 hover:bg-red-500/10' : 'text-red-500 hover:bg-red-500/10'
-                  : theme === 'dark' ? 'text-gray-400 hover:text-red-500 hover:bg-red-500/10' : 'text-gray-500 hover:text-red-500 hover:bg-red-500/10'
-                }`}
+                  ? theme === 'dark' ? 'text-pink-500 hover:bg-pink-500/10' : 'text-pink-500 hover:bg-pink-500/10'
+                  : theme === 'dark' ? 'text-gray-400 hover:text-pink-500 hover:bg-pink-500/10' : 'text-gray-500 hover:text-pink-500 hover:bg-pink-500/10'
+                } ${isLiking ? 'opacity-50 cursor-wait' : ''}`}
             >
               <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
               <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                {isLiked ? 1 : 0}
+                {post.engagements?.counts?.like_received_count || 0}
               </span>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              onClick={handleDislike}
+              disabled={isDisliking}
+              whileTap={{ scale: 0.9 }}
+              className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${isDisliked
+                  ? theme === 'dark' ? 'text-purple-500 hover:bg-purple-500/10' : 'text-purple-500 hover:bg-purple-500/10'
+                  : theme === 'dark' ? 'text-gray-400 hover:text-purple-500 hover:bg-purple-500/10' : 'text-gray-500 hover:text-purple-500 hover:bg-purple-500/10'
+                } ${isDisliking ? 'opacity-50 cursor-wait' : ''}`}
+            >
+              <HeartOff className={`w-5 h-5 ${isDisliked ? 'fill-current' : ''}`} />
+              <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                {post.engagements?.counts?.dislike_received_count || 0}
+              </span>
+            </motion.button>
+            <motion.button
+              onClick={handleBanana}
+              disabled={isBananaing}
+              whileTap={{ scale: 0.9 }}
+              className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${isBanana
+                  ? theme === 'dark' ? 'text-yellow-500 hover:bg-yellow-500/10' : 'text-yellow-600 hover:bg-yellow-500/10'
+                  : theme === 'dark' ? 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10' : 'text-gray-500 hover:text-yellow-500 hover:bg-yellow-500/10'
+                } ${isBananaing ? 'opacity-50 cursor-wait' : ''}`}
+            >
+              <Banana className={`w-5 h-5 ${isBanana ? 'fill-current' : ''}`} />
+              <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                {post.engagements?.counts?.banana_count || post.engagements?.counts?.banana_received_count || 0}
+              </span>
+            </motion.button>
+            <motion.button
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 setShowReply(!showReply);
               }}
+              whileTap={{ scale: 0.9 }}
               className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${theme === 'dark' ? 'text-gray-400 hover:text-blue-500 hover:bg-blue-500/10' : 'text-gray-500 hover:text-blue-500 hover:bg-blue-500/10'
                 }`}
             >
               <MessageCircle className="w-5 h-5" />
-              <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>0</span>
-            </button>
-            <button
+              <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                {post.engagements?.counts?.comment_count || 0}
+              </span>
+            </motion.button>
+            <motion.button
               onClick={(e) => e.stopPropagation()}
+              whileTap={{ scale: 0.9 }}
               className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${theme === 'dark' ? 'text-gray-400 hover:text-green-500 hover:bg-green-500/10' : 'text-gray-500 hover:text-green-500 hover:bg-green-500/10'
                 }`}
             >
               <Share className="w-5 h-5" />
               <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>0</span>
-            </button>
+            </motion.button>
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsBookmarked(!isBookmarked);
-            }}
+          <motion.button
+            onClick={handleBookmark}
+            disabled={isBookmarking}
+            whileTap={{ scale: 0.9 }}
             className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${isBookmarked
                 ? theme === 'dark' ? 'text-yellow-500 hover:bg-yellow-500/10' : 'text-yellow-600 hover:bg-yellow-500/10'
                 : theme === 'dark' ? 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10' : 'text-gray-500 hover:text-yellow-500 hover:bg-yellow-500/10'
-              }`}
+              } ${isBookmarking ? 'opacity-50 cursor-wait' : ''}`}
           >
             <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
-          </button>
+            <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+              {post.engagements?.counts?.bookmark_count || 0}
+            </span>
+          </motion.button>
         </div>
 
       </div>
@@ -2290,22 +2681,27 @@ className={`
             console.log('Reply posted:', content, 'Parent ID:', parentPostId);
             setShowReply(false);
 
-            // Refresh parent post (top-level post) to get updated children
-            if (onRefreshParent) {
-              onRefreshParent();
-            }
-
-            // Also refresh local children if in detail view
-            if (loadChildren && post.public_id) {
+            // Refresh this post to get updated children (works for both parent and child posts)
+            if (post.public_id) {
               api.fetchPost(post.public_id)
                 .then((response) => {
+                  setPost(response);
                   if (response.children) {
                     setChildren(response.children);
                   }
+                  // Update parent component if callback exists
+                  if (onUpdatePost) {
+                    onUpdatePost(response);
+                  }
                 })
                 .catch((error) => {
-                  console.error('Error refreshing children:', error);
+                  console.error('Error refreshing post after reply:', error);
                 });
+            }
+
+            // Also refresh parent post (top-level post) to get updated children
+            if (onRefreshParent) {
+              onRefreshParent();
             }
           }}
         />
@@ -2336,8 +2732,35 @@ className={`
                         onPostClick={onPostClick}
                         onProfileClick={onProfileClick}
                         showChildren={true}
-                        onRefreshParent={onRefreshParent}
-                        onUpdatePost={onUpdatePost}
+                        loadChildren={true}
+                        onRefreshParent={() => {
+                          // Refresh parent post to update children list
+                          if (loadChildren && post.public_id) {
+                            api.fetchPost(post.public_id)
+                              .then((response) => {
+                                if (response.children) {
+                                  setChildren(response.children);
+                                }
+                                setPost(response);
+                                if (onUpdatePost) {
+                                  onUpdatePost(response);
+                                }
+                              })
+                              .catch((error) => {
+                                console.error('Error refreshing parent post:', error);
+                              });
+                          } else if (onRefreshParent) {
+                            onRefreshParent();
+                          }
+                        }}
+                        onUpdatePost={(updatedChild) => {
+                          // Update child post in children list
+                          setChildren(prev => prev.map(c => c.id === updatedChild.id ? updatedChild : c));
+                          // Also update parent post
+                          if (onUpdatePost) {
+                            onUpdatePost(post);
+                          }
+                        }}
                       />
                     </div>
                   </div>
@@ -2503,6 +2926,132 @@ className={`
           </motion.div>
         );
       })()}
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            onClick={() => {
+              setShowDeleteModal(false);
+              setDeleteError(null);
+            }}
+            style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              className={`w-full max-w-md rounded-2xl shadow-2xl ${
+                theme === 'dark'
+                  ? 'bg-gray-900 border border-gray-800'
+                  : 'bg-white border border-gray-200'
+              }`}
+            >
+              {/* Modal Header */}
+              <div className={`px-6 py-5 border-b ${
+                theme === 'dark' ? 'border-gray-800' : 'border-gray-200'
+              }`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    theme === 'dark'
+                      ? 'bg-red-500/20 text-red-400'
+                      : 'bg-red-50 text-red-600'
+                  }`}>
+                    <Trash2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className={`text-lg font-semibold ${
+                      theme === 'dark' ? 'text-white' : 'text-gray-900'
+                    }`}>
+                      Delete Post
+                    </h3>
+                    <p className={`text-sm mt-0.5 ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                    }`}>
+                      This action cannot be undone
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="px-6 py-5">
+                <p className={`text-base leading-relaxed ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Are you sure you want to delete this post? This action cannot be undone and the post will be permanently removed.
+                </p>
+                
+                {/* Error Message */}
+                {deleteError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className={`mt-4 px-4 py-3 rounded-xl flex items-center gap-2 ${
+                      theme === 'dark'
+                        ? 'bg-red-500/20 border border-red-500/30 text-red-400'
+                        : 'bg-red-50 border border-red-200 text-red-600'
+                    }`}
+                  >
+                    <X className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-sm font-medium">{deleteError}</span>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className={`px-6 py-4 flex items-center gap-3 border-t ${
+                theme === 'dark' ? 'border-gray-800' : 'border-gray-200'
+              }`}>
+                <motion.button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeleteError(null);
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                    theme === 'dark'
+                      ? 'bg-gray-800 text-white hover:bg-gray-700'
+                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                  }`}
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  onClick={handleDeletePost}
+                  disabled={isDeleting}
+                  whileTap={{ scale: 0.98 }}
+                  className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                    theme === 'dark'
+                      ? 'bg-red-600 text-white hover:bg-red-700'
+                      : 'bg-red-600 text-white hover:bg-red-700'
+                  } ${isDeleting ? 'opacity-50 cursor-wait' : ''}`}
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete'
+                  )}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </>
   );
 };

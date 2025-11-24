@@ -7,6 +7,8 @@ import { useApp } from '../contexts/AppContext';
 import PostReply from './PostReply';
 import VideoPlayer from './VideoPlayer';
 import ReportButton from './ReportButton';
+import ShareButton from './ShareButton';
+import TipButton from './TipButton';
 import { api } from '../services/api';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { createEditor } from 'lexical';
@@ -18,6 +20,7 @@ import {ListNode, ListItemNode} from '@lexical/list';
 import {LinkNode, AutoLinkNode} from '@lexical/link';
 import { MentionNode } from './Lexical/nodes/MentionNode';
 import { getSafeImageURL } from '../helpers/helpers';
+import { ImageNode } from './Lexical/nodes/ImageNode';
 
 // API data structure interfaces
 interface ApiPost {
@@ -235,6 +238,8 @@ interface ApiPost {
       banana_count?: number;
       banana_received_count?: number;
       banana_given_count?: number;
+      tip_count?: number;
+      tip_amount?: number | string;
     };
     engagement_details?: Array<{
       id: string;
@@ -296,6 +301,9 @@ const Post: React.FC<PostProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [hasTipped, setHasTipped] = useState(false);
+  const [tipCountDisplay, setTipCountDisplay] = useState(0);
+  const [tipAmountDisplay, setTipAmountDisplay] = useState(0);
   const { theme } = useTheme();
   const { user } = useAuth();
   const { data: appData, defaultLanguage } = useApp();
@@ -309,6 +317,15 @@ const Post: React.FC<PostProps> = ({
   // Update post when prop changes
   useEffect(() => {
     setPost(postProp);
+    
+    // If postProp has children, update children state immediately
+    // This prevents unnecessary fetch requests
+    if (postProp.children && postProp.children.length > 0) {
+      setChildren(postProp.children);
+    }
+
+    setHasTipped(false);
+    
     // Initialize like/dislike/banana/bookmark state from engagement_details
     // Check engagement_details first (more accurate), then fallback to counts
     if (postProp.engagements) {
@@ -332,6 +349,7 @@ const Post: React.FC<PostProps> = ({
         ));
         setIsBanana(userEngagements.some(e => e.kind === 'banana'));
         setIsBookmarked(userEngagements.some(e => e.kind === 'bookmark'));
+        setHasTipped(userEngagements.some(e => e.kind === 'tip'));
       } else if (postProp.engagements.counts) {
         // Fallback to counts if engagement_details is not available
         const counts = postProp.engagements.counts;
@@ -339,7 +357,11 @@ const Post: React.FC<PostProps> = ({
         setIsDisliked((counts as any).dislike_given_count ? (counts as any).dislike_given_count > 0 : false);
         setIsBanana((counts as any).banana_given_count ? (counts as any).banana_given_count > 0 : false);
         setIsBookmarked((counts.bookmark_count || 0) > 0);
+        // Without engagement details we can't know if current user tipped
+        setHasTipped(false);
       }
+    } else {
+      setHasTipped(false);
     }
   }, [postProp, user?.id]);
 
@@ -383,7 +405,7 @@ const Post: React.FC<PostProps> = ({
   const editorConfig = useMemo(() => ({
     namespace: "CoolVibesEditor",
     editable: true,
-    nodes:[HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode,MentionNode],
+    nodes:[HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode,MentionNode,ImageNode],
     theme: {
       paragraph: `mb-2 text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`,
       heading: {
@@ -701,7 +723,16 @@ const Post: React.FC<PostProps> = ({
   }, [post.event?.location]);
 
   // Fetch children (replies) when in detail view
+  // Only fetch if children are not already included in the post data
   useEffect(() => {
+    // If post already has children, always use them (regardless of loadChildren prop)
+    if (post.children && post.children.length > 0) {
+      setChildren(post.children);
+      setLoadingChildren(false);
+      return;
+    }
+    
+    // Only fetch if loadChildren is true and post doesn't have children
     if (loadChildren && post.public_id) {
       setLoadingChildren(true);
       api.fetchPost(post.public_id)
@@ -716,6 +747,11 @@ const Post: React.FC<PostProps> = ({
         .finally(() => {
           setLoadingChildren(false);
         });
+    } else if (!loadChildren) {
+      // If loadChildren is false and post doesn't have children, clear children state
+      // But don't clear if post.children exists (handled above)
+      setChildren([]);
+      setLoadingChildren(false);
     }
   }, [loadChildren, post.public_id]);
 
@@ -1219,6 +1255,28 @@ const Post: React.FC<PostProps> = ({
     }
   };
 
+  const refreshPostData = useCallback(async () => {
+    if (!post.public_id) return;
+    try {
+      const updatedPost = await api.fetchPost(post.public_id);
+      setPost(updatedPost);
+      if (onUpdatePost) {
+        onUpdatePost(updatedPost);
+      } else if (onRefreshParent) {
+        onRefreshParent();
+      }
+    } catch (error) {
+      console.error('Error refreshing post after tip:', error);
+    }
+  }, [post.public_id, onUpdatePost, onRefreshParent]);
+
+  const handleTipSuccess = (amount: number) => {
+    setHasTipped(true);
+    setTipCountDisplay((prev) => prev + 1);
+    setTipAmountDisplay((prev) => Number((prev + amount).toFixed(2)));
+    refreshPostData();
+  };
+
   // Shimmer Component
   const ImageShimmer = ({ className }: { className?: string }) => (
     <>
@@ -1251,6 +1309,17 @@ const Post: React.FC<PostProps> = ({
   );
 
   
+  const tipCountValue = Number(post.engagements?.counts?.tip_count ?? 0);
+  const tipCount = Number.isFinite(tipCountValue) ? tipCountValue : 0;
+  const tipAmountRaw = post.engagements?.counts?.tip_amount;
+  const tipAmountValue = tipAmountRaw !== undefined && tipAmountRaw !== null ? Number(tipAmountRaw) : 0;
+  const tipAmount = Number.isFinite(tipAmountValue) ? tipAmountValue : 0;
+
+  useEffect(() => {
+    setTipCountDisplay(tipCount);
+    setTipAmountDisplay(tipAmount);
+  }, [tipCount, tipAmount]);
+
   return (
     <>
 <motion.div
@@ -1266,11 +1335,41 @@ onClick={(e) => {
   // Interactive elements (buttons, links, etc.) should use stopPropagation
   if (onPostClick) {
     const target = e.target as HTMLElement;
-    // Check if click is on an interactive element
-    const isInteractive = target.closest('button, a, input, select, textarea, [role="button"]');
-    if (!isInteractive) {
+    // Check if click is on an interactive element or its children
+    const isInteractive = target.closest('button, a, input, select, textarea, [role="button"], [data-interactive="true"], [data-no-post-click="true"]');
+    // Also check if the click originated from an interactive element
+    const clickedElement = e.target as HTMLElement;
+    const isClickOnInteractive = clickedElement.tagName === 'BUTTON' || 
+                                 clickedElement.tagName === 'A' || 
+                                 clickedElement.closest('button') !== null ||
+                                 clickedElement.closest('a') !== null ||
+                                 clickedElement.closest('[role="button"]') !== null ||
+                                 clickedElement.closest('[data-no-post-click="true"]') !== null;
+    
+    // Additional check: if the event was already stopped, don't trigger
+    if (e.isPropagationStopped()) {
+      return;
+    }
+    
+    if (!isInteractive && !isClickOnInteractive) {
       onPostClick(post.public_id, post.author.username);
     }
+  }
+}}
+onTapStart={(e) => {
+  // Prevent whileTap animation if clicking on interactive elements
+  const target = e.target as HTMLElement;
+  const isInteractive = target.closest('button, a, input, select, textarea, [role="button"], [data-no-post-click="true"]');
+  if (isInteractive) {
+    e.stopPropagation();
+  }
+}}
+onTapCancel={(e) => {
+  // Prevent whileTap animation if clicking on interactive elements
+  const target = e.target as HTMLElement;
+  const isInteractive = target.closest('button, a, input, select, textarea, [role="button"], [data-no-post-click="true"]');
+  if (isInteractive) {
+    e.stopPropagation();
   }
 }}
 whileTap={onPostClick ? { scale: 0.98, opacity: 0.95 } : undefined}
@@ -1280,10 +1379,14 @@ transition={{ duration: 0.15 }}
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <button
+              data-no-post-click="true"
               onClick={(e) => {
                 e.stopPropagation();
                 handleProfileClick(e);
               }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 overflow-hidden border ${
                 theme === 'dark'
                   ? 'bg-gray-900/30 hover:bg-gray-900/50 border-gray-900'
@@ -1308,20 +1411,26 @@ transition={{ duration: 0.15 }}
             <div>
               <div className="flex items-center space-x-2">
                 <button
+                  data-no-post-click="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleProfileClick(e);
                   }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
                   className={`font-semibold hover:underline transition-colors duration-200 ${theme === 'dark' ? 'text-white hover:text-gray-300' : 'text-gray-900 hover:text-gray-600'
                     }`}
                 >
                   {post.author.displayname}
                 </button>
                 <button
+                  data-no-post-click="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleProfileClick(e);
                   }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
                   className={`text-sm hover:underline transition-colors duration-200 ${theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'
                     }`}
                 >
@@ -1334,12 +1443,42 @@ transition={{ duration: 0.15 }}
               </div>
             </div>
           </div>
-          <div className="relative" ref={menuRef}>
+          <div className="flex items-center gap-2" data-no-post-click="true" onClick={(e) => e.stopPropagation()}>
+            <ShareButton
+              url={typeof window !== 'undefined' ? `${window.location.origin}/status/${post.public_id}` : ''}
+              title={post.author.displayname ? `${post.author.displayname}'s post` : 'Post'}
+              description={html ? html.replace(/<[^>]*>/g, '').substring(0, 100) : ''}
+              trigger={
+                <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onTapStart={(e) => e.stopPropagation()}
+                  whileTap={{ scale: 0.9 }}
+                  className={`p-2 rounded-full transition-colors duration-200 ${
+                    theme === 'dark'
+                      ? 'hover:bg-gray-900/50 text-gray-400 hover:text-white'
+                      : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
+                  }`}
+                  aria-label="Share post"
+                >
+                  <Share className="w-5 h-5" />
+                </motion.button>
+              }
+            />
+            <div className="relative" ref={menuRef}>
             <motion.button
+              data-no-post-click="true"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsMenuOpen(!isMenuOpen);
               }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onTapStart={(e) => e.stopPropagation()}
               whileTap={{ scale: 0.9 }}
               className={`p-2 rounded-full transition-colors duration-200 ${
                 theme === 'dark'
@@ -1364,13 +1503,17 @@ transition={{ duration: 0.15 }}
                     : 'bg-white border-gray-200'
                 }`}
                 onClick={(e) => e.stopPropagation()}
+                data-no-post-click="true"
               >
                 {user && user.id === post.author_id && (
                   <button
+                    data-no-post-click="true"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteClick();
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
                     disabled={isDeleting}
                     className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors duration-200 first:rounded-t-xl ${
                       theme === 'dark'
@@ -1387,16 +1530,17 @@ transition={{ duration: 0.15 }}
                 <ReportButton
                   type="post"
                   id={post.public_id}
+                  onModalClose={() => setIsMenuOpen(false)}
                   onReportSuccess={() => {
                     setIsMenuOpen(false);
                   }}
                   trigger={
                     <div 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsMenuOpen(false);
-                      }}
-                      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors duration-200 ${
+                      data-no-post-click="true"
+                      onClick={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors duration-200 cursor-pointer ${
                         user && user.id === post.author_id ? 'rounded-b-xl' : 'rounded-xl'
                       } ${
                         theme === 'dark'
@@ -1410,6 +1554,7 @@ transition={{ duration: 0.15 }}
                 />
               </motion.div>
             )}
+          </div>
           </div>
         </div>
 
@@ -1931,15 +2076,19 @@ transition={{ duration: 0.15 }}
                         return (
                           <motion.div
                             key={choice.id}
+                            data-no-post-click="true"
                             initial={{ opacity: 0, x: -5 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: choiceIndex * 0.03, duration: 0.2 }}
                             className={`relative px-4 py-3.5 transition-all duration-200 ${choiceStateClasses} ${borderBottomClass}`}
                             onClick={(e) => {
+                              e.stopPropagation();
                               if (!isDisabled) {
                                 handlePollVote(poll.id, choice.id, pollKind, maxSelectable, e);
                               }
                             }}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => e.stopPropagation()}
                             whileTap={
                               !isDisabled
                                 ? {
@@ -1949,7 +2098,12 @@ transition={{ duration: 0.15 }}
                                   }
                                 : undefined
                             }
-                            onTapStart={() => !isDisabled && setPressingChoiceId(choice.id)}
+                            onTapStart={(e) => {
+                              e.stopPropagation();
+                              if (!isDisabled) {
+                                setPressingChoiceId(choice.id);
+                              }
+                            }}
                             onTapCancel={() => setPressingChoiceId(prev => (prev === choice.id ? null : prev))}
                             onTap={() => setPressingChoiceId(null)}
                             onPointerUp={() => setPressingChoiceId(prev => (prev === choice.id ? null : prev))}
@@ -2142,6 +2296,7 @@ transition={{ duration: 0.15 }}
                           </span>
                           {isMultipleChoice && (
                             <motion.button
+                              data-no-post-click="true"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedPollChoices(prev => {
@@ -2150,6 +2305,9 @@ transition={{ duration: 0.15 }}
                                   return updated;
                                 });
                               }}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onTapStart={(e) => e.stopPropagation()}
                               className={`text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-200 ${
                                 theme === 'dark'
                                   ? 'text-white/60 hover:text-white hover:bg-gray-900/50 border border-gray-900 hover:border-gray-700'
@@ -2341,6 +2499,7 @@ transition={{ duration: 0.15 }}
                             </div>
                             {/* Open with Google Maps Button */}
                             <motion.button
+                              data-no-post-click="true"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (!post.event?.location) return;
@@ -2351,6 +2510,9 @@ transition={{ duration: 0.15 }}
                                   window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
                                 }
                               }}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onTapStart={(e) => e.stopPropagation()}
                               className={`w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
                                 theme === 'dark'
                                   ? 'bg-gray-900/50 border border-gray-700 text-white hover:bg-gray-900/70 active:bg-gray-900/70'
@@ -2417,9 +2579,15 @@ transition={{ duration: 0.15 }}
                   )}
 
                   {/* Event Attendance Buttons */}
-                  <div className="flex items-center gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-2 mt-4" data-no-post-click="true" onClick={(e) => e.stopPropagation()}>
                     <button
-                      onClick={() => setEventStatus(eventStatus === 'going' ? null : 'going')}
+                      data-no-post-click="true"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEventStatus(eventStatus === 'going' ? null : 'going');
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
                       className={`px-4 py-2 rounded-full transition-colors duration-200 ${eventStatus === 'going'
                           ? theme === 'dark'
                             ? 'bg-white text-black'
@@ -2432,7 +2600,13 @@ transition={{ duration: 0.15 }}
                       Going
                     </button>
                     <button
-                      onClick={() => setEventStatus(eventStatus === 'not_going' ? null : 'not_going')}
+                      data-no-post-click="true"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEventStatus(eventStatus === 'not_going' ? null : 'not_going');
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
                       className={`px-4 py-2 rounded-full transition-colors duration-200 ${eventStatus === 'not_going'
                           ? theme === 'dark'
                             ? 'bg-white text-black'
@@ -2445,7 +2619,13 @@ transition={{ duration: 0.15 }}
                       Not Going
                     </button>
                     <button
-                      onClick={() => setEventStatus(eventStatus === 'maybe' ? null : 'maybe')}
+                      data-no-post-click="true"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEventStatus(eventStatus === 'maybe' ? null : 'maybe');
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
                       className={`px-4 py-2 rounded-full transition-colors duration-200 ${eventStatus === 'maybe'
                           ? theme === 'dark'
                             ? 'bg-white text-black'
@@ -2569,6 +2749,7 @@ transition={{ duration: 0.15 }}
             </div>
                         {/* Open with Google Maps Button */}
                         <motion.button
+                          data-no-post-click="true"
                           onClick={(e) => {
                             e.stopPropagation();
                             if (!post.location) return;
@@ -2579,6 +2760,9 @@ transition={{ duration: 0.15 }}
                               window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
                             }
                           }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onTapStart={(e) => e.stopPropagation()}
                           className={`w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
                             theme === 'dark'
                               ? 'bg-gray-900/50 border border-gray-700 text-white hover:bg-gray-900/70 active:bg-gray-900/70'
@@ -2600,86 +2784,169 @@ transition={{ duration: 0.15 }}
         )}
 
         {/* Engagement Bar */}
-        <div className="px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center space-x-1 -ml-2">
+        <div 
+          className="px-4 py-2 flex items-center justify-between"
+          data-no-post-click="true"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center space-x-2 -ml-2">
             <motion.button
-              onClick={handleLike}
+              data-no-post-click="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleLike(e);
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onTapStart={(e) => e.stopPropagation()}
               disabled={isLiking}
               whileTap={{ scale: 0.9 }}
-              className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${isLiked
+              className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${isLiked
                   ? theme === 'dark' ? 'text-pink-500 hover:bg-pink-500/10' : 'text-pink-500 hover:bg-pink-500/10'
                   : theme === 'dark' ? 'text-gray-400 hover:text-pink-500 hover:bg-pink-500/10' : 'text-gray-500 hover:text-pink-500 hover:bg-pink-500/10'
                 } ${isLiking ? 'opacity-50 cursor-wait' : ''}`}
             >
               <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-              <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+              <span className={`text-xs mt-0.5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                 {post.engagements?.counts?.like_received_count || 0}
               </span>
             </motion.button>
             <motion.button
-              onClick={handleDislike}
+              data-no-post-click="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDislike(e);
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onTapStart={(e) => e.stopPropagation()}
               disabled={isDisliking}
               whileTap={{ scale: 0.9 }}
-              className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${isDisliked
+              className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${isDisliked
                   ? theme === 'dark' ? 'text-purple-500 hover:bg-purple-500/10' : 'text-purple-500 hover:bg-purple-500/10'
                   : theme === 'dark' ? 'text-gray-400 hover:text-purple-500 hover:bg-purple-500/10' : 'text-gray-500 hover:text-purple-500 hover:bg-purple-500/10'
                 } ${isDisliking ? 'opacity-50 cursor-wait' : ''}`}
             >
               <HeartOff className={`w-5 h-5 ${isDisliked ? 'fill-current' : ''}`} />
-              <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+              <span className={`text-xs mt-0.5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                 {post.engagements?.counts?.dislike_received_count || 0}
               </span>
             </motion.button>
             <motion.button
-              onClick={handleBanana}
+              data-no-post-click="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBanana(e);
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onTapStart={(e) => e.stopPropagation()}
               disabled={isBananaing}
               whileTap={{ scale: 0.9 }}
-              className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${isBanana
+              className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${isBanana
                   ? theme === 'dark' ? 'text-yellow-500 hover:bg-yellow-500/10' : 'text-yellow-600 hover:bg-yellow-500/10'
                   : theme === 'dark' ? 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10' : 'text-gray-500 hover:text-yellow-500 hover:bg-yellow-500/10'
                 } ${isBananaing ? 'opacity-50 cursor-wait' : ''}`}
             >
               <Banana className={`w-5 h-5 ${isBanana ? 'fill-current' : ''}`} />
-              <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+              <span className={`text-xs mt-0.5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                 {post.engagements?.counts?.banana_count || post.engagements?.counts?.banana_received_count || 0}
               </span>
             </motion.button>
             <motion.button
+              data-no-post-click="true"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 setShowReply(!showReply);
               }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onTapStart={(e) => e.stopPropagation()}
               whileTap={{ scale: 0.9 }}
-              className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${theme === 'dark' ? 'text-gray-400 hover:text-blue-500 hover:bg-blue-500/10' : 'text-gray-500 hover:text-blue-500 hover:bg-blue-500/10'
+              className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${theme === 'dark' ? 'text-gray-400 hover:text-blue-500 hover:bg-blue-500/10' : 'text-gray-500 hover:text-blue-500 hover:bg-blue-500/10'
                 }`}
             >
               <MessageCircle className="w-5 h-5" />
-              <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+              <span className={`text-xs mt-0.5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                 {post.engagements?.counts?.comment_count || 0}
               </span>
             </motion.button>
-            <motion.button
+            <div 
+              data-no-post-click="true"
               onClick={(e) => e.stopPropagation()}
-              whileTap={{ scale: 0.9 }}
-              className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${theme === 'dark' ? 'text-gray-400 hover:text-green-500 hover:bg-green-500/10' : 'text-gray-500 hover:text-green-500 hover:bg-green-500/10'
-                }`}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
             >
-              <Share className="w-5 h-5" />
-              <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>0</span>
-            </motion.button>
+              <TipButton
+                recipientId={post.public_id}
+                recipientName={post.author.displayname}
+                recipientAvatar={authorAvatarUrl}
+                recipientUsername={post.author.username}
+                onTipSuccess={handleTipSuccess}
+                trigger={
+                  <motion.button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                    }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                    }}
+                    onTapStart={(e) => e.stopPropagation()}
+                    whileTap={{ scale: 0.9 }}
+                    className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${
+                      hasTipped
+                        ? theme === 'dark'
+                          ? 'text-red-400 hover:bg-red-500/10'
+                          : 'text-red-500 hover:bg-red-500/10'
+                        : theme === 'dark'
+                          ? 'text-gray-400 hover:text-red-500 hover:bg-red-500/10'
+                          : 'text-gray-500 hover:text-red-500 hover:bg-red-500/10'
+                    }`}
+                  >
+                    <HandCoins className={`w-5 h-5 ${hasTipped ? 'fill-current' : ''}`} />
+                    <span
+                      className={`text-[11px] mt-0.5 font-medium ${
+                        hasTipped
+                          ? theme === 'dark'
+                            ? 'text-red-200'
+                            : 'text-red-700'
+                          : theme === 'dark'
+                            ? 'text-gray-300'
+                            : 'text-gray-700'
+                      }`}
+                    >
+                      {tipCountDisplay > 0 || tipAmountDisplay > 0
+                        ? `$${tipAmountDisplay.toFixed(2)}`
+                        : 'Tip'}
+                    </span>
+                  </motion.button>
+                }
+              />
+            </div>
           </div>
           <motion.button
-            onClick={handleBookmark}
+            data-no-post-click="true"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleBookmark(e);
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onTapStart={(e) => e.stopPropagation()}
             disabled={isBookmarking}
             whileTap={{ scale: 0.9 }}
-            className={`flex items-center space-x-1 px-3 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-10 ${isBookmarked
+            className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${isBookmarked
                 ? theme === 'dark' ? 'text-yellow-500 hover:bg-yellow-500/10' : 'text-yellow-600 hover:bg-yellow-500/10'
                 : theme === 'dark' ? 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10' : 'text-gray-500 hover:text-yellow-500 hover:bg-yellow-500/10'
               } ${isBookmarking ? 'opacity-50 cursor-wait' : ''}`}
           >
             <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
-            <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+            <span className={`text-xs mt-0.5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
               {post.engagements?.counts?.bookmark_count || 0}
             </span>
           </motion.button>
@@ -2697,8 +2964,12 @@ transition={{ duration: 0.15 }}
             console.log('Reply posted:', content, 'Parent ID:', parentPostId);
             setShowReply(false);
 
-            // Refresh this post to get updated children (works for both parent and child posts)
-            if (post.public_id) {
+            // Only refresh if we don't have children already (recursive data already includes all children)
+            // If we have onRefreshParent, use it instead of fetching here
+            if (onRefreshParent) {
+              onRefreshParent();
+            } else if (post.public_id && (!post.children || post.children.length === 0)) {
+              // Only fetch if we don't have children and no parent callback
               api.fetchPost(post.public_id)
                 .then((response) => {
                   setPost(response);
@@ -2713,11 +2984,10 @@ transition={{ duration: 0.15 }}
                 .catch((error) => {
                   console.error('Error refreshing post after reply:', error);
                 });
-            }
-
-            // Also refresh parent post (top-level post) to get updated children
-            if (onRefreshParent) {
-              onRefreshParent();
+            } else if (onUpdatePost && post.public_id) {
+              // If we have children already, just update the parent with current post
+              // The parent will handle refreshing the entire tree
+              onUpdatePost(post);
             }
           }}
         />
@@ -2748,10 +3018,13 @@ transition={{ duration: 0.15 }}
                         onPostClick={onPostClick}
                         onProfileClick={onProfileClick}
                         showChildren={true}
-                        loadChildren={true}
+                        loadChildren={false}
                         onRefreshParent={() => {
                           // Refresh parent post to update children list
-                          if (loadChildren && post.public_id) {
+                          if (onRefreshParent) {
+                            onRefreshParent();
+                          } else if (post.public_id) {
+                            // Fallback: refresh this post if no parent callback
                             api.fetchPost(post.public_id)
                               .then((response) => {
                                 if (response.children) {
@@ -2765,8 +3038,6 @@ transition={{ duration: 0.15 }}
                               .catch((error) => {
                                 console.error('Error refreshing parent post:', error);
                               });
-                          } else if (onRefreshParent) {
-                            onRefreshParent();
                           }
                         }}
                         onUpdatePost={(updatedChild) => {

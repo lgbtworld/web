@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Flag, AlertTriangle, Loader2, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
@@ -11,6 +12,7 @@ interface ReportButtonProps {
   type: ReportableType;
   id: string | number;
   onReportSuccess?: () => void;
+  onModalClose?: () => void;
   trigger?: React.ReactNode;
   className?: string;
 }
@@ -19,6 +21,7 @@ const ReportButton: React.FC<ReportButtonProps> = ({
   type,
   id,
   onReportSuccess,
+  onModalClose,
   trigger,
   className = '',
 }) => {
@@ -32,6 +35,19 @@ const ReportButton: React.FC<ReportButtonProps> = ({
   const modalContentRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const { data: appData, defaultLanguage } = useApp();
+
+  const resetModalState = () => {
+    setSelectedReportKind(null);
+    setReportDescription('');
+    setIsReportKindPickerOpen(false);
+    setReportKindSearchQuery('');
+  };
+
+  const closeReportModal = () => {
+    setShowReportModal(false);
+    resetModalState();
+    onModalClose?.();
+  };
 
   // Close dropdown when clicking outside (only within modal)
   useEffect(() => {
@@ -59,11 +75,7 @@ const ReportButton: React.FC<ReportButtonProps> = ({
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && showReportModal && !isReporting) {
-        setShowReportModal(false);
-        setSelectedReportKind(null);
-        setReportDescription('');
-        setIsReportKindPickerOpen(false);
-        setReportKindSearchQuery('');
+        closeReportModal();
       }
     };
 
@@ -88,10 +100,7 @@ const ReportButton: React.FC<ReportButtonProps> = ({
   // Handle modal open
   const handleOpenModal = () => {
     setShowReportModal(true);
-    setSelectedReportKind(null);
-    setReportDescription('');
-    setIsReportKindPickerOpen(false);
-    setReportKindSearchQuery('');
+    resetModalState();
   };
 
   // Handle report kind selection
@@ -118,9 +127,7 @@ const ReportButton: React.FC<ReportButtonProps> = ({
         await api.handleUserReport(id, selectedReportKind.key, reportDescription || '');
       }
       
-      setShowReportModal(false);
-      setSelectedReportKind(null);
-      setReportDescription('');
+      closeReportModal();
       onReportSuccess?.();
     } catch (error) {
       console.error('Error reporting:', error);
@@ -146,59 +153,88 @@ const ReportButton: React.FC<ReportButtonProps> = ({
     </motion.button>
   );
 
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    handleOpenModal();
+  };
+
   return (
     <>
         {trigger ? (
           <div
-            onClick={(e) => {
-              e.stopPropagation();
-            handleOpenModal();
-            }}
+            onClick={handleTriggerClick}
+            className="w-full cursor-pointer"
+            style={{ pointerEvents: 'auto' }}
           >
-            {trigger}
+            {React.isValidElement(trigger)
+              ? React.cloneElement(trigger as React.ReactElement<any>, {
+                  onClick: (e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleOpenModal();
+                  },
+                  style: { pointerEvents: 'auto' as const, ...((trigger as any).props?.style || {}) }
+                })
+              : trigger
+            }
           </div>
         ) : (
           defaultTrigger
         )}
 
       {/* Report Modal */}
-      <AnimatePresence>
-        {showReportModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-            onClick={(e) => {
-              // Only close if clicking directly on backdrop (not on modal content)
-              if (e.target === e.currentTarget && !isReporting) {
-                setShowReportModal(false);
-                setSelectedReportKind(null);
-                setReportDescription('');
-                setIsReportKindPickerOpen(false);
-                setReportKindSearchQuery('');
-              }
-            }}
-          >
+      {typeof window !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showReportModal && (
             <motion.div
-              ref={modalContentRef}
-              initial={{ opacity: 0, scale: 0.96, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 10 }}
-              transition={{ 
-                duration: 0.3, 
-                ease: [0.4, 0, 0.2, 1],
-                opacity: { duration: 0.2 }
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+              onClick={(e) => {
+                // Only close if clicking directly on backdrop (not on modal content)
+                if (e.target === e.currentTarget && !isReporting) {
+                  closeReportModal();
+                }
               }}
-              className={`w-full max-w-md rounded-2xl shadow-2xl backdrop-blur-xl border ${
-                theme === 'dark'
-                  ? 'bg-gray-950/95 border-gray-900'
-                  : 'bg-white/95 border-gray-200/50'
-              }`}
-              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => {
+                // Only close if clicking directly on backdrop
+                if (e.target === e.currentTarget && !isReporting) {
+                  e.stopPropagation();
+                }
+              }}
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                backdropFilter: 'blur(4px)',
+              }}
             >
-              <div className="p-6">
+              <motion.div
+                ref={modalContentRef}
+                initial={{ opacity: 0, scale: 0.96, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96, y: 10 }}
+                transition={{ 
+                  duration: 0.3, 
+                  ease: [0.4, 0, 0.2, 1],
+                  opacity: { duration: 0.2 }
+                }}
+                className={`w-full max-w-md rounded-2xl shadow-2xl backdrop-blur-xl border ${
+                  theme === 'dark'
+                    ? 'bg-gray-950/95 border-gray-900'
+                    : 'bg-white/95 border-gray-200/50'
+                }`}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+              <div 
+                className="p-6"
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
                 <div className="flex items-center gap-3 mb-6">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                     theme === 'dark' ? 'bg-red-500/20' : 'bg-red-50'
@@ -226,12 +262,15 @@ const ReportButton: React.FC<ReportButtonProps> = ({
                   </label>
                   <motion.button
                     type="button"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setIsReportKindPickerOpen(!isReportKindPickerOpen);
                       if (!isReportKindPickerOpen) {
                         setReportKindSearchQuery('');
                       }
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
                     className={`w-full px-4 sm:px-5 py-4 sm:py-4.5 text-base sm:text-lg rounded-xl sm:rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 backdrop-blur-xl font-medium text-left flex items-center justify-between ${
                       theme === 'dark'
                         ? 'bg-gray-900/30 border-gray-900 text-white focus:border-gray-900 focus:ring-gray-900/30 hover:border-gray-900'
@@ -284,13 +323,19 @@ const ReportButton: React.FC<ReportButtonProps> = ({
                               type="text"
                               placeholder="Search report types..."
                               value={reportKindSearchQuery}
-                              onChange={(e) => setReportKindSearchQuery(e.target.value)}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                setReportKindSearchQuery(e.target.value);
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              onFocus={(e) => e.stopPropagation()}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onPointerDown={(e) => e.stopPropagation()}
                               className={`w-full pl-10 pr-4 py-2.5 rounded-lg text-sm border transition-all duration-200 focus:outline-none focus:ring-2 ${
                                 theme === 'dark'
                                   ? 'bg-gray-900 border-gray-900 text-white placeholder-white/40 focus:border-gray-900 focus:ring-gray-900/30'
                                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-gray-300 focus:ring-gray-200'
                               }`}
-                              onClick={(e) => e.stopPropagation()}
                             />
                           </div>
                         </div>
@@ -308,11 +353,14 @@ const ReportButton: React.FC<ReportButtonProps> = ({
                             .map((kind) => (
                               <motion.button
                                 key={kind.key}
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   handleReportKindSelect(kind);
                                   setIsReportKindPickerOpen(false);
                                   setReportKindSearchQuery('');
                                 }}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onPointerDown={(e) => e.stopPropagation()}
                                 className={`w-full px-3 py-2.5 rounded-lg text-sm text-left transition-all duration-300 mb-1.5 ${
                                   selectedReportKind?.key === kind.key
                                     ? theme === 'dark'
@@ -386,7 +434,14 @@ const ReportButton: React.FC<ReportButtonProps> = ({
                       </div>
                       <textarea
                         value={reportDescription}
-                        onChange={(e) => setReportDescription(e.target.value)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          setReportDescription(e.target.value);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        onFocus={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
                         placeholder={`Please provide at least ${MIN_DESCRIPTION_LENGTH} characters describing the issue...`}
                         rows={4}
                         className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:border-opacity-100 transition-all resize-none ${
@@ -415,12 +470,18 @@ const ReportButton: React.FC<ReportButtonProps> = ({
 
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => {
-                      setShowReportModal(false);
-                      setSelectedReportKind(null);
-                      setReportDescription('');
-                      setIsReportKindPickerOpen(false);
-                      setReportKindSearchQuery('');
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      closeReportModal();
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                     }}
                     disabled={isReporting}
                     className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition-all ${
@@ -432,7 +493,19 @@ const ReportButton: React.FC<ReportButtonProps> = ({
                     Cancel
                   </button>
                   <button
-                    onClick={handleReportSubmit}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleReportSubmit();
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
                     disabled={isReporting || !selectedReportKind || !isDescriptionValid}
                     className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition-all ${
                       theme === 'dark'
@@ -451,10 +524,12 @@ const ReportButton: React.FC<ReportButtonProps> = ({
                   </button>
                 </div>
               </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 };

@@ -29,6 +29,7 @@ import { getSafeImageURL } from './helpers/helpers.tsx';
 import TestPage from './components/TestPage.tsx';
 import PwaInstallPrompt, { PwaInstallProvider, usePwaInstall } from './components/PwaInstallPrompt';
 import PremiumScreen from './components/PremiumScreen.tsx';
+import PostDetails from './components/PostDetails.tsx';
 
 function AppContent() {
   const [activeScreen, setActiveScreen] = useState('pride');
@@ -430,9 +431,9 @@ function AppContent() {
                   path="/:username/:engagementType"
                   element={<ProfileEngagementsScreen />}
                 />
+                <Route path="/:username/status/:postId" element={<PostDetails />} />
+                <Route path="/status/:postId" element={<PostDetails />} />
                 <Route path="/:username" element={<ProfileScreen />} />
-                <Route path="/:username/status/:postId" element={<HomeScreen />} />
-
                 {/* Other Routes */}
                 <Route path="/search" element={<SearchScreen />} />
                 <Route path="/match" element={<MatchScreen />} />

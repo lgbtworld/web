@@ -12,11 +12,13 @@ import './i18n'
 
 import { SocketProvider } from './contexts/SocketContext.tsx'
 import { PushNotificationSetupContext } from './contexts/PushNotificationSetupContext.tsx'
+import { SharedHistoryContext } from './contexts/SharedHistoryContext.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <SocketProvider>
         <SettingsContext>
+        <SharedHistoryContext>
           <ToolbarContext>
             <ThemeProvider>
               <AppProvider>
@@ -27,6 +29,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               </AppProvider>
             </ThemeProvider>
           </ToolbarContext>
+          </SharedHistoryContext>
         </SettingsContext>
       </SocketProvider>
     </BrowserRouter>

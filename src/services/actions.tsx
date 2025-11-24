@@ -61,6 +61,7 @@ export const Actions = {
   CMD_POST_REPORT: "post.report",
   CMD_POST_VIEW: "post.view",
   CMD_POST_DELETE: "post.delete",
+  CMD_POST_TIP: "post.tip",
 
   CMD_USER_REPORT: "user.report",
 

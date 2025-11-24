@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import Stories from './Stories';
-import PostDetails from './PostDetails';
 import Flows from './Flows';
-import Vibes from './Vibes';
 import CreatePost from './CreatePost';
-import { api } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import VibesGL from './VibesGL/VibesGL';
 
@@ -19,56 +16,19 @@ const MIN_HEADER_HEIGHT = 80;
 const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
-  const location = useLocation();
   const [activeTab, setActiveTab] = useState('flows');
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
-  const { showBottomBar, setShowBottomBar } = useSettings();
-
-  // Get selected post from URL or null
-  const selectedPost = location.pathname.includes('/status/')
-    ? location.pathname.split('/status/')[1]
-    : null;
-
-  // Separate state for post detail data (fetched independently)
-  const [selectedPostData, setSelectedPostData] = useState<any | null>(null);
-  const [loadingPostDetail, setLoadingPostDetail] = useState(false);
+  const { setShowBottomBar } = useSettings();
 
   // Handle post click - update URL
   const handlePostClick = (postId: string, username: string) => {
     navigate(`/${username}/status/${postId}`, { replace: true });
   };
 
-  // Handle back button click
-  const handleBackClick = () => {
-    navigate('/', { replace: true });
-  };
-
   // Handle profile click - navigate to profile page
   const handleProfileClick = (username: string) => {
     navigate(`/${username}`, { replace: true });
   };
-
-  // Fetch post detail when selectedPost changes
-  useEffect(() => {
-    const fetchPostDetail = async () => {
-      if (!selectedPost) {
-        setSelectedPostData(null);
-        return;
-      }
-
-      try {
-        setLoadingPostDetail(true);
-        const response = await api.fetchPost(selectedPost);
-        setSelectedPostData(response);
-      } catch (err) {
-        console.error('Error fetching post detail:', err);
-      } finally {
-        setLoadingPostDetail(false);
-      }
-    };
-
-    fetchPostDetail();
-  }, [selectedPost]);
 
   const [headerHeight, setHeaderHeight] = useState(MAX_HEADER_HEIGHT);
   const headerVisibilityProgress = Math.max(
@@ -111,7 +71,7 @@ const HomeScreen: React.FC = () => {
       className={`flex flex-col  overflow-y-auto scrollbar-hide max-h-[100dvh]`}>
 
 {
-          activeTab == "flows" && !selectedPost && <div
+          activeTab == "flows" && <div
             className={`flex-shrink-0 px-1 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] border-b ${theme === 'dark' ? 'border-black' : 'border-gray-100'}`}
             style={{
               opacity: headerVisibilityProgress,
@@ -139,25 +99,8 @@ const HomeScreen: React.FC = () => {
 
         <div className='w-full flex-grow'>
           <div className={`z-40 border-b  ${theme === 'dark' ? 'bg-gray-950 border-gray-800/50' : 'bg-white border-gray-100/50'}`}>
-            {selectedPost ? (
-              // Post Detail Header
-              <div className="flex items-center px-4 py-3">
-                <button
-                  onClick={handleBackClick}
-                  className={`p-2 rounded-full transition-all duration-200 mr-3 ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-100'
-                    }`}
-                >
-                  <ArrowLeft className={`w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} />
-                </button>
-                <div>
-                  <h2 className={`font-bold text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                    Post
-                  </h2>
-                </div>
-              </div>
-            ) : (
-              // Tab Navigation
-              <div className="flex z-10">
+            {/* Tab Navigation */}
+            <div className="flex z-10">
                 <motion.button
                   onClick={() => {
                     setActiveTab('flows')
@@ -234,7 +177,6 @@ const HomeScreen: React.FC = () => {
                   )}
                 </motion.button>
               </div>
-            )}
           </div>
 
         </div>
@@ -244,64 +186,25 @@ const HomeScreen: React.FC = () => {
 
 
       <main className={`flex-grow w-full min-w-0 lg:border-x ${theme === 'dark' ? 'lg:border-black' : 'lg:border-gray-100'}`}>
-
-        {selectedPost ? (
-          // Post Detail View
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.2 }}
-            className={`${theme === 'dark' ? 'bg-gray-950' : 'bg-white'}`}
-          >
-            {loadingPostDetail ? (
-              <div className={`flex items-center justify-center py-12 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                Loading post...
-              </div>
-            ) : selectedPostData ? (
-              <PostDetails
-                post={selectedPostData}
-                onPostClick={(postId, username) => handlePostClick(postId, username)}
-                onProfileClick={handleProfileClick}
-                onRefreshParent={() => {
-                  // Refresh the specific post when a reply is posted
-                  const refreshPost = async () => {
-                    try {
-                      const response = await api.fetchPost(selectedPostData.public_id);
-                      setSelectedPostData(response);
-                    } catch (err) {
-                      console.error('Error refreshing post:', err);
-                    }
-                  };
-                  refreshPost();
-                }}
-              />
-            ) : (
-              <div className={`text-center py-12 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                Post not found
-              </div>
-            )}
-          </motion.div>
-        ) : (
-          // Posts Feed or Vibes Grid
-          <AnimatePresence mode="wait">
-            {activeTab === 'flows' ? (
-              <Flows
-                key="flows"
-                onPostClick={handlePostClick}
-                onProfileClick={handleProfileClick}
-              />
-            ) : (
-              <>
-              <VibesGL/>
-             
-              </>
-            )}
-          </AnimatePresence>
-        )}
+        {/* Posts Feed or Vibes Grid */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'flows' ? (
+            <Flows
+              key="flows"
+              onPostClick={handlePostClick}
+              onProfileClick={handleProfileClick}
+            />
+          ) : (
+            <>
+            <VibesGL/>
+           
+            </>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* FAB Button - Mobile Only, Flows Tab Only */}
-      {!selectedPost && activeTab === 'flows' && (
+      {activeTab === 'flows' && (
         <motion.button
           onClick={() => {
             setIsCreatePostOpen(true)

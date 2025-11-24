@@ -52,6 +52,10 @@ import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 import { $getRoot } from 'lexical';
 import { MentionNode } from './Lexical/nodes/MentionNode';
 import NewMentionsPlugin from './Lexical/plugins/MentionsPlugin';
+import ImagesPlugin, { INSERT_IMAGE_COMMAND } from './Lexical/plugins/ImagesPlugin';
+import StickerPicker, { StickerItem } from './StickerPicker';
+import { ImageNode } from './Lexical/nodes/ImageNode';
+
 
 // ToolbarPlugin wrapper component
 const ToolbarPluginWrapper = ({ setEditorInstance }: { setEditorInstance: (editor: any) => void }) => {
@@ -132,6 +136,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
   const [location, setLocation] = useState<{ address: string; lat: number; lng: number } | null>(null);
   const [pollErrors, setPollErrors] = useState<Record<string, string>>({});
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+  const [isStickerPickerOpen, setIsStickerPickerOpen] = useState(false);
   const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
   const [emojiSearchQuery, setEmojiSearchQuery] = useState('');
   const [selectedEmojiCategory, setSelectedEmojiCategory] = useState('smileys');
@@ -168,6 +173,19 @@ const CreatePost: React.FC<CreatePostProps> = ({
     setSelectedVideos(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleStickerSelect = (sticker: StickerItem) => {
+    if (!editorInstance) return;
+    editorInstance.dispatchCommand(INSERT_IMAGE_COMMAND, {
+      src: sticker.src,
+      altText: sticker.label,
+      width: '100%',
+      showCaption:false,
+      captionsEnabled:false,
+      height: '100%',
+    });
+    setIsStickerPickerOpen(false);
+  };
+
   const toggleFullScreen = () => {
     setIsFullScreen(!isFullScreen);
   };
@@ -178,7 +196,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
     
     // Validate polls
     const errors: Record<string, string> = {};
-    polls.forEach((poll, index) => {
+    polls.forEach((poll) => {
       // Check if question is empty
       if (!poll.question || poll.question.trim() === '') {
         errors[`poll-${poll.id}-question`] = 'Poll question is required';
@@ -827,10 +845,14 @@ const CreatePost: React.FC<CreatePostProps> = ({
 
   
   
-  const editorConfig = {
+  const editorConfig = useMemo(() => ({
     namespace: "CoolVibesEditor",
     editable: true,
-    nodes:[HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode,MentionNode],
+    isRichText: true,
+    selectionAlwaysOnDisplay: true,
+    listStrictIndent: false,
+    measureTypingPerf: false,
+    nodes: [HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, MentionNode, ImageNode],
     theme: {
       paragraph: `mb-2 text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`,
       heading: {
@@ -854,13 +876,17 @@ const CreatePost: React.FC<CreatePostProps> = ({
         underline: "underline",
         strikethrough: "line-through",
       },
+      indent: 'PlaygroundEditorTheme__indent',
+      layoutContainer: 'PlaygroundEditorTheme__layoutContainer',
+      layoutItem: 'PlaygroundEditorTheme__layoutItem',
+      image: 'editor-image',
        hashtag: "hashtag inline-block bg-[linear-gradient(to_right,_#d04b36,_#e36511,_#ffba00,_#00b180,_#147aab,_#675997)]  bg-clip-text text-transparent  font-semibold hover:underline cursor-pointer",
        mention:"mention font-semibold  font-md inline-block bg-[linear-gradient(to_right,_#d04b36,_#e36511,_#ffba00,_#00b180,_#147aab,_#675997)]  bg-clip-text text-transparent  font-semibold hover:underline cursor-pointer"
     },
     onError(error: Error) {
       console.error("Lexical Error:", error);
     },
-  };
+  }), [theme]);
   
 
 
@@ -984,6 +1010,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                     <HashtagPlugin/>
                     <ListPlugin/>
                     <LinkPlugin/>
+                    <ImagesPlugin  captionsEnabled={false}/>
                     <NewMentionsPlugin/>
                   
                     <div className="-mx-2 mt-1">
@@ -1018,67 +1045,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 </LexicalComposer>
               </div>
 
-
-                
-                {/* Floating Character Counter */}
-                <AnimatePresence>
-                  {postText.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className={`absolute bottom-2 right-2 flex items-center space-x-2 px-3 py-1.5 rounded-full backdrop-blur-md ${
-                        charCount > maxChars * 0.9 
-                          ? 'bg-red-500/20 border border-red-500/30' 
-                          : charCount > maxChars * 0.7 
-                          ? 'bg-orange-500/20 border border-orange-500/30'
-                          : theme === 'dark'
-                          ? 'bg-gray-950/90 border border-gray-900'
-                          : 'bg-white/80 border border-gray-200/50'
-                      }`}
-                    >
-                      <span className={`text-xs font-medium ${
-                        charCount > maxChars * 0.9 
-                          ? 'text-red-500' 
-                          : charCount > maxChars * 0.7 
-                          ? 'text-orange-500'
-                          : theme === 'dark' 
-                          ? 'text-gray-300' 
-                          : 'text-gray-600'
-                      }`}>
-                        {charCount}/{maxChars}
-                      </span>
-                      
-                      {/* Circular Progress */}
-                      <div className="relative w-5 h-5">
-                        <svg className="w-5 h-5 transform -rotate-90" viewBox="0 0 20 20">
-                          <circle
-                            cx="10"
-                            cy="10"
-                            r="8"
-                            stroke={theme === 'dark' ? '#374151' : '#E5E7EB'}
-                            strokeWidth="2"
-                            fill="none"
-                          />
-                          <circle
-                            cx="10"
-                            cy="10"
-                            r="8"
-                            stroke={
-                              charCount > maxChars * 0.9 ? '#EF4444' :
-                              charCount > maxChars * 0.7 ? '#F59E0B' : '#6B7280'
-                            }
-                            strokeWidth="2"
-                            fill="none"
-                            strokeDasharray={`${2 * Math.PI * 8}`}
-                            strokeDashoffset={`${2 * Math.PI * 8 * (1 - Math.min(charCount / maxChars, 1))}`}
-                            className="transition-all duration-300"
-                          />
-                        </svg>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+ 
               </div>
             </div>
           </div>
@@ -1087,7 +1054,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
         {/* Professional Attachments Section - Scrollable */}
         <div className={`w-full ${isFullScreen ? 'flex-1' : ''}  ${isFullScreen ? 'overflow-y-auto' : ''} scrollbar-hide`}>
         <AnimatePresence>
-          {(selectedImages.length > 0 || selectedVideos.length > 0 || location || polls.length > 0 || isEventActive || isEmojiPickerOpen || isLocationPickerOpen) && (
+          {(selectedImages.length > 0 || selectedVideos.length > 0 || location || polls.length > 0 || isEventActive || isEmojiPickerOpen || isStickerPickerOpen || isLocationPickerOpen) && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -2740,6 +2707,14 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 </motion.div>
               )}
 
+            {/* Sticker Picker */}
+            {isStickerPickerOpen && (
+              <StickerPicker
+                onStickerSelect={handleStickerSelect}
+                onClose={() => setIsStickerPickerOpen(false)}
+              />
+            )}
+
               {/* Compact Location Picker */}
               {isLocationPickerOpen && (
                 <motion.div
@@ -2888,7 +2863,14 @@ const CreatePost: React.FC<CreatePostProps> = ({
 
             {/* Emoji */}
             <motion.button
-              onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)}
+              onClick={() => {
+                const nextState = !isEmojiPickerOpen;
+                setIsEmojiPickerOpen(nextState);
+                if (nextState) {
+                  setIsStickerPickerOpen(false);
+                  setIsLocationPickerOpen(false);
+                }
+              }}
               className={`flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-lg transition-all duration-200 flex-shrink-0 ${
                 isEmojiPickerOpen
                   ? theme === 'dark'
@@ -2903,6 +2885,32 @@ const CreatePost: React.FC<CreatePostProps> = ({
               title="Add emoji"
             >
               <Smile className="w-5 h-5 sm:w-4 sm:h-4" />
+            </motion.button>
+
+            {/* Stickers */}
+            <motion.button
+              onClick={() => {
+                const nextState = !isStickerPickerOpen;
+                setIsStickerPickerOpen(nextState);
+                if (nextState) {
+                  setIsEmojiPickerOpen(false);
+                  setIsLocationPickerOpen(false);
+                }
+              }}
+              className={`flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-lg transition-all duration-200 flex-shrink-0 ${
+                isStickerPickerOpen
+                  ? theme === 'dark'
+                    ? 'bg-pink-500/15 text-pink-400'
+                    : 'bg-pink-50 text-pink-600'
+                  : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-900/50 active:bg-gray-900/50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 active:bg-gray-100/50'
+              }`}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              title="Add stickers"
+            >
+              <Sparkles className="w-5 h-5 sm:w-4 sm:h-4" />
             </motion.button>
 
             {/* Event */}
@@ -2926,7 +2934,14 @@ const CreatePost: React.FC<CreatePostProps> = ({
 
             {/* Location */}
             <motion.button
-              onClick={() => setIsLocationPickerOpen(!isLocationPickerOpen)}
+              onClick={() => {
+                const nextState = !isLocationPickerOpen;
+                setIsLocationPickerOpen(nextState);
+                if (nextState) {
+                  setIsEmojiPickerOpen(false);
+                  setIsStickerPickerOpen(false);
+                }
+              }}
               className={`flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-lg transition-all duration-200 flex-shrink-0 ${
                 location || isLocationPickerOpen
                   ? theme === 'dark'

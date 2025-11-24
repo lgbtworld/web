@@ -105,6 +105,13 @@ export class ApiService {
   }
 
 
+  async handleSendTip(postId : any,amount:any){
+    return this.call(Actions.CMD_POST_TIP, {
+      method: "POST",
+      body: {post_id:postId,amount:amount},
+    });
+  }
+
 
   async handleLogin(credentials: { nickname: string; password: string; location?: any }) {
     return this.call(Actions.AUTH_LOGIN, {

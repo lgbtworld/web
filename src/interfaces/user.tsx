@@ -81,6 +81,7 @@ export interface User {
   socket_id?: string;
   username: string;
   displayname: string;
+  balance?: number;
   email?: string;
   password?: string;
   profile_image_url?: string;

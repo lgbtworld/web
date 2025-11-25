@@ -48,14 +48,15 @@ import {LinkNode, AutoLinkNode} from '@lexical/link';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import ToolbarPlugin from './Lexical/plugins/ToolbarPlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
-import { $getRoot, INSERT_PARAGRAPH_COMMAND } from 'lexical';
+import { $generateHtmlFromNodes } from '@lexical/html';
+import { $getRoot, $getSelection, $isRangeSelection, $createParagraphNode, $createTextNode, INSERT_PARAGRAPH_COMMAND } from 'lexical';
 import { MentionNode } from './Lexical/nodes/MentionNode';
 import NewMentionsPlugin from './Lexical/plugins/MentionsPlugin';
 import ImagesPlugin, { INSERT_IMAGE_COMMAND } from './Lexical/plugins/ImagesPlugin';
 import StickerPicker, { StickerItem } from './StickerPicker';
 import { ImageNode } from './Lexical/nodes/ImageNode';
 import { INSERT_PAGE_BREAK } from './Lexical/plugins/PageBreakPlugin';
+import EmojiPicker from './EmojiPicker';
 
 
 // ToolbarPlugin wrapper component
@@ -139,8 +140,6 @@ const CreatePost: React.FC<CreatePostProps> = ({
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isStickerPickerOpen, setIsStickerPickerOpen] = useState(false);
   const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
-  const [emojiSearchQuery, setEmojiSearchQuery] = useState('');
-  const [selectedEmojiCategory, setSelectedEmojiCategory] = useState('smileys');
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(fullScreen);
   const { theme } = useTheme();
@@ -2591,123 +2590,33 @@ const CreatePost: React.FC<CreatePostProps> = ({
 
               {/* Emoji Picker Inside Attachments */}
               {isEmojiPickerOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="mb-6"
-                >
-                  <div                   className={`p-6 rounded-2xl border ${
-                    theme === 'dark'
-                      ? 'bg-gray-950/80 border-gray-900'
-                      : 'bg-white border-gray-200'
-                  }`}>
-                    {/* Emoji Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                          theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-100'
-                        }`}>
-                          <Smile className={`w-5 h-5 ${
-                            theme === 'dark' ? 'text-yellow-400' : 'text-yellow-600'
-                          }`} />
-                        </div>
-                        <div>
-                          <h3 className={`font-bold text-base ${
-                            theme === 'dark' ? 'text-white' : 'text-gray-900'
-                          }`}>
-                            Add Emoji
-                          </h3>
-                          <p className={`text-sm ${
-                            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                            Express yourself with emojis
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setIsEmojiPickerOpen(false)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          theme === 'dark'
-                            ? 'text-gray-400 hover:text-red-400 hover:bg-gray-900/50'
-                            : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
-                        }`}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {/* Emoji Search */}
-                    <div className="mb-4">
-                      <div className="relative">
-                        <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
-                          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                        }`} />
-                        <input
-                          type="text"
-                          placeholder="Search emojis..."
-                          value={emojiSearchQuery}
-                          onChange={(e) => setEmojiSearchQuery(e.target.value)}
-                          className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${
-                            theme === 'dark'
-                              ? 'bg-gray-900/50 border-gray-900 text-white placeholder-gray-400 focus:border-gray-900 focus:ring-gray-900/30'
-                              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-gray-400 focus:ring-gray-400'
-                          }`}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Emoji Categories */}
-                    <div className="flex items-center space-x-1 sm:space-x-2 mb-4 overflow-x-auto scrollbar-hide pb-2">
-                      {Object.keys(emojiCategories).map((category) => (
-                        <button
-                          key={category}
-                          onClick={() => setSelectedEmojiCategory(category)}
-                          className={`flex-shrink-0 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-                            selectedEmojiCategory === category
-                              ? theme === 'dark'
-                                ? 'bg-white text-black'
-                                : 'bg-black text-white'
-                              : theme === 'dark'
-                              ? 'bg-gray-900/50 text-gray-300 hover:bg-gray-900/70'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Emoji Grid */}
-                    <div className="max-h-40 sm:max-h-48 overflow-y-auto scrollbar-hide px-2">
-                      <div className="grid grid-cols-8 gap-2 w-full place-items-center">
-                        {emojiCategories[selectedEmojiCategory as keyof typeof emojiCategories]
-                          .filter(emoji =>
-                            emojiSearchQuery === '' ||
-                            emoji.includes(emojiSearchQuery)
-                          )
-                          .map((emoji, index) => (
-                            <motion.button
-                              key={index}
-                              onClick={() => {
-                                setPostText(prev => prev + emoji);
-                                setCharCount(prev => prev + emoji.length);
-                              }}
-                              className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-200 ${
-                                theme === 'dark'
-                                  ? 'hover:bg-gray-900/50'
-                                  : 'hover:bg-gray-100'
-                              }`}
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                            >
-                              {emoji}
-                            </motion.button>
-                          ))}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+                <EmojiPicker
+                  onEmojiSelect={(emoji) => {
+                    // Insert emoji into editor
+                    if (editorInstance) {
+                      editorInstance.update(() => {
+                        const selection = $getSelection();
+                        if ($isRangeSelection(selection)) {
+                          selection.insertText(emoji);
+                        } else {
+                          // If no selection, append to root
+                          const root = $getRoot();
+                          const lastChild = root.getLastChild();
+                          if (lastChild && 'append' in lastChild) {
+                            const textNode = $createTextNode(emoji);
+                            (lastChild as any).append(textNode);
+                          } else {
+                            const paragraph = $createParagraphNode();
+                            const textNode = $createTextNode(emoji);
+                            paragraph.append(textNode);
+                            root.append(paragraph);
+                          }
+                        }
+                      });
+                    }
+                  }}
+                  onClose={() => setIsEmojiPickerOpen(false)}
+                />
               )}
 
             {/* Sticker Picker */}

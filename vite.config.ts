@@ -8,5 +8,11 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    fs: {
+      // Allow serving files from node_modules for emoji images
+      allow: ['..'],
+    },
+  },
 });
 

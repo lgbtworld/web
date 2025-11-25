@@ -49,13 +49,25 @@ export const PwaInstallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const promptInstall = React.useCallback(async () => {
     if (!deferredPrompt) return null;
 
-    deferredPrompt.prompt();
-    const choiceResult = await deferredPrompt.userChoice;
-    if (choiceResult.outcome === 'accepted') {
+    try {
+      // Call prompt() and wait for it to complete
+      await deferredPrompt.prompt();
+      const choiceResult = await deferredPrompt.userChoice;
+      
+      // Clear the deferred prompt after user makes a choice
       setDeferredPrompt(null);
-      setDismissed(true);
+      
+      if (choiceResult.outcome === 'accepted') {
+        setDismissed(true);
+      }
+      
+      return choiceResult;
+    } catch (error) {
+      // If prompt fails, clear the deferred prompt
+      console.error('Error showing install prompt:', error);
+      setDeferredPrompt(null);
+      return null;
     }
-    return choiceResult;
   }, [deferredPrompt]);
 
   const dismissPrompt = React.useCallback(() => {

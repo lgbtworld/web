@@ -1541,6 +1541,11 @@ electron-to-chromium@^1.5.238:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.249.tgz#e4fc3a3e60bb347361e4e876bb31903a9132a447"
   integrity sha512-5vcfL3BBe++qZ5kuFhD/p8WOM1N9m3nwvJPULJx+4xf2usSlZFJ0qoNYO2fOX4hi3ocuDcmDobtA+5SFr4OmBg==
 
+emoji-datasource-facebook@^16.0.0:
+  version "16.0.0"
+  resolved "https://registry.yarnpkg.com/emoji-datasource-facebook/-/emoji-datasource-facebook-16.0.0.tgz#42802fe5f3174d5b965edd0104f56e3811616bd9"
+  integrity sha512-b9ZxJdB7nMWGckH1vyCjPSosaa6MJYuojPPFiQ0LmDIZS8vlG454XKcmTFKrXIMAA72O4MRJMYFhvWI8pjyciQ==
+
 engine.io-client@~6.6.1:
   version "6.6.3"
   resolved "https://registry.yarnpkg.com/engine.io-client/-/engine.io-client-6.6.3.tgz#815393fa24f30b8e6afa8f77ccca2f28146be6de"

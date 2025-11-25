@@ -323,56 +323,84 @@ const Post: React.FC<PostProps> = ({
   const eventMapRef = useRef<HTMLDivElement>(null);
   const eventMapInstanceRef = useRef<L.Map | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  
+  // Memoize post ID and key engagement data to prevent unnecessary updates
+  const postIdRef = useRef<string>(postProp.public_id);
+  const userIdRef = useRef<string | undefined>(user?.id);
+  const engagementsRef = useRef<string>(JSON.stringify(postProp.engagements));
+  const childrenRef = useRef<ApiPost[] | undefined>(postProp.children);
+  const postPropRef = useRef<ApiPost>(postProp);
 
   
-  // Update post when prop changes
+  // Update post when prop changes - only if post ID, user ID, or engagement data actually changed
   useEffect(() => {
-    setPost(postProp);
+    // Always update ref to latest postProp
+    postPropRef.current = postProp;
     
-    // If postProp has children, update children state immediately
-    // This prevents unnecessary fetch requests
-    if (postProp.children && postProp.children.length > 0) {
-      setChildren(postProp.children);
+    const postIdChanged = postProp.public_id !== postIdRef.current;
+    const userIdChanged = user?.id !== userIdRef.current;
+    const engagementsChanged = JSON.stringify(postProp.engagements) !== engagementsRef.current;
+    const childrenChanged = JSON.stringify(postProp.children) !== JSON.stringify(childrenRef.current);
+    
+    if (postIdChanged) {
+      postIdRef.current = postProp.public_id;
+      setPost(postProp);
     }
-
-    setHasTipped(false);
     
-    // Initialize like/dislike/banana/bookmark state from engagement_details
-    // Check engagement_details first (more accurate), then fallback to counts
-    if (postProp.engagements) {
-      const userId = user?.id;
+    if (childrenChanged) {
+      childrenRef.current = postProp.children;
+      // Always update children state, even if empty array
+      setChildren(postProp.children || []);
+    }
+    
+    if (postIdChanged || userIdChanged || engagementsChanged) {
+      if (userIdChanged) {
+        userIdRef.current = user?.id;
+      }
       
-      if (postProp.engagements.engagement_details && userId) {
-        // Check engagement_details for user's interactions
-        // engager_id is the user who performed the engagement
-        const userEngagements = postProp.engagements.engagement_details.filter(
-          detail => detail.engager_id === userId
-        );
+      if (engagementsChanged) {
+        engagementsRef.current = JSON.stringify(postProp.engagements);
+      }
+      
+      setHasTipped(false);
+      
+      // Initialize like/dislike/banana/bookmark state from engagement_details
+      // Check engagement_details first (more accurate), then fallback to counts
+      if (postProp.engagements) {
+        const userId = user?.id;
         
-        // Check for each interaction type
-        // Backend returns like_received/dislike_received when user gives like/dislike
-        // Also check for like_given/dislike_given for compatibility
-        setIsLiked(userEngagements.some(e => 
-          e.kind === 'like_given' || e.kind === 'like_received'
-        ));
-        setIsDisliked(userEngagements.some(e => 
-          e.kind === 'dislike_given' || e.kind === 'dislike_received'
-        ));
-        setIsBanana(userEngagements.some(e => e.kind === 'banana'));
-        setIsBookmarked(userEngagements.some(e => e.kind === 'bookmark'));
-        setHasTipped(userEngagements.some(e => e.kind === 'tip'));
-      } else if (postProp.engagements.counts) {
-        // Fallback to counts if engagement_details is not available
-        const counts = postProp.engagements.counts;
-        setIsLiked((counts.like_given_count || 0) > 0);
-        setIsDisliked((counts as any).dislike_given_count ? (counts as any).dislike_given_count > 0 : false);
-        setIsBanana((counts as any).banana_given_count ? (counts as any).banana_given_count > 0 : false);
-        setIsBookmarked((counts.bookmark_count || 0) > 0);
-        // Without engagement details we can't know if current user tipped
+        if (postProp.engagements.engagement_details && userId) {
+          // Check engagement_details for user's interactions
+          // engager_id is the user who performed the engagement
+          const userEngagements = postProp.engagements.engagement_details.filter(
+            detail => detail.engager_id === userId
+          );
+          
+          // Check for each interaction type
+          // Backend returns like_received/dislike_received when user gives like/dislike
+          // Also check for like_given/dislike_given for compatibility
+          setIsLiked(userEngagements.some(e => 
+            e.kind === 'like_given' || e.kind === 'like_received'
+          ));
+          setIsDisliked(userEngagements.some(e => 
+            e.kind === 'dislike_given' || e.kind === 'dislike_received'
+          ));
+          setIsBanana(userEngagements.some(e => e.kind === 'banana'));
+          setIsBookmarked(userEngagements.some(e => e.kind === 'bookmark'));
+          setHasTipped(userEngagements.some(e => e.kind === 'tip'));
+        } else if (postProp.engagements.counts) {
+          // Fallback to counts if engagement_details is not available
+          const counts = postProp.engagements.counts;
+          setIsLiked((counts.like_given_count || 0) > 0);
+          setIsDisliked((counts as any).dislike_given_count ? (counts as any).dislike_given_count > 0 : false);
+          setIsBanana((counts as any).banana_given_count ? (counts as any).banana_given_count > 0 : false);
+          setIsBookmarked((counts.bookmark_count || 0) > 0);
+          // Without engagement details we can't know if current user tipped
+          setHasTipped(false);
+        }
+      } else {
         setHasTipped(false);
       }
-    } else {
-      setHasTipped(false);
     }
   }, [postProp, user?.id]);
 
@@ -455,18 +483,33 @@ const Post: React.FC<PostProps> = ({
   // Internal component to manage editor state within LexicalComposer context
   const PostContentEditor = React.memo(({ content }: { content: string }) => {
     const [editor] = useLexicalComposerContext();
+    const contentRef = useRef<string>(content);
+    const isInitializedRef = useRef<boolean>(false);
 
     useEffect(() => {
+      // Only update if content actually changed
+      if (contentRef.current === content && isInitializedRef.current) {
+        return;
+      }
+      
       if (!content) {
         return;
       }
-      try {
-        editor.setEditable(false)
-        editor.setEditorState(editor.parseEditorState(content));
-        editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
-      } catch {
-        // JSON değil, direkt HTML
-      }
+      
+      contentRef.current = content;
+      
+      // Defer editor state update to avoid flushSync during React rendering
+      // Use queueMicrotask to schedule after current render cycle
+      queueMicrotask(() => {
+        try {
+          editor.setEditable(false);
+          editor.setEditorState(editor.parseEditorState(content));
+          editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+          isInitializedRef.current = true;
+        } catch {
+          // JSON değil, direkt HTML
+        }
+      });
     }, [content, editor]);
 
     return null;
@@ -2987,34 +3030,45 @@ transition={{ duration: 0.15 }}
           isOpen={true}
           onClose={() => setShowReply(false)}
           parentPostId={`${post.public_id}`}
-          onReply={(content, parentPostId) => {
+          onReply={async (content, parentPostId) => {
             console.log('Reply posted:', content, 'Parent ID:', parentPostId);
             setShowReply(false);
 
-            // Only refresh if we don't have children already (recursive data already includes all children)
-            // If we have onRefreshParent, use it instead of fetching here
-            if (onRefreshParent) {
+            // Always fetch the updated post to get the new comment
+            if (post.public_id) {
+              try {
+                const updatedPost = await api.fetchPost(post.public_id);
+                
+                // Update local state with new post data (includes new comment)
+                setPost(updatedPost);
+                
+                // Update children state if new children are present
+                if (updatedPost.children && updatedPost.children.length > 0) {
+                  setChildren(updatedPost.children);
+                } else if (updatedPost.children) {
+                  // Even if empty, update to reflect current state
+                  setChildren([]);
+                }
+                
+                // Update parent component with new post data
+                if (onUpdatePost) {
+                  onUpdatePost(updatedPost);
+                }
+                
+                // Also refresh parent if callback exists (for list views)
+                if (onRefreshParent) {
+                  onRefreshParent();
+                }
+              } catch (error) {
+                console.error('Error refreshing post after reply:', error);
+                // Even on error, try to refresh parent if callback exists
+                if (onRefreshParent) {
+                  onRefreshParent();
+                }
+              }
+            } else if (onRefreshParent) {
+              // Fallback: if no post ID, just refresh parent
               onRefreshParent();
-            } else if (post.public_id && (!post.children || post.children.length === 0)) {
-              // Only fetch if we don't have children and no parent callback
-              api.fetchPost(post.public_id)
-                .then((response) => {
-                  setPost(response);
-                  if (response.children) {
-                    setChildren(response.children);
-                  }
-                  // Update parent component if callback exists
-                  if (onUpdatePost) {
-                    onUpdatePost(response);
-                  }
-                })
-                .catch((error) => {
-                  console.error('Error refreshing post after reply:', error);
-                });
-            } else if (onUpdatePost && post.public_id) {
-              // If we have children already, just update the parent with current post
-              // The parent will handle refreshing the entire tree
-              onUpdatePost(post);
             }
           }}
         />
@@ -3022,63 +3076,61 @@ transition={{ duration: 0.15 }}
 
       {/* Children (Replies) Section - Outside main post div */}
       {(loadChildren || showChildren) && (
-        <div className={`overflow-hidden border-b ${theme === 'dark'
-            ? 'bg-gray-950 border-gray-900'
+        <div className={`overflow-hidden  ${theme === 'dark'
+            ? 'bg-gray-950  border-gray-900'
             : 'bg-white border-gray-200/50'
           }`}>
-          <div className="px-4 py-3">
+          <div className="px-4 py-0">
             {loadingChildren ? (
               <div className={`text-center py-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                 Loading replies...
               </div>
             ) : (children.length > 0 || (post.children && post.children.length > 0)) ? (
               <div className="space-y-4">
-                <div className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                <div className={`pt-4 text-sm font-semibold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                   Replies ({children.length || post.children?.length || 0})
                 </div>
-                {(children.length > 0 ? children : post.children || []).map((child) => (
-                  <div key={child.id} className={`border-l-2 pl-4 pointer-events-none ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'
-                    }`}>
-                    <div className="pointer-events-auto">
-                      <Post
-                        post={child}
-                        onPostClick={onPostClick}
-                        onProfileClick={onProfileClick}
-                        showChildren={true}
-                        loadChildren={false}
-                        onRefreshParent={() => {
-                          // Refresh parent post to update children list
-                          if (onRefreshParent) {
-                            onRefreshParent();
-                          } else if (post.public_id) {
-                            // Fallback: refresh this post if no parent callback
-                            api.fetchPost(post.public_id)
-                              .then((response) => {
-                                if (response.children) {
-                                  setChildren(response.children);
-                                }
-                                setPost(response);
-                                if (onUpdatePost) {
-                                  onUpdatePost(response);
-                                }
-                              })
-                              .catch((error) => {
-                                console.error('Error refreshing parent post:', error);
-                              });
-                          }
-                        }}
-                        onUpdatePost={(updatedChild) => {
-                          // Update child post in children list
-                          setChildren(prev => prev.map(c => c.id === updatedChild.id ? updatedChild : c));
-                          // Also update parent post
-                          if (onUpdatePost) {
-                            onUpdatePost(post);
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                <div className="-mx-4">
+                  {(children.length > 0 ? children : post.children || []).map((child) => (
+                    <Post
+                      key={child.id}
+                      post={child}
+                      onPostClick={onPostClick}
+                      onProfileClick={onProfileClick}
+                      showChildren={true}
+                      loadChildren={false}
+                      onRefreshParent={() => {
+                        // Refresh parent post to update children list
+                        if (onRefreshParent) {
+                          onRefreshParent();
+                        } else if (post.public_id) {
+                          // Fallback: refresh this post if no parent callback
+                          api.fetchPost(post.public_id)
+                            .then((response) => {
+                              if (response.children) {
+                                setChildren(response.children);
+                              }
+                              setPost(response);
+                              if (onUpdatePost) {
+                                onUpdatePost(response);
+                              }
+                            })
+                            .catch((error) => {
+                              console.error('Error refreshing parent post:', error);
+                            });
+                        }
+                      }}
+                      onUpdatePost={(updatedChild) => {
+                        // Update child post in children list
+                        setChildren(prev => prev.map(c => c.id === updatedChild.id ? updatedChild : c));
+                        // Also update parent post
+                        if (onUpdatePost) {
+                          onUpdatePost(post);
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             ) : null}
           </div>
@@ -3370,5 +3422,84 @@ transition={{ duration: 0.15 }}
   );
 };
 
-export default Post;
+// Memoize Post component to prevent unnecessary re-renders
+// Only re-render if post ID, user ID, or engagement counts actually change
+const MemoizedPost = React.memo(Post, (prevProps, nextProps) => {
+  // If post ID changed, always re-render
+  if (prevProps.post.public_id !== nextProps.post.public_id) {
+    return false;
+  }
+  
+  // If other props changed, re-render
+  if (
+    prevProps.showChildren !== nextProps.showChildren ||
+    prevProps.defaultShowReply !== nextProps.defaultShowReply ||
+    prevProps.loadChildren !== nextProps.loadChildren
+  ) {
+    return false;
+  }
+  
+  // Check if engagement counts changed (important for UI updates)
+  const prevCounts = prevProps.post.engagements?.counts;
+  const nextCounts = nextProps.post.engagements?.counts;
+  
+  if (prevCounts && nextCounts) {
+    if (
+      prevCounts.like_received_count !== nextCounts.like_received_count ||
+      prevCounts.dislike_received_count !== nextCounts.dislike_received_count ||
+      prevCounts.banana_count !== nextCounts.banana_count ||
+      prevCounts.banana_received_count !== nextCounts.banana_received_count ||
+      prevCounts.comment_count !== nextCounts.comment_count ||
+      prevCounts.bookmark_count !== nextCounts.bookmark_count ||
+      prevCounts.tip_count !== nextCounts.tip_count ||
+      prevCounts.tip_amount !== nextCounts.tip_amount
+    ) {
+      return false;
+    }
+  } else if (prevCounts !== nextCounts) {
+    return false;
+  }
+  
+  // Check if poll vote counts changed
+  if (prevProps.post.poll && nextProps.post.poll) {
+    if (prevProps.post.poll.length !== nextProps.post.poll.length) {
+      return false;
+    }
+    
+    for (let i = 0; i < prevProps.post.poll.length; i++) {
+      const prevPoll = prevProps.post.poll[i];
+      const nextPoll = nextProps.post.poll[i];
+      
+      if (prevPoll.id !== nextPoll.id) {
+        return false;
+      }
+      
+      if (prevPoll.choices && nextPoll.choices) {
+        if (prevPoll.choices.length !== nextPoll.choices.length) {
+          return false;
+        }
+        
+        for (let j = 0; j < prevPoll.choices.length; j++) {
+          if (prevPoll.choices[j].vote_count !== nextPoll.choices[j].vote_count) {
+            return false;
+          }
+        }
+      }
+    }
+  } else if (prevProps.post.poll !== nextProps.post.poll) {
+    return false;
+  }
+  
+  // Check if children changed
+  if (prevProps.post.children?.length !== nextProps.post.children?.length) {
+    return false;
+  }
+  
+  // If nothing important changed, skip re-render
+  return true;
+});
+
+MemoizedPost.displayName = 'Post';
+
+export default MemoizedPost;
 export type { PostProps, ApiPost };

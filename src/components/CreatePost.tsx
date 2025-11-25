@@ -49,12 +49,13 @@ import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import ToolbarPlugin from './Lexical/plugins/ToolbarPlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
-import { $getRoot } from 'lexical';
+import { $getRoot, INSERT_PARAGRAPH_COMMAND } from 'lexical';
 import { MentionNode } from './Lexical/nodes/MentionNode';
 import NewMentionsPlugin from './Lexical/plugins/MentionsPlugin';
 import ImagesPlugin, { INSERT_IMAGE_COMMAND } from './Lexical/plugins/ImagesPlugin';
 import StickerPicker, { StickerItem } from './StickerPicker';
 import { ImageNode } from './Lexical/nodes/ImageNode';
+import { INSERT_PAGE_BREAK } from './Lexical/plugins/PageBreakPlugin';
 
 
 // ToolbarPlugin wrapper component
@@ -183,6 +184,8 @@ const CreatePost: React.FC<CreatePostProps> = ({
       captionsEnabled:false,
       height: '100%',
     });
+    editorInstance.dispatchCommand(INSERT_PARAGRAPH_COMMAND, undefined);
+    
     setIsStickerPickerOpen(false);
   };
 

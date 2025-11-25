@@ -11,7 +11,7 @@ import ShareButton from './ShareButton';
 import TipButton from './TipButton';
 import { api } from '../services/api';
 import { $generateHtmlFromNodes } from '@lexical/html';
-import { createEditor } from 'lexical';
+import { CLEAR_HISTORY_COMMAND, createEditor } from 'lexical';
 import L from 'leaflet';
 
 import {HashtagNode} from '@lexical/hashtag';
@@ -21,6 +21,16 @@ import {LinkNode, AutoLinkNode} from '@lexical/link';
 import { MentionNode } from './Lexical/nodes/MentionNode';
 import { getSafeImageURL } from '../helpers/helpers';
 import { ImageNode } from './Lexical/nodes/ImageNode';
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { HashtagPlugin } from '@lexical/react/LexicalHashtagPlugin';
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import NewMentionsPlugin from './Lexical/plugins/MentionsPlugin';
+import ImagesPlugin from './Lexical/plugins/ImagesPlugin';
+import LinkPlugin from './Lexical/plugins/LinkPlugin';
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 
 // API data structure interfaces
 interface ApiPost {
@@ -314,6 +324,7 @@ const Post: React.FC<PostProps> = ({
   const eventMapInstanceRef = useRef<L.Map | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  
   // Update post when prop changes
   useEffect(() => {
     setPost(postProp);
@@ -403,11 +414,11 @@ const Post: React.FC<PostProps> = ({
   }, [post.author?.id, post.author?.avatar]);
 
   const editorConfig = useMemo(() => ({
-    namespace: "CoolVibesEditor",
+    namespace: "CoolVibesEditorEx",
     editable: true,
     nodes:[HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode,MentionNode,ImageNode],
     theme: {
-      paragraph: `mb-2 text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`,
+      paragraph: `relative m-0 w-full mb-2 text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`,
       heading: {
         h1: `text-3xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`,
         h2: `text-2xl font-semibold mb-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`,
@@ -429,6 +440,7 @@ const Post: React.FC<PostProps> = ({
         underline: "underline",
         strikethrough: "line-through",
       },
+       image: 'editor-image',
        hashtag: "hashtag inline-block bg-[linear-gradient(to_right,_#d04b36,_#e36511,_#ffba00,_#00b180,_#147aab,_#675997)]  bg-clip-text text-transparent  font-semibold hover:underline cursor-pointer",
        mention:"mention font-semibold  font-md inline-block bg-[linear-gradient(to_right,_#d04b36,_#e36511,_#ffba00,_#00b180,_#147aab,_#675997)]  bg-clip-text text-transparent  font-semibold hover:underline cursor-pointer"
     },
@@ -436,35 +448,31 @@ const Post: React.FC<PostProps> = ({
       console.error("Lexical Error:", error);
     },
   }), [theme]);
-  
 
-  const  lexicalJsonToHtml = useCallback((json: any) : string =>  {
-    const editor = createEditor(editorConfig);
-    const editorState = editor.parseEditorState(json);
-    let html = '';
-    editorState.read(() => {
-      html = $generateHtmlFromNodes(editor);
-    });
-    return html;
-  }, [editorConfig]);
 
-  useEffect(() => {
-    const _content = post.content?.en || ""
-    if (!_content) return setHtml('');
-    try {
-      const parsed = JSON.parse(_content);
-      if (parsed.root) {
-        let _htmlString = lexicalJsonToHtml(parsed)
-        setHtml(_htmlString);
-      } else {
-        // JSON ama Lexical değil, direkt göster
-        setHtml(_content);
+ 
+
+  // Internal component to manage editor state within LexicalComposer context
+  const PostContentEditor = React.memo(({ content }: { content: string }) => {
+    const [editor] = useLexicalComposerContext();
+
+    useEffect(() => {
+      if (!content) {
+        return;
       }
-    } catch {
-      // JSON değil, direkt HTML
-      setHtml(_content);
-    }
-  }, [post, theme, lexicalJsonToHtml]);
+      try {
+        editor.setEditable(false)
+        editor.setEditorState(editor.parseEditorState(content));
+        editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+      } catch {
+        // JSON değil, direkt HTML
+      }
+    }, [content, editor]);
+
+    return null;
+  });
+  
+  PostContentEditor.displayName = 'PostContentEditor';
 
   // Initialize Leaflet map when location is set
   useEffect(() => {
@@ -1560,21 +1568,40 @@ transition={{ duration: 0.15 }}
 
         {/* Post Content */}
         <div className="px-4 py-3">
-          <div className={`leading-relaxed  break-words text-[15px] ${theme === 'dark' ? 'text-white' : 'text-gray-900'
-            }`} style={{
-              color: theme === 'dark' ? '#ffffff' : '#111827'
-            }}>
-            <div
-              dangerouslySetInnerHTML={{ __html: html }}
-              style={{
-                color: theme === 'dark' ? '#ffffff' : '#111827'
-              }}
-              className={`prose prose-sm max-w-none ${theme === 'dark'
-                  ? 'prose-invert prose-headings:text-white prose-p:text-white prose-strong:text-white prose-em:text-white prose-a:text-blue-400 prose-code:text-white'
-                  : 'prose-headings:text-gray-900 prose-p:text-gray-900 prose-strong:text-gray-900 prose-em:text-gray-900 prose-a:text-blue-600 prose-code:text-gray-900'
-                }`}
-            />
-          </div>
+
+
+        <LexicalComposer initialConfig={editorConfig}>
+                  <PostContentEditor content={post.content?.en || ""} />
+                  <div className="relative">
+                    <HashtagPlugin/>
+                    <ListPlugin/>
+                    <LinkPlugin/>
+                    <ImagesPlugin  captionsEnabled={false}/>
+                    <NewMentionsPlugin/>
+                  
+                 
+                    <RichTextPlugin
+                  
+                      
+                    
+                      contentEditable={
+                        <ContentEditable 
+                          className="editor-input lexical-editor py-4 px-0"
+                       
+                        />
+                      }
+                      placeholder={
+                        <div className="pt-[24px] rounded-sm z-0 p-0 editor-placeholder w-full h-full text-start flex justify-start items-start">
+                          {"Loading..."}
+                        </div>
+                      }
+                      ErrorBoundary={LexicalErrorBoundary}
+                    />
+                    
+                  </div>
+                </LexicalComposer>
+                
+        
         </div>
 
         {/* Post Attachments */}

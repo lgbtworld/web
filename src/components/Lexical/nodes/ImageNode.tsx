@@ -169,7 +169,6 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     imgElement.setAttribute('alt', this.__altText);
     imgElement.setAttribute('width', this.__width.toString());
     imgElement.setAttribute('height', this.__height.toString());
-    imgElement.setAttribute('class',"mx-auto")
     if (this.__showCaption && this.__caption) {
       const captionEditor = this.__caption;
       const captionHtml = captionEditor.read(() => {

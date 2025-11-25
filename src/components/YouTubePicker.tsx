@@ -49,7 +49,7 @@ const API_KEY = YOUTUBE_API_KEY;
 
 const YouTubePicker: React.FC<YouTubePickerProps> = ({ onVideoSelect, onClose, isProcessing = false }) => {
   const { theme } = useTheme();
-  const [selectedCategory, setSelectedCategory] = useState<string>('trending');
+  const [selectedCategory, setSelectedCategory] = useState<string>('lgbt');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -177,7 +177,7 @@ const YouTubePicker: React.FC<YouTubePickerProps> = ({ onVideoSelect, onClose, i
 
   useEffect(() => {
     if (canFetch) {
-      handleCategoryChange('trending');
+      handleCategoryChange('lgbt');
     }
   }, [canFetch]);
 

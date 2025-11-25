@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion';
 import { Search, X, AlertCircle, Film } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { TENOR_API_KEY } from '../appSettings';
 
 export type GifItem = {
   id: string;
@@ -41,7 +42,7 @@ const GIF_CATEGORIES = [
 
 const CLIENT_KEY = 'bifrostapp-web';
 const TENOR_BASE_URL = 'https://tenor.googleapis.com/v2';
-const API_KEY = "AIzaSyDVaUFhS8lcvNWZCsupEWC-m6CH1RGrMIU";
+const API_KEY = TENOR_API_KEY
 
 const GifPicker: React.FC<GifPickerProps> = ({ onGifSelect, onClose, isProcessing = false }) => {
   const { theme } = useTheme();

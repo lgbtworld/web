@@ -768,16 +768,23 @@ img{
 
 .editor-input span.editor-image {
   cursor: default;
-  display: inline-block;
+  display: block;
+  width: 100%;
+  text-align: center;
   position: relative;
   -webkit-user-select: none;
   user-select: none;
-  overflow: hidden
+  overflow: hidden;
 }
 
 .editor-input .editor-image img {
   max-width: 100%;
-  cursor: default
+  margin-left: auto;
+  margin-right: auto;
+  display: inline-block;
+  cursor: default;
+  border-radius: 10px;
+
 }
 
 .editor-input .editor-image img.focused {

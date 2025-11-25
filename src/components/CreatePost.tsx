@@ -23,7 +23,8 @@ import {
   ListOrdered,
   Scale,
   HandCoins,
-  Film
+  Film,
+  Youtube
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
@@ -56,7 +57,10 @@ import NewMentionsPlugin from './Lexical/plugins/MentionsPlugin';
 import ImagesPlugin, { INSERT_IMAGE_COMMAND } from './Lexical/plugins/ImagesPlugin';
 import StickerPicker, { StickerItem } from './StickerPicker';
 import GifPicker, { GifItem } from './GifPicker';
+import YouTubePicker, { YouTubeVideo } from './YouTubePicker';
 import { ImageNode } from './Lexical/nodes/ImageNode';
+import { YouTubeNode } from './Lexical/nodes/YouTubeNode';
+import YouTubePlugin, { INSERT_YOUTUBE_COMMAND } from './Lexical/plugins/YouTubePlugin';
 import { INSERT_PAGE_BREAK } from './Lexical/plugins/PageBreakPlugin';
 import EmojiPicker from './EmojiPicker';
 
@@ -143,6 +147,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
   const [isStickerPickerOpen, setIsStickerPickerOpen] = useState(false);
   const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
   const [isGifPickerOpen, setIsGifPickerOpen] = useState(false);
+  const [isYouTubePickerOpen, setIsYouTubePickerOpen] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(fullScreen);
   const { theme } = useTheme();
@@ -203,6 +208,12 @@ const CreatePost: React.FC<CreatePostProps> = ({
     });
     editorInstance.dispatchCommand(INSERT_PARAGRAPH_COMMAND, undefined);
     setIsGifPickerOpen(false);
+  };
+
+  const handleYouTubeSelect = (video: YouTubeVideo) => {
+    if (!editorInstance) return;
+    editorInstance.dispatchCommand(INSERT_YOUTUBE_COMMAND, video.id);
+    setIsYouTubePickerOpen(false);
   };
 
   const toggleFullScreen = () => {
@@ -871,7 +882,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
     selectionAlwaysOnDisplay: true,
     listStrictIndent: false,
     measureTypingPerf: false,
-    nodes: [HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, MentionNode, ImageNode],
+    nodes: [HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, MentionNode, ImageNode, YouTubeNode],
     theme: {
       paragraph: `mb-2 text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`,
       heading: {
@@ -1050,6 +1061,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                     <ListPlugin/>
                     <LinkPlugin/>
                     <ImagesPlugin  captionsEnabled={false}/>
+                    <YouTubePlugin />
                     <NewMentionsPlugin/>
                   
                     <div className="-mx-2 mt-1">
@@ -1093,7 +1105,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
         {/* Professional Attachments Section - Scrollable */}
         <div className={`w-full ${isFullScreen ? 'flex-1' : ''}  ${isFullScreen ? 'overflow-y-auto' : ''} scrollbar-hide`}>
         <AnimatePresence>
-          {(selectedImages.length > 0 || selectedVideos.length > 0 || location || polls.length > 0 || isEventActive || isEmojiPickerOpen || isStickerPickerOpen || isLocationPickerOpen || isGifPickerOpen) && (
+          {(selectedImages.length > 0 || selectedVideos.length > 0 || location || polls.length > 0 || isEventActive || isEmojiPickerOpen || isStickerPickerOpen || isLocationPickerOpen || isGifPickerOpen || isYouTubePickerOpen) && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -2673,6 +2685,15 @@ const CreatePost: React.FC<CreatePostProps> = ({
               />
             )}
 
+            {/* YouTube Picker */}
+            {isYouTubePickerOpen && (
+              <YouTubePicker
+                onVideoSelect={handleYouTubeSelect}
+                onClose={() => setIsYouTubePickerOpen(false)}
+                isProcessing={isSubmitting}
+              />
+            )}
+
               {/* Compact Location Picker */}
               {isLocationPickerOpen && (
                 <motion.div
@@ -2829,6 +2850,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 if (nextState) {
                   setIsStickerPickerOpen(false);
                   setIsGifPickerOpen(false);
+                  setIsYouTubePickerOpen(false);
                   setIsLocationPickerOpen(false);
                 }
               }}
@@ -2856,6 +2878,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 if (nextState) {
                   setIsEmojiPickerOpen(false);
                   setIsGifPickerOpen(false);
+                  setIsYouTubePickerOpen(false);
                   setIsLocationPickerOpen(false);
                 }
               }}
@@ -2883,6 +2906,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 if (nextState) {
                   setIsStickerPickerOpen(false);
                   setIsEmojiPickerOpen(false);
+                  setIsYouTubePickerOpen(false);
                   setIsLocationPickerOpen(false);
                 }
               }}
@@ -2900,6 +2924,34 @@ const CreatePost: React.FC<CreatePostProps> = ({
               title="Add GIF"
             >
               <Film className="w-5 h-5 sm:w-4 sm:h-4" />
+            </motion.button>
+
+            {/* YouTube */}
+            <motion.button
+              onClick={() => {
+                const nextState = !isYouTubePickerOpen;
+                setIsYouTubePickerOpen(nextState);
+                if (nextState) {
+                  setIsStickerPickerOpen(false);
+                  setIsEmojiPickerOpen(false);
+                  setIsGifPickerOpen(false);
+                  setIsLocationPickerOpen(false);
+                }
+              }}
+              className={`flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-lg transition-all duration-200 flex-shrink-0 ${
+                isYouTubePickerOpen
+                  ? theme === 'dark'
+                    ? 'bg-red-500/15 text-red-400'
+                    : 'bg-red-50 text-red-600'
+                  : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-900/50 active:bg-gray-900/50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 active:bg-gray-100/50'
+              }`}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              title="Add YouTube video"
+            >
+              <Youtube className="w-5 h-5 sm:w-4 sm:h-4" />
             </motion.button>
 
             {/* Event */}
@@ -2930,6 +2982,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                   setIsEmojiPickerOpen(false);
                   setIsStickerPickerOpen(false);
                   setIsGifPickerOpen(false);
+                  setIsYouTubePickerOpen(false);
                 }
               }}
               className={`flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-lg transition-all duration-200 flex-shrink-0 ${

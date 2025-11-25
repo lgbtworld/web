@@ -11,7 +11,8 @@ export const applicationName = "coolvibes"
 // Google reCAPTCHA Site Key (v2)
 // Replace with your actual reCAPTCHA site key from https://www.google.com/recaptcha/admin
 export const RECAPTCHA_SITE_KEY = "6LecaQIsAAAAAOptodMnAZCOiKSVysrvKnmsXDix"; // Test key for development
-
+export const YOUTUBE_API_KEY ="AIzaSyDVaUFhS8lcvNWZCsupEWC-m6CH1RGrMIU"
+export const TENOR_API_KEY= "AIzaSyDVaUFhS8lcvNWZCsupEWC-m6CH1RGrMIU";
 
 const hostName = window.location.hostname; // sadece domain, örn: localhost
 const port = window.location.port;         // port numarası, örn: 5173

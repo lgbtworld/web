@@ -1629,7 +1629,7 @@ transition={{ duration: 0.15 }}
                     
                       contentEditable={
                         <ContentEditable 
-                          className="editor-input lexical-editor py-4 px-0"
+                          className="editor-input lexical-editor py-0 px-0"
                        
                         />
                       }

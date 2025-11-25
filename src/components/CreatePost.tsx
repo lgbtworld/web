@@ -896,8 +896,28 @@ const CreatePost: React.FC<CreatePostProps> = ({
     editorState.read(() => {
       const root = $getRoot();
       const plainText = root.getTextContent();
+      const topLevelChildren = root.getChildren();
+
+      const hasMeaningfulNode = topLevelChildren.some((child: any) => {
+        const type = typeof child.getType === 'function' ? child.getType() : null;
+
+        if (type && type !== 'paragraph') {
+          return true;
+        }
+
+        if (typeof child.isEmpty === 'function' && !child.isEmpty()) {
+          return true;
+        }
+
+        if (typeof child.getChildrenSize === 'function' && child.getChildrenSize() > 0) {
+          return true;
+        }
+
+        return false;
+      });
+
       setEditorContent(plainText);
-      setHasEditorContent(plainText.trim().length > 0);
+      setHasEditorContent(hasMeaningfulNode || plainText.trim().length > 0);
     });
   };
   

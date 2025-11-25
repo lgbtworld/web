@@ -291,12 +291,12 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
     >
       <div
         ref={pickerRef}
-        className={`w-full rounded-lg border shadow-2xl overflow-hidden ${
+        className={`w-full border overflow-hidden ${
           theme === 'dark'
             ? 'bg-gray-950 border-gray-800'
-            : 'bg-white border-gray-200 shadow-lg'
+            : 'bg-white border-gray-200'
         }`}
-        style={{ maxWidth: '500px' }}
+       
       >
         {/* Category Tabs - Top */}
         <div

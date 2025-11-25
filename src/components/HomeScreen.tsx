@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
@@ -39,25 +39,42 @@ const HomeScreen: React.FC = () => {
     )
   );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const lastScrollTopRef = useRef(0);
+  const isTickingRef = useRef(false);
 
-  const handleScroll = () => {
-    if (!scrollContainerRef.current) return;
-    const scrollTop = scrollContainerRef.current.scrollTop;
+  const updateHeaderHeight = useCallback(() => {
+    const scrollTop = lastScrollTopRef.current;
     const newHeight = Math.max(MIN_HEADER_HEIGHT, MAX_HEADER_HEIGHT - scrollTop);
-    setHeaderHeight(newHeight);
-  };
+    setHeaderHeight((prev) => {
+      if (Math.abs(prev - newHeight) < 0.5) {
+        return prev;
+      }
+      return newHeight;
+    });
+    isTickingRef.current = false;
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    if (!scrollContainerRef.current) return;
+    lastScrollTopRef.current = scrollContainerRef.current.scrollTop;
+
+    if (!isTickingRef.current) {
+      isTickingRef.current = true;
+      requestAnimationFrame(updateHeaderHeight);
+    }
+  }, [updateHeaderHeight]);
 
   useEffect(() => {
     const current = scrollContainerRef.current;
     if (current) {
-      current.addEventListener('scroll', handleScroll);
+      current.addEventListener('scroll', handleScroll, { passive: true });
     }
     return () => {
       if (current) {
         current.removeEventListener('scroll', handleScroll);
       }
     };
-  }, []);
+  }, [handleScroll]);
 
 
   return (

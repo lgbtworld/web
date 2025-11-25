@@ -22,7 +22,8 @@ import {
   CheckSquare,
   ListOrdered,
   Scale,
-  HandCoins
+  HandCoins,
+  Film
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
@@ -54,6 +55,7 @@ import { MentionNode } from './Lexical/nodes/MentionNode';
 import NewMentionsPlugin from './Lexical/plugins/MentionsPlugin';
 import ImagesPlugin, { INSERT_IMAGE_COMMAND } from './Lexical/plugins/ImagesPlugin';
 import StickerPicker, { StickerItem } from './StickerPicker';
+import GifPicker, { GifItem } from './GifPicker';
 import { ImageNode } from './Lexical/nodes/ImageNode';
 import { INSERT_PAGE_BREAK } from './Lexical/plugins/PageBreakPlugin';
 import EmojiPicker from './EmojiPicker';
@@ -140,6 +142,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isStickerPickerOpen, setIsStickerPickerOpen] = useState(false);
   const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+  const [isGifPickerOpen, setIsGifPickerOpen] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(fullScreen);
   const { theme } = useTheme();
@@ -186,6 +189,20 @@ const CreatePost: React.FC<CreatePostProps> = ({
     editorInstance.dispatchCommand(INSERT_PARAGRAPH_COMMAND, undefined);
     
     setIsStickerPickerOpen(false);
+  };
+
+  const handleGifSelect = (gif: GifItem) => {
+    if (!editorInstance) return;
+    editorInstance.dispatchCommand(INSERT_IMAGE_COMMAND, {
+      src: gif.url,
+      altText: gif.description || 'GIF',
+      width: '100%',
+      height: '100%',
+      showCaption: false,
+      captionsEnabled: false,
+    });
+    editorInstance.dispatchCommand(INSERT_PARAGRAPH_COMMAND, undefined);
+    setIsGifPickerOpen(false);
   };
 
   const toggleFullScreen = () => {
@@ -1019,7 +1036,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
           </div>
 
             {/* Main Content Area */}
-        <div className={`${isFullScreen ? 'px-3 sm:px-6 py-1' : 'px-3 sm:px-4 py-2'} w-full max-w-full flex-shrink-0 !z-0`}>
+        <div className={`${isFullScreen ? 'py-1' : 'py-2'} w-full max-w-full flex-shrink-0 !z-0`}>
           <div className="w-full max-w-full">
             {/* Content Input Area */}
             <div className="w-full max-w-full">
@@ -1076,7 +1093,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
         {/* Professional Attachments Section - Scrollable */}
         <div className={`w-full ${isFullScreen ? 'flex-1' : ''}  ${isFullScreen ? 'overflow-y-auto' : ''} scrollbar-hide`}>
         <AnimatePresence>
-          {(selectedImages.length > 0 || selectedVideos.length > 0 || location || polls.length > 0 || isEventActive || isEmojiPickerOpen || isStickerPickerOpen || isLocationPickerOpen) && (
+          {(selectedImages.length > 0 || selectedVideos.length > 0 || location || polls.length > 0 || isEventActive || isEmojiPickerOpen || isStickerPickerOpen || isLocationPickerOpen || isGifPickerOpen) && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -2647,6 +2664,15 @@ const CreatePost: React.FC<CreatePostProps> = ({
               />
             )}
 
+            {/* GIF Picker */}
+            {isGifPickerOpen && (
+              <GifPicker
+                onGifSelect={handleGifSelect}
+                onClose={() => setIsGifPickerOpen(false)}
+                isProcessing={isSubmitting}
+              />
+            )}
+
               {/* Compact Location Picker */}
               {isLocationPickerOpen && (
                 <motion.div
@@ -2731,11 +2757,13 @@ const CreatePost: React.FC<CreatePostProps> = ({
         </div>
 
         {/* Compact Action Bar */}
-        <div className={`flex items-center justify-between ${isFullScreen ? 'px-3 sm:px-6 py-2' : 'px-3 sm:px-4 py-2 sm:py-2.5'} ${parentPostId ? 'pb-3 sm:pb-2.5' : ''} border-t w-full max-w-full mt-auto flex-shrink-0 ${
-          theme === 'dark' ? 'bg-gray-950 border-gray-900' : 'bg-white border-gray-200/30'
-        }`}>
+        <div
+          className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pt-2 ${parentPostId ? 'pb-3 sm:pb-2.5' : ''} border-t w-full max-w-full mt-auto flex-shrink-0 ${
+            theme === 'dark' ? 'bg-gray-950 border-gray-900' : 'bg-white border-gray-200/30'
+          }`}
+        >
           {/* Compact Action Buttons */}
-          <div className="flex items-center space-x-0.5 sm:space-x-1 flex-shrink-0">
+          <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 flex-shrink-0">
             {/* Photo Upload */}
             <motion.button
               onClick={() => fileInputRef.current?.click()}
@@ -2800,6 +2828,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 setIsEmojiPickerOpen(nextState);
                 if (nextState) {
                   setIsStickerPickerOpen(false);
+                  setIsGifPickerOpen(false);
                   setIsLocationPickerOpen(false);
                 }
               }}
@@ -2826,6 +2855,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 setIsStickerPickerOpen(nextState);
                 if (nextState) {
                   setIsEmojiPickerOpen(false);
+                  setIsGifPickerOpen(false);
                   setIsLocationPickerOpen(false);
                 }
               }}
@@ -2843,6 +2873,33 @@ const CreatePost: React.FC<CreatePostProps> = ({
               title="Add stickers"
             >
               <Sparkles className="w-5 h-5 sm:w-4 sm:h-4" />
+            </motion.button>
+
+            {/* GIFs */}
+            <motion.button
+              onClick={() => {
+                const nextState = !isGifPickerOpen;
+                setIsGifPickerOpen(nextState);
+                if (nextState) {
+                  setIsStickerPickerOpen(false);
+                  setIsEmojiPickerOpen(false);
+                  setIsLocationPickerOpen(false);
+                }
+              }}
+              className={`flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-lg transition-all duration-200 flex-shrink-0 ${
+                isGifPickerOpen
+                  ? theme === 'dark'
+                    ? 'bg-indigo-500/15 text-indigo-400'
+                    : 'bg-indigo-50 text-indigo-600'
+                  : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-900/50 active:bg-gray-900/50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 active:bg-gray-100/50'
+              }`}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              title="Add GIF"
+            >
+              <Film className="w-5 h-5 sm:w-4 sm:h-4" />
             </motion.button>
 
             {/* Event */}
@@ -2872,6 +2929,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 if (nextState) {
                   setIsEmojiPickerOpen(false);
                   setIsStickerPickerOpen(false);
+                  setIsGifPickerOpen(false);
                 }
               }}
               className={`flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-lg transition-all duration-200 flex-shrink-0 ${
@@ -2894,7 +2952,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
           {/* Compact Post Button */}
           <motion.button
             disabled={(!hasEditorContent && selectedImages.length === 0 && selectedVideos.length === 0) || isSubmitting || charCount > maxChars}
-            className={`px-4 sm:px-5 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 flex-shrink-0 ${
+            className={`w-full sm:w-auto sm:min-w-[120px] px-4 sm:px-5 py-3 sm:py-2 rounded-xl sm:rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 text-center ${
               hasEditorContent || selectedImages.length > 0 || selectedVideos.length > 0
                 ? theme === 'dark'
                   ? 'bg-white text-black hover:bg-gray-100 active:bg-gray-100'

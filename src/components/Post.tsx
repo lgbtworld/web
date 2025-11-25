@@ -279,6 +279,44 @@ interface PostProps {
   onUpdatePost?: (updatedPost: ApiPost) => void;
 }
 
+// Internal component to manage editor state within LexicalComposer context
+// Moved outside Post component to prevent recreation on every render
+const PostContentEditor = React.memo(({ content }: { content: string }) => {
+  const [editor] = useLexicalComposerContext();
+  const contentRef = useRef<string>(content);
+  const isInitializedRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    // Only update if content actually changed
+    if (contentRef.current === content && isInitializedRef.current) {
+      return;
+    }
+    
+    if (!content) {
+      return;
+    }
+    
+    contentRef.current = content;
+    
+    // Defer editor state update to avoid flushSync during React rendering
+    // Use queueMicrotask to schedule after current render cycle
+    queueMicrotask(() => {
+      try {
+        editor.setEditable(false);
+        editor.setEditorState(editor.parseEditorState(content));
+        editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+        isInitializedRef.current = true;
+      } catch {
+        // JSON değil, direkt HTML
+      }
+    });
+  }, [content, editor]);
+
+  return null;
+});
+
+PostContentEditor.displayName = 'PostContentEditor';
+
 const Post: React.FC<PostProps> = ({
   post: postProp,
   onPostClick,
@@ -330,12 +368,90 @@ const Post: React.FC<PostProps> = ({
   const postIdRef = useRef<string>(postProp.public_id);
   const userIdRef = useRef<string | undefined>(user?.id);
   const engagementsRef = useRef<string>(JSON.stringify(postProp.engagements));
+  const postEngagementsRef = useRef<string>(JSON.stringify(postProp.engagements || {}));
   const childrenRef = useRef<ApiPost[] | undefined>(postProp.children);
   const postPropRef = useRef<ApiPost>(postProp);
 
   
+  // Helper function to update engagement states from post data
+  // Not using useCallback to avoid dependency issues
+  const updateEngagementStates = (postData: ApiPost) => {
+    console.log("updateEngagementStates called", {
+      hasEngagements: !!postData.engagements,
+      hasUserId: !!user?.id,
+      userId: user?.id,
+      engagementDetails: postData.engagements?.engagement_details
+    });
+    
+    if (!postData.engagements || !user?.id) {
+      // No user logged in or no engagements, reset all states
+      console.log("Resetting all engagement states - no engagements or user");
+      setIsLiked(false);
+      setIsDisliked(false);
+      setIsBanana(false);
+      setIsBookmarked(false);
+      setHasTipped(false);
+      return;
+    }
+
+    const userId = user.id;
+    console.log("Checking engagements for userId:", userId);
+    
+    if (postData.engagements.engagement_details && Array.isArray(postData.engagements.engagement_details)) {
+      // Check engagement_details for user's interactions
+      // engager_id is the user who performed the engagement
+      const userEngagements = postData.engagements.engagement_details.filter(
+        detail => detail && detail.engager_id === userId
+      );
+      
+      console.log("User engagements found:", userEngagements.map(e => e.kind));
+      
+      // Check for each interaction type
+      // Backend returns like_received/dislike_received when user gives like/dislike
+      // Also check for like_given/dislike_given for compatibility
+      const isLikedValue = userEngagements.some(e => 
+        e.kind === 'like_given' || e.kind === 'like_received'
+      );
+      const isDislikedValue = userEngagements.some(e => 
+        e.kind === 'dislike_given' || e.kind === 'dislike_received'
+      );
+      const isBananaValue = userEngagements.some(e => e.kind === 'banana');
+      const isBookmarkedValue = userEngagements.some(e => e.kind === 'bookmark');
+      const hasTippedValue = userEngagements.some(e => e.kind === 'tip');
+      
+      console.log("Setting states:", {
+        isLiked: isLikedValue,
+        isDisliked: isDislikedValue,
+        isBanana: isBananaValue,
+        isBookmarked: isBookmarkedValue,
+        hasTipped: hasTippedValue
+      });
+      
+      setIsLiked(isLikedValue);
+      setIsDisliked(isDislikedValue);
+      setIsBanana(isBananaValue);
+      setIsBookmarked(isBookmarkedValue);
+      setHasTipped(hasTippedValue);
+    } else {
+      // Fallback: reset all states if engagement_details is not available
+      // This ensures we don't show stale states
+      console.log("No engagement_details array, resetting states");
+      setIsLiked(false);
+      setIsDisliked(false);
+      setIsBanana(false);
+      setIsBookmarked(false);
+      setHasTipped(false);
+    }
+  };
+  
   // Update post when prop changes - only if post ID, user ID, or engagement data actually changed
   useEffect(() => {
+    console.log("useEffect [postProp, user?.id] triggered", {
+      postId: postProp.public_id,
+      userId: user?.id,
+      hasEngagements: !!postProp.engagements
+    });
+    
     // Always update ref to latest postProp
     postPropRef.current = postProp;
     
@@ -343,6 +459,13 @@ const Post: React.FC<PostProps> = ({
     const userIdChanged = user?.id !== userIdRef.current;
     const engagementsChanged = JSON.stringify(postProp.engagements) !== engagementsRef.current;
     const childrenChanged = JSON.stringify(postProp.children) !== JSON.stringify(childrenRef.current);
+    
+    console.log("Change detection:", {
+      postIdChanged,
+      userIdChanged,
+      engagementsChanged,
+      childrenChanged
+    });
     
     if (postIdChanged) {
       postIdRef.current = postProp.public_id;
@@ -355,7 +478,7 @@ const Post: React.FC<PostProps> = ({
       setChildren(postProp.children || []);
     }
     
-    if (postIdChanged || userIdChanged || engagementsChanged) {
+    // Always update engagement states - call on every render to ensure sync
       if (userIdChanged) {
         userIdRef.current = user?.id;
       }
@@ -364,47 +487,47 @@ const Post: React.FC<PostProps> = ({
         engagementsRef.current = JSON.stringify(postProp.engagements);
       }
       
-      setHasTipped(false);
-      
-      // Initialize like/dislike/banana/bookmark state from engagement_details
-      // Check engagement_details first (more accurate), then fallback to counts
-      if (postProp.engagements) {
-        const userId = user?.id;
-        
-        if (postProp.engagements.engagement_details && userId) {
-          // Check engagement_details for user's interactions
-          // engager_id is the user who performed the engagement
-          const userEngagements = postProp.engagements.engagement_details.filter(
-            detail => detail.engager_id === userId
-          );
-          
-          // Check for each interaction type
-          // Backend returns like_received/dislike_received when user gives like/dislike
-          // Also check for like_given/dislike_given for compatibility
-          setIsLiked(userEngagements.some(e => 
-            e.kind === 'like_given' || e.kind === 'like_received'
-          ));
-          setIsDisliked(userEngagements.some(e => 
-            e.kind === 'dislike_given' || e.kind === 'dislike_received'
-          ));
-          setIsBanana(userEngagements.some(e => e.kind === 'banana'));
-          setIsBookmarked(userEngagements.some(e => e.kind === 'bookmark'));
-          setHasTipped(userEngagements.some(e => e.kind === 'tip'));
-        } else if (postProp.engagements.counts) {
-          // Fallback to counts if engagement_details is not available
-          const counts = postProp.engagements.counts;
-          setIsLiked((counts.like_given_count || 0) > 0);
-          setIsDisliked((counts as any).dislike_given_count ? (counts as any).dislike_given_count > 0 : false);
-          setIsBanana((counts as any).banana_given_count ? (counts as any).banana_given_count > 0 : false);
-          setIsBookmarked((counts.bookmark_count || 0) > 0);
-          // Without engagement details we can't know if current user tipped
-          setHasTipped(false);
-        }
-      } else {
-        setHasTipped(false);
-      }
-    }
+    // Always update engagement states from postProp (not just when changed)
+    // This ensures states are synced on initial load and after prop updates
+    console.log("Calling updateEngagementStates from postProp useEffect");
+    updateEngagementStates(postProp);
   }, [postProp, user?.id]);
+
+  // Also update engagement states when post state changes (after API calls)
+  useEffect(() => {
+    console.log("useEffect [post.engagements, user?.id] triggered", {
+      hasEngagements: !!post.engagements,
+      userId: user?.id
+    });
+    
+    if (!post.engagements || !user?.id) {
+      // Reset if no engagements
+      const emptyString = '';
+      if (postEngagementsRef.current !== emptyString) {
+        postEngagementsRef.current = emptyString;
+        console.log("Calling updateEngagementStates from post state useEffect (no engagements)");
+        updateEngagementStates(post);
+      }
+      return;
+    }
+    
+    const engagementsString = JSON.stringify(post.engagements);
+    const engagementsChanged = engagementsString !== postEngagementsRef.current;
+    
+    console.log("Post engagements changed:", engagementsChanged);
+    
+    if (engagementsChanged) {
+      postEngagementsRef.current = engagementsString;
+      engagementsRef.current = engagementsString;
+      // Update engagement states from post state (after API refresh)
+      console.log("Calling updateEngagementStates from post state useEffect (engagements changed)");
+      updateEngagementStates(post);
+      } else {
+      // Even if not changed, ensure states are synced (in case of race conditions)
+      console.log("Engagements not changed, but ensuring sync");
+      updateEngagementStates(post);
+      }
+  }, [post.engagements, user?.id]);
 
   // Initialize selected poll choices from votes when post loads
   useEffect(() => {
@@ -478,46 +601,6 @@ const Post: React.FC<PostProps> = ({
       console.error("Lexical Error:", error);
     },
   }), [theme]);
-
-
- 
-
-  // Internal component to manage editor state within LexicalComposer context
-  const PostContentEditor = React.memo(({ content }: { content: string }) => {
-    const [editor] = useLexicalComposerContext();
-    const contentRef = useRef<string>(content);
-    const isInitializedRef = useRef<boolean>(false);
-
-    useEffect(() => {
-      // Only update if content actually changed
-      if (contentRef.current === content && isInitializedRef.current) {
-        return;
-      }
-      
-      if (!content) {
-        return;
-      }
-      
-      contentRef.current = content;
-      
-      // Defer editor state update to avoid flushSync during React rendering
-      // Use queueMicrotask to schedule after current render cycle
-      queueMicrotask(() => {
-        try {
-          editor.setEditable(false);
-          editor.setEditorState(editor.parseEditorState(content));
-          editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
-          isInitializedRef.current = true;
-        } catch {
-          // JSON değil, direkt HTML
-        }
-      });
-    }, [content, editor]);
-
-    return null;
-  });
-  
-  PostContentEditor.displayName = 'PostContentEditor';
 
   // Initialize Leaflet map when location is set
   useEffect(() => {
@@ -909,6 +992,7 @@ const Post: React.FC<PostProps> = ({
   };
 
   const handlePollVote = async (pollId: string, choiceId: string, pollKind: 'single' | 'multiple' | 'ranked' | 'weighted', maxSelectable: number, e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation(); // Prevent post click
     
     // Get current state before updating
@@ -1069,6 +1153,7 @@ const Post: React.FC<PostProps> = ({
 
   // Handle like
   const handleLike = async (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (isLiking) return;
     
@@ -1085,11 +1170,15 @@ const Post: React.FC<PostProps> = ({
     
     try {
       await api.handlePostLike(post.public_id);
+      console.log("Like API call successful, fetching updated post");
       // Refresh post to get updated engagement counts
       if (post.public_id) {
         try {
           const updatedPost = await api.fetchPost(post.public_id);
+          console.log("Updated post fetched, calling updateEngagementStates from handleLike");
           setPost(updatedPost);
+          // Update engagement states immediately after API call
+          updateEngagementStates(updatedPost);
           if (onUpdatePost) {
             onUpdatePost(updatedPost);
           } else if (onRefreshParent) {
@@ -1110,6 +1199,7 @@ const Post: React.FC<PostProps> = ({
 
   // Handle dislike
   const handleDislike = async (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (isDisliking) return;
     
@@ -1131,6 +1221,8 @@ const Post: React.FC<PostProps> = ({
         try {
           const updatedPost = await api.fetchPost(post.public_id);
           setPost(updatedPost);
+          // Update engagement states immediately after API call
+          updateEngagementStates(updatedPost);
           if (onUpdatePost) {
             onUpdatePost(updatedPost);
           } else if (onRefreshParent) {
@@ -1151,6 +1243,7 @@ const Post: React.FC<PostProps> = ({
 
   // Handle banana
   const handleBanana = async (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (isBananaing) return;
     
@@ -1166,6 +1259,8 @@ const Post: React.FC<PostProps> = ({
         try {
           const updatedPost = await api.fetchPost(post.public_id);
           setPost(updatedPost);
+          // Update engagement states immediately after API call
+          updateEngagementStates(updatedPost);
           if (onUpdatePost) {
             onUpdatePost(updatedPost);
           } else if (onRefreshParent) {
@@ -1185,6 +1280,7 @@ const Post: React.FC<PostProps> = ({
 
   // Handle bookmark
   const handleBookmark = async (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (isBookmarking) return;
     
@@ -1199,6 +1295,8 @@ const Post: React.FC<PostProps> = ({
         try {
           const updatedPost = await api.fetchPost(post.public_id);
           setPost(updatedPost);
+          // Update engagement states immediately after API call
+          updateEngagementStates(updatedPost);
           if (onUpdatePost) {
             onUpdatePost(updatedPost);
           } else if (onRefreshParent) {
@@ -1313,6 +1411,8 @@ const Post: React.FC<PostProps> = ({
     try {
       const updatedPost = await api.fetchPost(post.public_id);
       setPost(updatedPost);
+      // Update engagement states immediately after API call
+      updateEngagementStates(updatedPost);
       if (onUpdatePost) {
         onUpdatePost(updatedPost);
       } else if (onRefreshParent) {

@@ -123,7 +123,7 @@ export class YouTubeNode extends DecoratorBlockNode {
       'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
     );
     element.setAttribute('allowfullscreen', 'true');
-    element.setAttribute('title', 'YouTube video');
+    element.setAttribute('title', 'Coolvibes video');
     return { element };
   }
 

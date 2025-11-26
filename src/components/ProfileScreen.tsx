@@ -1223,7 +1223,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   const [updatingInterests, setUpdatingInterests] = useState(false);
 
   // Fantasies state
-  const [fantasyView, setFantasyView] = useState<'list' | 'detail'>('list');
   const [selectedFantasyCategory, setSelectedFantasyCategory] = useState<string | null>(null);
   const [updatingFantasies, setUpdatingFantasies] = useState(false);
 
@@ -2341,7 +2340,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
 
   const handleFantasyCategoryClick = (categoryId: string) => {
     setSelectedFantasyCategory(categoryId);
-    setFantasyView('detail');
   };
 
   const handleFantasyItemToggle = async (fantasyId: string) => {
@@ -2379,6 +2377,28 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         }
         // Set the selected bit
         newPreferencesFlags = setBit(newPreferencesFlags, fantasyItem.bit_index);
+      }
+    }
+
+    // Optimistically update preferences_flags in user state for immediate UI feedback
+    if (usePreferencesFlags && fantasyItem?.bit_index !== undefined) {
+      const flagsString = serializePreferencesFlags(newPreferencesFlags);
+      const userToUpdate = (isEditMode && isAuthenticated && isOwnProfile && authUser) ? authUser : user;
+      if (userToUpdate) {
+        const updatedUserData = {
+          ...userToUpdate,
+          preferences_flags: flagsString,
+        } as any;
+        
+        // Update auth context if it's the auth user
+        if (isAuthenticated && authUser && (authUser.id === userToUpdate.id || authUser.username === userToUpdate.username)) {
+          updateUser(updatedUserData);
+        }
+        
+        // Update local user state
+        if (user && (user.id === userToUpdate.id || user.username === userToUpdate.username)) {
+          setUser(updatedUserData as unknown as ProfileUser);
+        }
       }
     }
 
@@ -2441,24 +2461,15 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
             setUser(response.user as unknown as ProfileUser);
           }
         } else if (usePreferencesFlags && fantasyItem.bit_index !== undefined) {
-          // Update preferences_flags in user data from response
+          // Response might not have user, but we already updated optimistically
+          // Just ensure preferences_flags is in sync
           if (response?.user) {
             updateUser(response.user);
             if (user && (authUser.id === user.id || authUser.username === user.username)) {
               setUser(response.user as unknown as ProfileUser);
             }
-          } else {
-            // Fallback: update from newPreferencesFlags
-            const flagsString = serializePreferencesFlags(newPreferencesFlags);
-            const updatedUserData = {
-              ...authUser,
-              preferences_flags: flagsString,
-            } as any;
-            updateUser(updatedUserData);
-            if (user && (authUser.id === user.id || authUser.username === user.username)) {
-              setUser(updatedUserData as unknown as ProfileUser);
-            }
           }
+          // If no response.user, optimistic update already handled it above
         } else if (user && (authUser.id === user.id || authUser.username === user.username)) {
           // Fallback to local state update
           updateUser({
@@ -2471,7 +2482,25 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
       console.error('Error updating fantasies:', err);
 
       // Revert optimistic update on error
-      if (user) {
+      if (usePreferencesFlags && fantasyItem?.bit_index !== undefined) {
+        // Revert preferences_flags
+        const userToRevert = (isEditMode && isAuthenticated && isOwnProfile && authUser) ? authUser : user;
+        if (userToRevert) {
+          const originalFlagsString = (userToRevert as any)?.preferences_flags || '';
+          const revertedUserData = {
+            ...userToRevert,
+            preferences_flags: originalFlagsString,
+          } as any;
+          
+          if (isAuthenticated && authUser && (authUser.id === userToRevert.id || authUser.username === userToRevert.username)) {
+            updateUser(revertedUserData);
+          }
+          
+          if (user && (user.id === userToRevert.id || user.username === userToRevert.username)) {
+            setUser(revertedUserData as unknown as ProfileUser);
+          }
+        }
+      } else if (user) {
         const currentFantasies = user.fantasies || [];
         if (isSelected) {
           // Re-add fantasy if we removed it
@@ -2534,7 +2563,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
       setInterestView('list');
       setSelectedInterestCategory(null);
       // Reset fantasy view
-      setFantasyView('list');
       setSelectedFantasyCategory(null);
 
       // Initialize form data if user is available
@@ -3301,7 +3329,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                   </div>
 
                   {/* Tab Content */}
-                  <div className="relative min-h-[400px] px-4 sm:px-6 w-full">
+                  <div className="relative min-h-[400px] px-4 sm:px-6 w-full overflow-x-hidden overflow-y-auto">
                     <AnimatePresence mode="wait" initial={false}>
                       {editTab === 'profile' && (
                         <motion.div
@@ -3741,7 +3769,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                           className="space-y-6 w-full"
                         >
                           {/* Attributes List - iOS tableView style */}
-                          <div className="relative">
+                          <div className="relative h-full min-h-[calc(100vh-300px)]">
                             {/* List View */}
                             <motion.div
                               animate={{
@@ -3916,7 +3944,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                 stiffness: 400,
                                 mass: 0.8
                               }}
-                              className={`absolute inset-0 ${theme === 'dark' ? 'bg-transparent' : 'bg-transparent'} z-10`}
+                              className={`absolute top-0 left-0 right-0 bottom-24 ${theme === 'dark' ? 'bg-transparent' : 'bg-transparent'} z-10`}
                               style={{
                                 pointerEvents: attributeView === 'detail' ? 'auto' : 'none',
                                 willChange: 'transform, opacity'
@@ -4020,7 +4048,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                           className="space-y-6 w-full"
                         >
                           {/* Interests List - iOS tableView style */}
-                          <div className="relative">
+                          <div className="relative overflow-hidden" style={{ minHeight: 'calc(100vh - 300px)' }}>
                             {/* List View */}
                             <motion.div
                               animate={{
@@ -4033,10 +4061,15 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                 stiffness: 400,
                                 mass: 0.8
                               }}
-                              className={`relative ${theme === 'dark' ? 'bg-transparent' : 'bg-transparent'}`}
+                              className={`relative w-full ${theme === 'dark' ? 'bg-transparent' : 'bg-transparent'}`}
                               style={{
                                 pointerEvents: interestView === 'list' ? 'auto' : 'none',
-                                willChange: 'transform, opacity'
+                                willChange: 'transform, opacity',
+                                position: interestView === 'list' ? 'relative' : 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0
                               }}
                             >
                               {/* List Header */}
@@ -4116,68 +4149,84 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                                 stiffness: 400,
                                 mass: 0.8
                               }}
-                              className={`absolute inset-0 ${theme === 'dark' ? 'bg-transparent' : 'bg-transparent'} z-10`}
+                              className={`absolute inset-0 ${theme === 'dark' ? 'bg-gray-950' : 'bg-white'} z-10`}
                               style={{
                                 pointerEvents: interestView === 'detail' ? 'auto' : 'none',
-                                willChange: 'transform, opacity'
+                                willChange: 'transform, opacity',
+                                overflowY: 'auto',
+                                overflowX: 'hidden',
+                                WebkitOverflowScrolling: 'touch'
                               }}
                             >
-                              {/* Detail Header */}
-                              <div className={`sticky top-0 z-10 px-4 py-4 flex items-center ${theme === 'dark' ? 'bg-black/95 backdrop-blur-sm' : 'bg-white/95 backdrop-blur-sm'}`}>
-                                <button
-                                  onClick={() => {
-                                    setInterestView('list');
-                                    setSelectedInterestCategory(null);
-                                  }}
-                                  className={`p-2 rounded-full transition-colors ${theme === 'dark'
-                                    ? 'hover:bg-gray-900/50 text-gray-400 hover:text-gray-300'
-                                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-                                    }`}
-                                >
-                                  <ArrowLeft className="w-5 h-5" />
-                                </button>
-                                <h2 className={`text-lg font-bold flex-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                                  {selectedInterestCategory ? (interestCategories.find(c => c.id === selectedInterestCategory)?.name || '') : ''}
-                                </h2>
-                              </div>
+                              <style>{`
+                                .interest-detail-scroll::-webkit-scrollbar {
+                                  display: none;
+                                }
+                                .interest-detail-scroll {
+                                  -ms-overflow-style: none;
+                                  scrollbar-width: none;
+                                }
+                              `}</style>
+                              <div className="interest-detail-scroll h-full">
+                                {/* Detail Header */}
+                                <div className={`sticky top-0 z-10 px-4 py-4 flex items-center border-b ${theme === 'dark' ? 'bg-gray-950/95 backdrop-blur-sm border-gray-900' : 'bg-white/95 backdrop-blur-sm border-gray-200'}`}>
+                                  <button
+                                    onClick={() => {
+                                      setInterestView('list');
+                                      setSelectedInterestCategory(null);
+                                    }}
+                                    className={`p-2 rounded-full transition-colors ${theme === 'dark'
+                                      ? 'hover:bg-gray-900/50 text-gray-400 hover:text-gray-300'
+                                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                                      }`}
+                                  >
+                                    <ArrowLeft className="w-5 h-5" />
+                                  </button>
+                                  <h2 className={`text-lg font-bold flex-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                                    {selectedInterestCategory ? (interestCategories.find(c => c.id === selectedInterestCategory)?.name || '') : ''}
+                                  </h2>
+                                </div>
 
-                              {/* Options List */}
-                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}`}>
-                                {selectedInterestCategory && interestOptions[selectedInterestCategory] && interestOptions[selectedInterestCategory].length > 0 ? (
-                                  interestOptions[selectedInterestCategory].map((item, index) => {
-                                    const isSelected = userSelectedInterestIds.includes(item.id);
-                                    const isLast = index === interestOptions[selectedInterestCategory].length - 1;
-                                    return (
-                                      <button
-                                        key={item.id}
-                                        onClick={() => handleInterestItemToggle(item.id)}
-                                        disabled={updatingInterests}
-                                        className={`w-full px-4 py-4 text-left flex items-center justify-between transition-colors ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'}` : ''} ${isSelected
-                                          ? theme === 'dark'
-                                            ? 'bg-gray-900/50 text-white'
-                                            : 'bg-gray-50 text-gray-900'
-                                          : theme === 'dark'
-                                            ? 'border-gray-900 text-gray-300 hover:bg-gray-900/30 active:bg-gray-900/50'
-                                            : 'border-gray-200/50 text-gray-900 hover:bg-gray-50 active:bg-gray-100'
-                                          } ${updatingInterests ? 'opacity-50 cursor-wait' : ''}`}
-                                      >
-                                        <div className="flex items-center gap-3 flex-1">
-                                          {item.emoji && (
-                                            <span className="text-lg">{item.emoji}</span>
-                                          )}
-                                          <span className="text-base font-medium">{item.name}</span>
-                                        </div>
-                                        {isSelected && (
-                                          <Check className={`w-5 h-5 flex-shrink-0 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} />
-                                        )}
-                                      </button>
-                                    );
-                                  })
-                                ) : (
-                                  <div className={`px-4 py-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                                    <p className="text-sm">{t('profile.no_options_available') || 'No options available for this category'}</p>
+                                {/* Options List */}
+                                <div className="px-4 py-4">
+                                  <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}`}>
+                                    {selectedInterestCategory && interestOptions[selectedInterestCategory] && interestOptions[selectedInterestCategory].length > 0 ? (
+                                      interestOptions[selectedInterestCategory].map((item, index) => {
+                                        const isSelected = userSelectedInterestIds.includes(item.id);
+                                        const isLast = index === interestOptions[selectedInterestCategory].length - 1;
+                                        return (
+                                          <button
+                                            key={item.id}
+                                            onClick={() => handleInterestItemToggle(item.id)}
+                                            disabled={updatingInterests}
+                                            className={`w-full px-4 py-4 text-left flex items-center justify-between transition-colors ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'}` : ''} ${isSelected
+                                              ? theme === 'dark'
+                                                ? 'bg-gray-900/50 text-white'
+                                                : 'bg-gray-50 text-gray-900'
+                                              : theme === 'dark'
+                                                ? 'border-gray-900 text-gray-300 hover:bg-gray-900/30 active:bg-gray-900/50'
+                                                : 'border-gray-200/50 text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                                              } ${updatingInterests ? 'opacity-50 cursor-wait' : ''}`}
+                                          >
+                                            <div className="flex items-center gap-3 flex-1">
+                                              {item.emoji && (
+                                                <span className="text-lg">{item.emoji}</span>
+                                              )}
+                                              <span className="text-base font-medium">{item.name}</span>
+                                            </div>
+                                            {isSelected && (
+                                              <Check className={`w-5 h-5 flex-shrink-0 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} />
+                                            )}
+                                          </button>
+                                        );
+                                      })
+                                    ) : (
+                                      <div className={`px-4 py-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        <p className="text-sm">{t('profile.no_options_available') || 'No options available for this category'}</p>
+                                      </div>
+                                    )}
                                   </div>
-                                )}
+                                </div>
                               </div>
                             </motion.div>
                           </div>
@@ -4186,176 +4235,209 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                       {editTab === 'fantasies' && (
                         <motion.div
                           key="fantasies"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="space-y-6 w-full"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                          className="w-full"
                         >
-                          {/* Fantasies List - iOS tableView style */}
-                          <div className="relative">
-                            {/* List View */}
-                            <motion.div
-                              animate={{
-                                x: fantasyView === 'list' ? 0 : '-100%',
-                                opacity: fantasyView === 'list' ? 1 : 0
-                              }}
-                              transition={{
-                                type: 'spring',
-                                damping: 35,
-                                stiffness: 400,
-                                mass: 0.8
-                              }}
-                              className={`relative ${theme === 'dark' ? 'bg-transparent' : 'bg-transparent'}`}
-                              style={{
-                                pointerEvents: fantasyView === 'list' ? 'auto' : 'none',
-                                willChange: 'transform, opacity'
-                              }}
-                            >
-                              {/* List Header */}
-                              <div className={`px-4 py-4 flex items-center ${theme === 'dark' ? 'bg-transparent' : 'bg-transparent'}`}>
-                                <h3 className={`text-base font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                                  {t('profile.fantasies')}
-                                </h3>
-                              </div>
+                          {/* Header */}
+                          <div className={`pt-6 pb-4 ${theme === 'dark' ? 'bg-transparent' : 'bg-transparent'}`}>
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className={`text-xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                                {t('profile.fantasies')}
+                              </h3>
+                              {fantasyCategories.length > 0 && (
+                                <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${theme === 'dark'
+                                  ? 'bg-white/10 text-gray-300 border border-white/10'
+                                  : 'bg-gray-100 text-gray-600 border border-gray-200'
+                                  }`}>
+                                  {fantasyCategories.length} {fantasyCategories.length === 1 ? 'category' : 'categories'}
+                                </span>
+                              )}
+                            </div>
+                            {fantasyCategories.length > 0 && (
+                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {Object.values(userSelectedFantasiesByCategory).reduce((sum, items) => sum + items.length, 0)} selected
+                              </p>
+                            )}
+                          </div>
 
-                              {/* List Content */}
-                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}`}>
-                                {fantasyCategories.map((category, index) => {
-                                  const isLast = index === fantasyCategories.length - 1;
-                                  const categoryItems = fantasyOptions[category.id] || [];
-                                  const selectedCount = categoryItems.filter(item => userSelectedFantasyIds.includes(item.id)).length;
-                                  const hasSelections = selectedCount > 0;
-                                  const selectedItems = userSelectedFantasiesByCategory[category.id] || [];
+                          {/* Categories with Accordion - No Scroll */}
+                          <div className="pb-6 space-y-3">
+                            {fantasyCategories.length > 0 ? (
+                              fantasyCategories.map((category) => {
+                                const categoryItems = fantasyOptions[category.id] || [];
+                                const selectedCount = categoryItems.filter(item => userSelectedFantasyIds.includes(item.id)).length;
+                                const selectedItems = userSelectedFantasiesByCategory[category.id] || [];
+                                const hasSelections = selectedCount > 0;
+                                const isExpanded = selectedFantasyCategory === category.id;
 
-                                  return (
+                                return (
+                                  <motion.div
+                                    key={category.id}
+                                    initial={false}
+                                    className={`rounded-2xl overflow-hidden transition-all duration-200 ${theme === 'dark'
+                                      ? 'bg-gradient-to-br from-gray-900/90 to-gray-800/50 border border-gray-800/60'
+                                      : 'bg-white border border-gray-200/90'
+                                      }`}
+                                  >
+                                    {/* Category Header */}
                                     <button
-                                      key={category.id}
                                       type="button"
-                                      onClick={() => handleFantasyCategoryClick(category.id)}
+                                      onClick={() => {
+                                        if (isExpanded) {
+                                          setSelectedFantasyCategory(null);
+                                        } else {
+                                          setSelectedFantasyCategory(category.id);
+                                        }
+                                      }}
                                       disabled={updatingFantasies}
-                                      className={`w-full px-4 py-4 flex items-center justify-between transition-colors ${updatingFantasies ? 'opacity-50 cursor-default' : ''} ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-100'}` : ''} ${theme === 'dark'
-                                        ? 'text-white hover:bg-gray-900/50 active:bg-gray-900/50'
-                                        : 'text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                                      className={`w-full p-4 flex items-center justify-between transition-all ${updatingFantasies ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${theme === 'dark'
+                                        ? 'hover:bg-gray-900/50'
+                                        : 'hover:bg-gray-50/50'
                                         }`}
                                     >
                                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <span className="font-medium text-base flex-1 text-left">{category.name}</span>
-                                        {selectedItems.length > 0 && (
-                                          <div className="flex items-center gap-1.5 flex-wrap flex-shrink-0 ml-2">
-                                            {selectedItems.slice(0, 3).map((item) => (
-                                              <span
-                                                key={item.id}
-                                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${theme === 'dark'
-                                                  ? 'bg-gray-900/30 text-gray-200 border border-gray-900'
-                                                  : 'bg-gray-100 text-gray-700 border border-gray-200'
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-2.5 mb-1.5">
+                                            <h4 className={`text-base font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                                              {category.name}
+                                            </h4>
+                                            {hasSelections && (
+                                              <motion.span
+                                                initial={{ scale: 0.8 }}
+                                                animate={{ scale: 1 }}
+                                                className={`inline-flex items-center justify-center min-w-[24px] h-5 px-2 rounded-full text-xs font-bold ${theme === 'dark'
+                                                  ? 'bg-white/15 text-white'
+                                                  : 'bg-gray-900/10 text-gray-700'
                                                   }`}
                                               >
-                                                <span className="truncate max-w-[80px]">{item.name}</span>
-                                              </span>
-                                            ))}
-                                            {selectedItems.length > 3 && (
-                                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                +{selectedItems.length - 3}
-                                              </span>
+                                                {selectedCount}
+                                              </motion.span>
                                             )}
                                           </div>
-                                        )}
-                                      </div>
-                                      <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                                        {hasSelections && selectedItems.length === 0 && (
-                                          <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                                            {selectedCount}
-                                          </span>
-                                        )}
-                                        <ChevronRight className={`w-5 h-5 flex-shrink-0 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
+                                          {selectedItems.length > 0 && !isExpanded && (
+                                            <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                              {selectedItems.slice(0, 3).map((item) => (
+                                                <span
+                                                  key={item.id}
+                                                  className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${theme === 'dark'
+                                                    ? 'bg-white/10 text-gray-200'
+                                                    : 'bg-gray-100 text-gray-700'
+                                                    }`}
+                                                >
+                                                  {item.name}
+                                                </span>
+                                              ))}
+                                              {selectedItems.length > 3 && (
+                                                <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                  +{selectedItems.length - 3}
+                                                </span>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                        <motion.div
+                                          animate={{ rotate: isExpanded ? 180 : 0 }}
+                                          transition={{ duration: 0.2 }}
+                                          className={`flex-shrink-0 ml-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}
+                                        >
+                                          <ChevronDown className="w-5 h-5" />
+                                        </motion.div>
                                       </div>
                                     </button>
-                                  );
-                                })}
-                              </div>
-                            </motion.div>
 
-                            {/* Detail View */}
-                            <motion.div
-                              animate={{
-                                x: fantasyView === 'detail' ? 0 : '100%',
-                                opacity: fantasyView === 'detail' ? 1 : 0
-                              }}
-                              transition={{
-                                type: 'spring',
-                                damping: 35,
-                                stiffness: 400,
-                                mass: 0.8
-                              }}
-                              className={`absolute inset-0 ${theme === 'dark' ? 'bg-transparent' : 'bg-transparent'} z-10`}
-                              style={{
-                                pointerEvents: fantasyView === 'detail' ? 'auto' : 'none',
-                                willChange: 'transform, opacity'
-                              }}
-                            >
-                              {/* Detail Header */}
-                              <div className={`sticky top-0 z-10 px-4 py-4 flex items-center ${theme === 'dark' ? 'bg-black/95 backdrop-blur-sm' : 'bg-white/95 backdrop-blur-sm'}`}>
-                                <button
-                                  onClick={() => {
-                                    setFantasyView('list');
-                                    setSelectedFantasyCategory(null);
-                                  }}
-                                  className={`p-2 rounded-full transition-colors ${theme === 'dark'
-                                    ? 'hover:bg-gray-900/50 text-gray-400 hover:text-gray-300'
-                                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-                                    }`}
-                                >
-                                  <ArrowLeft className="w-5 h-5" />
-                                </button>
-                                <h2 className={`text-lg font-bold flex-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                                  {selectedFantasyCategory ? (fantasyCategories.find(c => c.id === selectedFantasyCategory)?.name || '') : ''}
-                                </h2>
-                              </div>
-
-                              {/* Options List */}
-                              <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-white'} border ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}`}>
-                                {selectedFantasyCategory && fantasyOptions[selectedFantasyCategory] && fantasyOptions[selectedFantasyCategory].length > 0 ? (
-                                  fantasyOptions[selectedFantasyCategory].map((item, index) => {
-                                    const isSelected = userSelectedFantasyIds.includes(item.id);
-                                    const isLast = index === fantasyOptions[selectedFantasyCategory].length - 1;
-                                    return (
-                                      <button
-                                        key={item.id}
-                                        onClick={() => handleFantasyItemToggle(item.id)}
-                                        disabled={updatingFantasies}
-                                        className={`w-full px-4 py-4 text-left flex items-center justify-between transition-colors ${!isLast ? `border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'}` : ''} ${isSelected
-                                          ? theme === 'dark'
-                                            ? 'bg-gray-900/50 text-white'
-                                            : 'bg-gray-50 text-gray-900'
-                                          : theme === 'dark'
-                                            ? 'border-gray-900 text-gray-300 hover:bg-gray-900/30 active:bg-gray-900/50'
-                                            : 'border-gray-200/50 text-gray-900 hover:bg-gray-50 active:bg-gray-100'
-                                          } ${updatingFantasies ? 'opacity-50 cursor-wait' : ''}`}
-                                      >
-                                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                                          <div className="flex-1 min-w-0">
-                                            <div className="text-base font-medium mb-1">{item.name}</div>
-                                            {item.description && (
-                                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                {item.description}
-                                              </p>
+                                    {/* Expanded Options - No Scroll */}
+                                    <AnimatePresence initial={false}>
+                                      {isExpanded && (
+                                        <motion.div
+                                          initial={{ height: 0, opacity: 0 }}
+                                          animate={{ height: 'auto', opacity: 1 }}
+                                          exit={{ height: 0, opacity: 0 }}
+                                          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                                          className="overflow-hidden"
+                                        >
+                                          <div className={`pb-4  px-3 pt-2 border-t ${theme === 'dark' ? 'border-gray-800/60' : 'border-gray-200/60'}`}>
+                                            {categoryItems.length > 0 ? (
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+                                                {categoryItems.map((item) => {
+                                                  const isSelected = userSelectedFantasyIds.includes(item.id);
+                                                  return (
+                                                    <motion.button
+                                                      key={item.id}
+                                                      onClick={() => handleFantasyItemToggle(item.id)}
+                                                      disabled={updatingFantasies}
+                                                      whileHover={{ scale: 1.02 }}
+                                                      whileTap={{ scale: 0.98 }}
+                                                      className={`text-left rounded-xl p-3.5 transition-all duration-200 relative ${updatingFantasies ? 'opacity-50 cursor-wait' : 'cursor-pointer'} ${isSelected
+                                                        ? theme === 'dark'
+                                                          ? 'bg-gradient-to-r from-white/12 to-white/6 border-2 border-white/25'
+                                                          : 'bg-gradient-to-r from-gray-50 to-white border-2 border-gray-400'
+                                                        : theme === 'dark'
+                                                          ? 'bg-gray-900/40 border border-gray-800/60 hover:border-gray-700/70 hover:bg-gray-900/60'
+                                                          : 'bg-white border border-gray-200/90 hover:border-gray-300 hover:bg-gray-50/80'
+                                                        }`}
+                                                    >
+                                                      <div className="flex items-start justify-start h-full w-full gap-2">
+                                                        <div className="flex-1 min-w-0 pr-8">
+                                                          <div className="mb-1">
+                                                            <h5 className={`text-sm font-semibold tracking-tight ${isSelected
+                                                              ? theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                                              : theme === 'dark' ? 'text-gray-200' : 'text-gray-900'
+                                                              }`}>
+                                                              {item.name}
+                                                            </h5>
+                                                          </div>
+                                                          {item.description && (
+                                                            <p className={`text-xs leading-relaxed ${isSelected
+                                                              ? theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                                                              : theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                                                              }`}>
+                                                              {item.description}
+                                                            </p>
+                                                          )}
+                                                        </div>
+                                                        {isSelected && (
+                                                          <motion.div
+                                                            initial={{ scale: 0 }}
+                                                            animate={{ scale: 1 }}
+                                                            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                                                            className={`absolute top-3.5 right-3.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${theme === 'dark'
+                                                              ? 'bg-white text-gray-900'
+                                                              : 'bg-gray-900 text-white'
+                                                              }`}
+                                                          >
+                                                            <Check className="w-3 h-3" />
+                                                          </motion.div>
+                                                        )}
+                                                      </div>
+                                                    </motion.button>
+                                                  );
+                                                })}
+                                              </div>
+                                            ) : (
+                                              <div className={`py-8 text-center rounded-xl ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-gray-50'}`}>
+                                                <p className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                  {t('profile.no_options_available') || 'No options available'}
+                                                </p>
+                                              </div>
                                             )}
                                           </div>
-                                        </div>
-                                        {isSelected && (
-                                          <Check className={`w-5 h-5 flex-shrink-0 ml-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} />
-                                        )}
-                                      </button>
-                                    );
-                                  })
-                                ) : (
-                                  <div className={`px-4 py-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                                    <p className="text-sm">{t('profile.no_options_available') || 'No options available for this category'}</p>
-                                  </div>
-                                )}
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                  </motion.div>
+                                );
+                              })
+                            ) : (
+                              <div className={`py-12 text-center rounded-2xl ${theme === 'dark' ? 'bg-gray-900/30 border border-gray-800' : 'bg-gray-50 border border-gray-200'}`}>
+                                <Sparkles className={`w-10 h-10 mx-auto mb-3 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
+                                <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  No fantasy categories available
+                                </p>
                               </div>
-                            </motion.div>
+                            )}
                           </div>
                         </motion.div>
                       )}
@@ -4375,40 +4457,42 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     </motion.div>
                   )}
 
-                  {/* Action Buttons */}
-                  <div className="flex items-center justify-end gap-3 pt-6 pb-8 px-4 sm:px-6 border-t ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'}">
-                    <button
-                      onClick={() => setIsEditMode(false)}
-                      className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${theme === 'dark'
-                        ? 'bg-gray-900/30 text-gray-300 hover:bg-gray-900/50'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                    >
-                      {t('profile.cancel')}
-                    </button>
-                    <button
-                      onClick={handleSaveProfile}
-                      disabled={isSaving}
-                      className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${isSaving
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : theme === 'dark'
-                          ? 'bg-white text-black hover:bg-gray-200'
-                          : 'bg-black text-white hover:bg-gray-900'
-                        }`}
-                    >
-                      {isSaving ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                          <span>{t('profile.saving')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-4 h-4" />
-                          <span>{t('profile.save')}</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  {/* Action Buttons - Only show on profile tab */}
+                  {editTab === 'profile' && (
+                    <div className={`flex items-center justify-end gap-3 pt-6 pb-8 px-4 sm:px-6 border-t ${theme === 'dark' ? 'bg-gray-950 border-gray-900' : 'bg-white border-gray-200'}`}>
+                      <button
+                        onClick={() => setIsEditMode(false)}
+                        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${theme === 'dark'
+                          ? 'bg-gray-900/30 text-gray-300 hover:bg-gray-900/50'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                      >
+                        {t('profile.cancel')}
+                      </button>
+                      <button
+                        onClick={handleSaveProfile}
+                        disabled={isSaving}
+                        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${isSaving
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : theme === 'dark'
+                            ? 'bg-white text-black hover:bg-gray-200'
+                            : 'bg-black text-white hover:bg-gray-900'
+                          }`}
+                      >
+                        {isSaving ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            <span>{t('profile.saving')}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4" />
+                            <span>{t('profile.save')}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </motion.div>
               </div>
             </div>

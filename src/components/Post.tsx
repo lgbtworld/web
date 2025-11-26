@@ -469,8 +469,16 @@ const Post: React.FC<PostProps> = ({
     
     if (postIdChanged) {
       postIdRef.current = postProp.public_id;
-      setPost(postProp);
     }
+    
+    // Always sync post state with postProp to ensure latest data
+    setPost(prevPost => {
+      // Only update if post ID changed or if engagements changed
+      if (postIdChanged || JSON.stringify(prevPost.engagements) !== JSON.stringify(postProp.engagements)) {
+        return postProp;
+      }
+      return prevPost;
+    });
     
     if (childrenChanged) {
       childrenRef.current = postProp.children;
@@ -497,37 +505,28 @@ const Post: React.FC<PostProps> = ({
   useEffect(() => {
     console.log("useEffect [post.engagements, user?.id] triggered", {
       hasEngagements: !!post.engagements,
-      userId: user?.id
+      userId: user?.id,
+      postId: post.public_id
     });
     
-    if (!post.engagements || !user?.id) {
-      // Reset if no engagements
-      const emptyString = '';
-      if (postEngagementsRef.current !== emptyString) {
-        postEngagementsRef.current = emptyString;
-        console.log("Calling updateEngagementStates from post state useEffect (no engagements)");
-        updateEngagementStates(post);
-      }
-      return;
-    }
-    
-    const engagementsString = JSON.stringify(post.engagements);
+    // Always update engagement states when post.engagements or user changes
+    // This ensures states are synced after API calls
+    const engagementsString = post.engagements ? JSON.stringify(post.engagements) : '';
     const engagementsChanged = engagementsString !== postEngagementsRef.current;
     
-    console.log("Post engagements changed:", engagementsChanged);
-    
-    if (engagementsChanged) {
+    if (engagementsChanged || !postEngagementsRef.current) {
       postEngagementsRef.current = engagementsString;
       engagementsRef.current = engagementsString;
-      // Update engagement states from post state (after API refresh)
-      console.log("Calling updateEngagementStates from post state useEffect (engagements changed)");
+      console.log("Calling updateEngagementStates from post state useEffect");
       updateEngagementStates(post);
-      } else {
-      // Even if not changed, ensure states are synced (in case of race conditions)
-      console.log("Engagements not changed, but ensuring sync");
-      updateEngagementStates(post);
-      }
-  }, [post.engagements, user?.id]);
+    }
+  }, [post.engagements, user?.id, post.public_id]);
+
+  // Ensure engagement states are updated on initial mount
+  useEffect(() => {
+    console.log("Initial mount useEffect - calling updateEngagementStates");
+    updateEngagementStates(post);
+  }, []); // Only run once on mount
 
   // Initialize selected poll choices from votes when post loads
   useEffect(() => {

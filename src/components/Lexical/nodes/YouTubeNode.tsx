@@ -17,9 +17,9 @@ import type {
   NodeKey,
   Spread,
 } from 'lexical';
-import type {JSX} from 'react';
+import type { JSX } from 'react';
 
-import {BlockWithAlignableContents} from '@lexical/react/LexicalBlockWithAlignableContents';
+import { BlockWithAlignableContents } from '@lexical/react/LexicalBlockWithAlignableContents';
 import {
   DecoratorBlockNode,
   SerializedDecoratorBlockNode,
@@ -50,11 +50,11 @@ function YouTubeComponent({
       <iframe
         width="100%"
         height="460px"
-        className='rounded-lg'
-        src={`https://www.youtube-nocookie.com/embed/${videoID}`}
+        className="rounded-lg"
+        src={`https://www.youtube.com/embed/${videoID}`}
         frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen={true}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
         title="YouTube video"
       />
     </BlockWithAlignableContents>
@@ -74,7 +74,7 @@ function $convertYoutubeElement(
   const videoID = domNode.getAttribute('data-lexical-youtube');
   if (videoID) {
     const node = $createYouTubeNode(videoID);
-    return {node};
+    return { node };
   }
   return null;
 }

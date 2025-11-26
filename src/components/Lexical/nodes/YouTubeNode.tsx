@@ -115,16 +115,16 @@ export class YouTubeNode extends DecoratorBlockNode {
     element.setAttribute('height', '100%');
     element.setAttribute(
       'src',
-      `https://www.youtube-nocookie.com/embed/${this.__id}`,
+      `https://www.youtube.com/embed/${this.__id}`
     );
     element.setAttribute('frameborder', '0');
     element.setAttribute(
       'allow',
-      'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+      'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
     );
     element.setAttribute('allowfullscreen', 'true');
     element.setAttribute('title', 'YouTube video');
-    return {element};
+    return { element };
   }
 
   static importDOM(): DOMConversionMap | null {

@@ -30,6 +30,7 @@ import TestPage from './components/TestPage.tsx';
 import PwaInstallPrompt, { PwaInstallProvider, usePwaInstall } from './components/PwaInstallPrompt';
 import PremiumScreen from './components/PremiumScreen.tsx';
 import PostDetails from './components/PostDetails.tsx';
+import WalletScreen from './components/WalletScreen.tsx';
 
 function AppContent() {
   const [activeScreen, setActiveScreen] = useState('pride');
@@ -427,6 +428,8 @@ function AppContent() {
                 <Route path="/pride" element={<HomeScreen />} />
                 <Route path="/testpage" element={<TestPage />} />
                 <Route path="/premium" element={<PremiumScreen />} />
+                <Route path="/wallet" element={<WalletScreen />} />
+
                 <Route
                   path="/:username/:engagementType"
                   element={<ProfileEngagementsScreen />}

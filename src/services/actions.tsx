@@ -1,6 +1,8 @@
 export const Actions = {
   // SYSTEM
+
   SYSTEM_INITIAL_SYNC: "system.initial_sync",
+  CMD_PAYMENT_METHODS : "system.payment_methods",
   CMD_GET_VAPID_PUBLIC_KEY: "system_vapid_get_key",
   CMD_SET_VAPID_SUBSCRIBE: "system_vapid_subscribe",
   CMD_GET_NOTIFICATIONS: "system_notifications",

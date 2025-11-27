@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, MapPin, Link, MoreHorizontal, Heart, Baby, Cigarette, Wine, Ruler, PawPrint, Church, GraduationCap, Eye, EyeOff, Lock, Palette, Accessibility, Paintbrush, RulerDimensionLine, Vegan, PersonStanding, Sparkles, Drama, Banana, Save, Camera, Image as ImageIcon, ChevronRight, Check, HeartHandshake, AlertTriangle, FileText, MessageCircle, Panda, Ghost, Rainbow, Transgender, Rabbit, ChevronLeft, ChevronDown, LocateFixed, UserCircle, Clock, Smile, HeartPulse, Bubbles, Leaf, Fingerprint } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Link, MoreHorizontal, Heart, Baby, Cigarette, Wine, Ruler, PawPrint, Church, GraduationCap, Eye, EyeOff, Lock, Palette, Accessibility, Paintbrush, RulerDimensionLine, Vegan, PersonStanding, Sparkles, Drama, Banana, Save, Camera, Image as ImageIcon, ChevronRight, Check, HeartHandshake, AlertTriangle, FileText, MessageCircle, Panda, Ghost, Rainbow, Transgender, Rabbit, ChevronLeft, ChevronDown, LocateFixed, UserCircle, Clock, Smile, HeartPulse, Bubbles, Leaf, Fingerprint, Wallet } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
@@ -4618,17 +4618,31 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                   />
                 </div>
 
-                {/* Action Button */}
+                {/* Action Buttons */}
                 {isOwnProfile ? (
-                  <button
-                    onClick={() => setIsEditMode(true)}
-                    className={`px-4 py-1.5 rounded-full font-bold text-sm transition-colors border relative z-10 ${theme === 'dark'
-                      ? 'border-gray-900 hover:bg-gray-900/50'
-                      : 'border-gray-300 hover:bg-gray-50'
-                      }`}
-                  >
-                    {t('profile.edit_profile_button')}
-                  </button>
+                  <div className="flex gap-2 relative z-10">
+                    <button
+                      onClick={() => navigate('/wallet')}
+                      className={`px-4 py-1.5 rounded-full font-bold text-sm transition-colors border ${theme === 'dark'
+                        ? 'border-gray-900 hover:bg-gray-900/50'
+                        : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Wallet className="w-4 h-4" />
+                        <span>{t('wallet.title') || 'Wallet'}</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setIsEditMode(true)}
+                      className={`px-4 py-1.5 rounded-full font-bold text-sm transition-colors border ${theme === 'dark'
+                        ? 'border-gray-900 hover:bg-gray-900/50'
+                        : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                    >
+                      {t('profile.edit_profile_button')}
+                    </button>
+                  </div>
                 ) : (
                   <div className="flex gap-2 relative z-10">
                     <button

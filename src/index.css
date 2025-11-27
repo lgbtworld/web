@@ -151,10 +151,7 @@ html, body {
   @apply bg-white text-gray-900 transition-colors duration-300;
 }
 
-.dark html, .dark body {
-  @apply bg-black text-gray-100 transition-colors duration-300;
-}
-
+ 
 ::selection {
   @apply bg-gray-300 text-black;
 }

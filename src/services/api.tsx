@@ -39,6 +39,12 @@ export class ApiService {
     });
   }
 
+  async handleFetchPaymentMethods() {
+    return this.call(Actions.CMD_PAYMENT_METHODS, {
+      method: "POST",
+    });
+  }
+
   async handleCreatePost(data: Record<string, any>) {
 
     return this.call(Actions.POST_CREATE, {

@@ -143,14 +143,26 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
   const [depositPaymentMethod, setDepositPaymentMethod] = useState<'iban' | 'crypto' | 'google_pay'>('google_pay');
   const [selectedGooglePayProvider, setSelectedGooglePayProvider] = useState<GooglePayDetail | null>(null);
 
-  // Helper function to set default payment method based on API kind
+  // Helper function to set default payment method based on API kind and enabled flags
   const setDefaultPaymentMethod = () => {
-    if (paymentMethods?.kind === 'google_play' || paymentMethods?.kind === 'google_pay') {
+    if (!paymentMethods) return;
+    
+    // Check enabled flags and set default payment method
+    if (paymentMethods.is_google_pay_enabled && (paymentMethods.kind === 'google_play' || paymentMethods.kind === 'google_pay')) {
       setDepositPaymentMethod('google_pay');
-    } else if (paymentMethods?.kind === 'iban') {
+    } else if (paymentMethods.is_iban_enabled && paymentMethods.kind === 'iban') {
       setDepositPaymentMethod('iban');
-    } else if (paymentMethods?.kind === 'crypto') {
+    } else if (paymentMethods.is_crypto_enabled && paymentMethods.kind === 'crypto') {
       setDepositPaymentMethod('crypto');
+    } else {
+      // Fallback: set first available enabled method
+      if (paymentMethods.is_google_pay_enabled) {
+        setDepositPaymentMethod('google_pay');
+      } else if (paymentMethods.is_iban_enabled) {
+        setDepositPaymentMethod('iban');
+      } else if (paymentMethods.is_crypto_enabled) {
+        setDepositPaymentMethod('crypto');
+      }
     }
   };
   const [googlePayAmount, setGooglePayAmount] = useState<string>('');
@@ -180,25 +192,44 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
         const paymentMethodsData = response as PaymentMethodsResponse;
         const kind = paymentMethodsData.kind;
 
-        // Set default payment method based on kind
-        if (kind === 'google_play' || kind === 'google_pay') {
+        // Set default payment method based on kind and enabled flags
+        if (paymentMethodsData.is_google_pay_enabled && (kind === 'google_play' || kind === 'google_pay')) {
           setDepositPaymentMethod('google_pay');
           // Set first Google Pay provider as default if available
           if (paymentMethodsData.google_pay_details && paymentMethodsData.google_pay_details.length > 0) {
             setSelectedGooglePayProvider(paymentMethodsData.google_pay_details[0]);
           }
-        } else if (kind === 'iban') {
+        } else if (paymentMethodsData.is_iban_enabled && kind === 'iban') {
           setDepositPaymentMethod('iban');
           // Set first IBAN as default if available
           if (paymentMethodsData.iban_details && paymentMethodsData.iban_details.length > 0) {
             setSelectedIban(paymentMethodsData.iban_details[0]);
           }
-        } else if (kind === 'crypto') {
+        } else if (paymentMethodsData.is_crypto_enabled && kind === 'crypto') {
           setDepositPaymentMethod('crypto');
           // Set first Crypto as default if available
           if (paymentMethodsData.crypto_details && paymentMethodsData.crypto_details.length > 0) {
             const firstCrypto = paymentMethodsData.crypto_details[0];
             setDepositCurrency(firstCrypto.symbol as CryptoCurrency);
+          }
+        } else {
+          // Fallback: set first available enabled method
+          if (paymentMethodsData.is_google_pay_enabled) {
+            setDepositPaymentMethod('google_pay');
+            if (paymentMethodsData.google_pay_details && paymentMethodsData.google_pay_details.length > 0) {
+              setSelectedGooglePayProvider(paymentMethodsData.google_pay_details[0]);
+            }
+          } else if (paymentMethodsData.is_iban_enabled) {
+            setDepositPaymentMethod('iban');
+            if (paymentMethodsData.iban_details && paymentMethodsData.iban_details.length > 0) {
+              setSelectedIban(paymentMethodsData.iban_details[0]);
+            }
+          } else if (paymentMethodsData.is_crypto_enabled) {
+            setDepositPaymentMethod('crypto');
+            if (paymentMethodsData.crypto_details && paymentMethodsData.crypto_details.length > 0) {
+              const firstCrypto = paymentMethodsData.crypto_details[0];
+              setDepositCurrency(firstCrypto.symbol as CryptoCurrency);
+            }
           }
         }
       } catch (error) {
@@ -822,13 +853,22 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                                 onClick={() => {
                                   setDepositStep('package');
                                   setSelectedPackage(null);
-                                  // Reset to default payment method from API
-                                  if (paymentMethods?.kind === 'google_play' || paymentMethods?.kind === 'google_pay') {
+                                  // Reset to default payment method from API based on enabled flags
+                                  if (paymentMethods?.is_google_pay_enabled && (paymentMethods?.kind === 'google_play' || paymentMethods?.kind === 'google_pay')) {
                                     setDepositPaymentMethod('google_pay');
-                                  } else if (paymentMethods?.kind === 'iban') {
+                                  } else if (paymentMethods?.is_iban_enabled && paymentMethods?.kind === 'iban') {
                                     setDepositPaymentMethod('iban');
-                                  } else if (paymentMethods?.kind === 'crypto') {
+                                  } else if (paymentMethods?.is_crypto_enabled && paymentMethods?.kind === 'crypto') {
                                     setDepositPaymentMethod('crypto');
+                                  } else {
+                                    // Fallback: set first available enabled method
+                                    if (paymentMethods?.is_google_pay_enabled) {
+                                      setDepositPaymentMethod('google_pay');
+                                    } else if (paymentMethods?.is_iban_enabled) {
+                                      setDepositPaymentMethod('iban');
+                                    } else if (paymentMethods?.is_crypto_enabled) {
+                                      setDepositPaymentMethod('crypto');
+                                    }
                                   }
                                   setShowDepositModal(true);
                                 }}
@@ -1251,9 +1291,9 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                             <div className="flex items-center gap-2.5 flex-1 min-w-0">
                               <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-lg overflow-hidden ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'
                                 }`}>
-                                {depositPaymentMethod === 'iban' ? (
+                                {depositPaymentMethod === 'iban' && paymentMethods?.is_iban_enabled ? (
                                   <Building2 className="w-5 h-5" />
-                                ) : depositPaymentMethod === 'google_pay' ? (
+                                ) : depositPaymentMethod === 'google_pay' && paymentMethods?.is_google_pay_enabled ? (
                                   paymentMethods?.google_pay_details?.[0]?.logo ? (
                                     <img
                                       src={paymentMethods.google_pay_details[0].logo}
@@ -1274,14 +1314,16 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                                   ) : (
                                     <span className="text-lg font-bold">G</span>
                                   )
-                                ) : (
+                                ) : depositPaymentMethod === 'crypto' && paymentMethods?.is_crypto_enabled ? (
                                   <Coins className="w-5 h-5" />
+                                ) : (
+                                  <Wallet className="w-5 h-5" />
                                 )}
                               </div>
                               <span className={`text-sm font-semibold ${depositPaymentMethod ? '' : 'opacity-50'}`}>
-                                {depositPaymentMethod === 'iban' ? (t('wallet.iban_transfer') || 'IBAN Transfer') :
-                                  depositPaymentMethod === 'google_pay' ? (t('wallet.google_pay') || 'Google Pay') :
-                                    depositPaymentMethod === 'crypto' ? (t('wallet.crypto') || 'Crypto') :
+                                {depositPaymentMethod === 'iban' && paymentMethods?.is_iban_enabled ? (t('wallet.iban_transfer') || 'IBAN Transfer') :
+                                  depositPaymentMethod === 'google_pay' && paymentMethods?.is_google_pay_enabled ? (t('wallet.google_pay') || 'Google Pay') :
+                                    depositPaymentMethod === 'crypto' && paymentMethods?.is_crypto_enabled ? (t('wallet.crypto') || 'Crypto') :
                                       (t('wallet.select_payment_method') || 'Select payment method')}
                               </span>
                             </div>
@@ -1310,157 +1352,172 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                               >
                                 {/* Payment Method Options - Square Grid Layout */}
                                 <div className="p-3">
-                                  <div className="grid grid-cols-3 gap-2.5">
-                                    {/* IBAN Transfer */}
-                                    <motion.button
-                                      type="button"
-                                      onClick={() => {
-                                        setDepositPaymentMethod('iban');
-                                        setShowPaymentMethodDropdown(false);
-                                      }}
-                                      whileHover={{ scale: 1.05, y: -2 }}
-                                      whileTap={{ scale: 0.92 }}
-                                      transition={{
-                                        type: "spring",
-                                        stiffness: 400,
-                                        damping: 20,
-                                        scale: { duration: 0.1 }
-                                      }}
-                                      className={`relative aspect-square rounded-xl transition-all duration-150 flex flex-col items-center justify-center gap-2 ${depositPaymentMethod === 'iban'
-                                        ? theme === 'dark'
-                                          ? 'bg-white text-black shadow-lg ring-2 ring-white/50'
-                                          : 'bg-gray-900 text-white shadow-lg ring-2 ring-gray-900/50'
-                                        : theme === 'dark'
-                                          ? 'bg-gray-900/50 hover:bg-gray-800/70 text-white border border-gray-800'
-                                          : 'bg-gray-50 hover:bg-gray-100 text-gray-900 border border-gray-200'
-                                        }`}
-                                    >
-                                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 ${depositPaymentMethod === 'iban'
-                                        ? theme === 'dark' ? 'bg-black/10' : 'bg-white/20'
-                                        : theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'
-                                        }`}>
-                                        <Building2 className="w-5 h-5" />
-                                      </div>
-                                      <span className="text-xs font-bold whitespace-nowrap">{t('wallet.iban') || 'IBAN'}</span>
-                                      {depositPaymentMethod === 'iban' && (
-                                        <motion.div
-                                          initial={{ scale: 0, rotate: -180 }}
-                                          animate={{ scale: 1, rotate: 0 }}
-                                          transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                                          className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
-                                            }`}
-                                        >
-                                          <Check className="w-3 h-3" />
-                                        </motion.div>
-                                      )}
-                                    </motion.button>
-
-                                    {/* Crypto */}
-                                    <motion.button
-                                      type="button"
-                                      onClick={() => {
-                                        setDepositPaymentMethod('crypto');
-                                        setShowPaymentMethodDropdown(false);
-                                      }}
-                                      whileHover={{ scale: 1.05, y: -2 }}
-                                      whileTap={{ scale: 0.92 }}
-                                      transition={{
-                                        type: "spring",
-                                        stiffness: 400,
-                                        damping: 20,
-                                        scale: { duration: 0.1 }
-                                      }}
-                                      className={`relative aspect-square rounded-xl transition-all duration-150 flex flex-col items-center justify-center gap-2 ${depositPaymentMethod === 'crypto'
-                                        ? theme === 'dark'
-                                          ? 'bg-white text-black shadow-lg ring-2 ring-white/50'
-                                          : 'bg-gray-900 text-white shadow-lg ring-2 ring-gray-900/50'
-                                        : theme === 'dark'
-                                          ? 'bg-gray-900/50 hover:bg-gray-800/70 text-white border border-gray-800'
-                                          : 'bg-gray-50 hover:bg-gray-100 text-gray-900 border border-gray-200'
-                                        }`}
-                                    >
-                                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 ${depositPaymentMethod === 'crypto'
-                                        ? theme === 'dark' ? 'bg-black/10' : 'bg-white/20'
-                                        : theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'
-                                        }`}>
-                                        <Coins className="w-5 h-5" />
-                                      </div>
-                                      <span className="text-xs font-bold whitespace-nowrap">{t('wallet.crypto') || 'Crypto'}</span>
-                                      {depositPaymentMethod === 'crypto' && (
-                                        <motion.div
-                                          initial={{ scale: 0, rotate: -180 }}
-                                          animate={{ scale: 1, rotate: 0 }}
-                                          transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                                          className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
-                                            }`}
-                                        >
-                                          <Check className="w-3 h-3" />
-                                        </motion.div>
-                                      )}
-                                    </motion.button>
-
-                                    {/* Google Pay */}
-                                    <motion.button
-                                      type="button"
-                                      onClick={() => {
-                                        setDepositPaymentMethod('google_pay');
-                                        setShowPaymentMethodDropdown(false);
-                                      }}
-                                      whileHover={{ scale: 1.05, y: -2 }}
-                                      whileTap={{ scale: 0.92 }}
-                                      transition={{
-                                        type: "spring",
-                                        stiffness: 400,
-                                        damping: 20,
-                                        scale: { duration: 0.1 }
-                                      }}
-                                      className={`relative aspect-square rounded-xl transition-all duration-150 flex flex-col items-center justify-center gap-2 ${depositPaymentMethod === 'google_pay'
-                                        ? theme === 'dark'
-                                          ? 'bg-white text-black shadow-lg ring-2 ring-white/50'
-                                          : 'bg-gray-900 text-white shadow-lg ring-2 ring-gray-900/50'
-                                        : theme === 'dark'
-                                          ? 'bg-gray-900/50 hover:bg-gray-800/70 text-white border border-gray-800'
-                                          : 'bg-gray-50 hover:bg-gray-100 text-gray-900 border border-gray-200'
-                                        }`}
-                                    >
-                                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 overflow-hidden ${depositPaymentMethod === 'google_pay'
-                                        ? theme === 'dark' ? 'bg-black/10' : 'bg-white/20'
-                                        : theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'
-                                        }`}>
-                                        {paymentMethods?.google_pay_details?.[0]?.logo ? (
-                                          <img
-                                            src={paymentMethods.google_pay_details[0].logo}
-                                            alt="Google Pay"
-                                            className="w-full h-full object-contain p-1"
-                                            onError={(e) => {
-                                              const target = e.target as HTMLImageElement;
-                                              target.style.display = 'none';
-                                              const parent = target.parentElement;
-                                              if (parent) {
-                                                const fallback = document.createElement('span');
-                                                fallback.className = 'text-lg font-bold';
-                                                fallback.textContent = 'G';
-                                                parent.appendChild(fallback);
-                                              }
-                                            }}
-                                          />
-                                        ) : (
-                                          <span className="text-lg font-bold">G</span>
+                                  <div className={`grid gap-2.5 ${[
+                                    paymentMethods?.is_iban_enabled,
+                                    paymentMethods?.is_crypto_enabled,
+                                    paymentMethods?.is_google_pay_enabled
+                                  ].filter(Boolean).length === 3 ? 'grid-cols-3' :
+                                  [
+                                    paymentMethods?.is_iban_enabled,
+                                    paymentMethods?.is_crypto_enabled,
+                                    paymentMethods?.is_google_pay_enabled
+                                  ].filter(Boolean).length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                    {/* IBAN Transfer - Only show if enabled */}
+                                    {paymentMethods?.is_iban_enabled && (
+                                      <motion.button
+                                        type="button"
+                                        onClick={() => {
+                                          setDepositPaymentMethod('iban');
+                                          setShowPaymentMethodDropdown(false);
+                                        }}
+                                        whileHover={{ scale: 1.05, y: -2 }}
+                                        whileTap={{ scale: 0.92 }}
+                                        transition={{
+                                          type: "spring",
+                                          stiffness: 400,
+                                          damping: 20,
+                                          scale: { duration: 0.1 }
+                                        }}
+                                        className={`relative aspect-square rounded-xl transition-all duration-150 flex flex-col items-center justify-center gap-2 ${depositPaymentMethod === 'iban'
+                                          ? theme === 'dark'
+                                            ? 'bg-white text-black shadow-lg ring-2 ring-white/50'
+                                            : 'bg-gray-900 text-white shadow-lg ring-2 ring-gray-900/50'
+                                          : theme === 'dark'
+                                            ? 'bg-gray-900/50 hover:bg-gray-800/70 text-white border border-gray-800'
+                                            : 'bg-gray-50 hover:bg-gray-100 text-gray-900 border border-gray-200'
+                                          }`}
+                                      >
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 ${depositPaymentMethod === 'iban'
+                                          ? theme === 'dark' ? 'bg-black/10' : 'bg-white/20'
+                                          : theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'
+                                          }`}>
+                                          <Building2 className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-xs font-bold whitespace-nowrap">{t('wallet.iban') || 'IBAN'}</span>
+                                        {depositPaymentMethod === 'iban' && (
+                                          <motion.div
+                                            initial={{ scale: 0, rotate: -180 }}
+                                            animate={{ scale: 1, rotate: 0 }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                                            className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
+                                              }`}
+                                          >
+                                            <Check className="w-3 h-3" />
+                                          </motion.div>
                                         )}
-                                      </div>
-                                      <span className="text-xs font-bold whitespace-nowrap">{t('wallet.google_pay') || 'Google Pay'}</span>
-                                      {depositPaymentMethod === 'google_pay' && (
-                                        <motion.div
-                                          initial={{ scale: 0, rotate: -180 }}
-                                          animate={{ scale: 1, rotate: 0 }}
-                                          transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                                          className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
-                                            }`}
-                                        >
-                                          <Check className="w-3 h-3" />
-                                        </motion.div>
-                                      )}
-                                    </motion.button>
+                                      </motion.button>
+                                    )}
+
+                                    {/* Crypto - Only show if enabled */}
+                                    {paymentMethods?.is_crypto_enabled && (
+                                      <motion.button
+                                        type="button"
+                                        onClick={() => {
+                                          setDepositPaymentMethod('crypto');
+                                          setShowPaymentMethodDropdown(false);
+                                        }}
+                                        whileHover={{ scale: 1.05, y: -2 }}
+                                        whileTap={{ scale: 0.92 }}
+                                        transition={{
+                                          type: "spring",
+                                          stiffness: 400,
+                                          damping: 20,
+                                          scale: { duration: 0.1 }
+                                        }}
+                                        className={`relative aspect-square rounded-xl transition-all duration-150 flex flex-col items-center justify-center gap-2 ${depositPaymentMethod === 'crypto'
+                                          ? theme === 'dark'
+                                            ? 'bg-white text-black shadow-lg ring-2 ring-white/50'
+                                            : 'bg-gray-900 text-white shadow-lg ring-2 ring-gray-900/50'
+                                          : theme === 'dark'
+                                            ? 'bg-gray-900/50 hover:bg-gray-800/70 text-white border border-gray-800'
+                                            : 'bg-gray-50 hover:bg-gray-100 text-gray-900 border border-gray-200'
+                                          }`}
+                                      >
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 ${depositPaymentMethod === 'crypto'
+                                          ? theme === 'dark' ? 'bg-black/10' : 'bg-white/20'
+                                          : theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'
+                                          }`}>
+                                          <Coins className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-xs font-bold whitespace-nowrap">{t('wallet.crypto') || 'Crypto'}</span>
+                                        {depositPaymentMethod === 'crypto' && (
+                                          <motion.div
+                                            initial={{ scale: 0, rotate: -180 }}
+                                            animate={{ scale: 1, rotate: 0 }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                                            className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
+                                              }`}
+                                          >
+                                            <Check className="w-3 h-3" />
+                                          </motion.div>
+                                        )}
+                                      </motion.button>
+                                    )}
+
+                                    {/* Google Pay - Only show if enabled */}
+                                    {paymentMethods?.is_google_pay_enabled && (
+                                      <motion.button
+                                        type="button"
+                                        onClick={() => {
+                                          setDepositPaymentMethod('google_pay');
+                                          setShowPaymentMethodDropdown(false);
+                                        }}
+                                        whileHover={{ scale: 1.05, y: -2 }}
+                                        whileTap={{ scale: 0.92 }}
+                                        transition={{
+                                          type: "spring",
+                                          stiffness: 400,
+                                          damping: 20,
+                                          scale: { duration: 0.1 }
+                                        }}
+                                        className={`relative aspect-square rounded-xl transition-all duration-150 flex flex-col items-center justify-center gap-2 ${depositPaymentMethod === 'google_pay'
+                                          ? theme === 'dark'
+                                            ? 'bg-white text-black shadow-lg ring-2 ring-white/50'
+                                            : 'bg-gray-900 text-white shadow-lg ring-2 ring-gray-900/50'
+                                          : theme === 'dark'
+                                            ? 'bg-gray-900/50 hover:bg-gray-800/70 text-white border border-gray-800'
+                                            : 'bg-gray-50 hover:bg-gray-100 text-gray-900 border border-gray-200'
+                                          }`}
+                                      >
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 overflow-hidden ${depositPaymentMethod === 'google_pay'
+                                          ? theme === 'dark' ? 'bg-black/10' : 'bg-white/20'
+                                          : theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'
+                                          }`}>
+                                          {paymentMethods?.google_pay_details?.[0]?.logo ? (
+                                            <img
+                                              src={paymentMethods.google_pay_details[0].logo}
+                                              alt="Google Pay"
+                                              className="w-full h-full object-contain p-1"
+                                              onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.style.display = 'none';
+                                                const parent = target.parentElement;
+                                                if (parent) {
+                                                  const fallback = document.createElement('span');
+                                                  fallback.className = 'text-lg font-bold';
+                                                  fallback.textContent = 'G';
+                                                  parent.appendChild(fallback);
+                                                }
+                                              }}
+                                            />
+                                          ) : (
+                                            <span className="text-lg font-bold">G</span>
+                                          )}
+                                        </div>
+                                        <span className="text-xs font-bold whitespace-nowrap">{t('wallet.google_pay') || 'Google Pay'}</span>
+                                        {depositPaymentMethod === 'google_pay' && (
+                                          <motion.div
+                                            initial={{ scale: 0, rotate: -180 }}
+                                            animate={{ scale: 1, rotate: 0 }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                                            className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
+                                              }`}
+                                          >
+                                            <Check className="w-3 h-3" />
+                                          </motion.div>
+                                        )}
+                                      </motion.button>
+                                    )}
                                   </div>
                                 </div>
                               </motion.div>
@@ -1469,8 +1526,8 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                         </div>
                       </div>
 
-                      {/* IBAN Selection - Show when IBAN payment method is selected */}
-                      {depositPaymentMethod === 'iban' && (
+                      {/* IBAN Selection - Show when IBAN payment method is selected and enabled */}
+                      {depositPaymentMethod === 'iban' && paymentMethods?.is_iban_enabled && (
                         <div>
                           <label className={`flex items-center gap-1.5 mb-2 ${theme === 'dark' ? 'text-white/90' : 'text-gray-900'}`}>
                             <Building2 className="w-3.5 h-3.5" />
@@ -1647,8 +1704,8 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                         </div>
                       )}
 
-                      {/* Crypto Selection - Show when Crypto payment method is selected */}
-                      {depositPaymentMethod === 'crypto' && (
+                      {/* Crypto Selection - Show when Crypto payment method is selected and enabled */}
+                      {depositPaymentMethod === 'crypto' && paymentMethods?.is_crypto_enabled && (
                         <div>
                           <label className={`flex items-center gap-1.5 mb-2 ${theme === 'dark' ? 'text-white/90' : 'text-gray-900'}`}>
                             <Wallet className="w-3.5 h-3.5" />
@@ -1806,8 +1863,8 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                         </div>
                       )}
 
-                      {/* Google Pay Provider Selection - Show when Google Pay payment method is selected */}
-                      {depositPaymentMethod === 'google_pay' && selectedPackage && (
+                      {/* Google Pay Provider Selection - Show when Google Pay payment method is selected and enabled */}
+                      {depositPaymentMethod === 'google_pay' && paymentMethods?.is_google_pay_enabled && selectedPackage && (
                         <div>
                           <label className={`flex items-center gap-1.5 mb-2 ${theme === 'dark' ? 'text-white/90' : 'text-gray-900'}`}>
                             <Wallet className="w-3.5 h-3.5" />
@@ -2017,29 +2074,29 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                         <motion.button
                           onClick={() => {
                             const isValid = selectedPackage && depositPaymentMethod &&
-                              (depositPaymentMethod === 'google_pay' && selectedGooglePayProvider ||
-                                (depositPaymentMethod === 'iban' && selectedIban) ||
-                                (depositPaymentMethod === 'crypto' && depositCurrency));
+                              (depositPaymentMethod === 'google_pay' && paymentMethods?.is_google_pay_enabled && selectedGooglePayProvider ||
+                                (depositPaymentMethod === 'iban' && paymentMethods?.is_iban_enabled && selectedIban) ||
+                                (depositPaymentMethod === 'crypto' && paymentMethods?.is_crypto_enabled && depositCurrency));
                             if (isValid) {
                               setDepositStep('payment_screen');
                             }
                           }}
                           disabled={!selectedPackage || !depositPaymentMethod ||
-                            (depositPaymentMethod === 'google_pay' && !selectedGooglePayProvider) ||
-                            (depositPaymentMethod === 'iban' && !selectedIban) ||
-                            (depositPaymentMethod === 'crypto' && !depositCurrency)}
+                            (depositPaymentMethod === 'google_pay' && (!paymentMethods?.is_google_pay_enabled || !selectedGooglePayProvider)) ||
+                            (depositPaymentMethod === 'iban' && (!paymentMethods?.is_iban_enabled || !selectedIban)) ||
+                            (depositPaymentMethod === 'crypto' && (!paymentMethods?.is_crypto_enabled || !depositCurrency))}
                           whileHover={selectedPackage && depositPaymentMethod &&
-                            (depositPaymentMethod === 'google_pay' && selectedGooglePayProvider ||
-                              (depositPaymentMethod === 'iban' && selectedIban) ||
-                              (depositPaymentMethod === 'crypto' && depositCurrency)) ? { scale: 1.02 } : {}}
+                            (depositPaymentMethod === 'google_pay' && paymentMethods?.is_google_pay_enabled && selectedGooglePayProvider ||
+                              (depositPaymentMethod === 'iban' && paymentMethods?.is_iban_enabled && selectedIban) ||
+                              (depositPaymentMethod === 'crypto' && paymentMethods?.is_crypto_enabled && depositCurrency)) ? { scale: 1.02 } : {}}
                           whileTap={selectedPackage && depositPaymentMethod &&
-                            (depositPaymentMethod === 'google_pay' && selectedGooglePayProvider ||
-                              (depositPaymentMethod === 'iban' && selectedIban) ||
-                              (depositPaymentMethod === 'crypto' && depositCurrency)) ? { scale: 0.98 } : {}}
+                            (depositPaymentMethod === 'google_pay' && paymentMethods?.is_google_pay_enabled && selectedGooglePayProvider ||
+                              (depositPaymentMethod === 'iban' && paymentMethods?.is_iban_enabled && selectedIban) ||
+                              (depositPaymentMethod === 'crypto' && paymentMethods?.is_crypto_enabled && depositCurrency)) ? { scale: 0.98 } : {}}
                           className={`flex-1 px-4 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${!selectedPackage || !depositPaymentMethod ||
-                              (depositPaymentMethod === 'google_pay' && !selectedGooglePayProvider) ||
-                              (depositPaymentMethod === 'iban' && !selectedIban) ||
-                              (depositPaymentMethod === 'crypto' && !depositCurrency)
+                              (depositPaymentMethod === 'google_pay' && (!paymentMethods?.is_google_pay_enabled || !selectedGooglePayProvider)) ||
+                              (depositPaymentMethod === 'iban' && (!paymentMethods?.is_iban_enabled || !selectedIban)) ||
+                              (depositPaymentMethod === 'crypto' && (!paymentMethods?.is_crypto_enabled || !depositCurrency))
                               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                               : theme === 'dark'
                                 ? 'bg-white text-black hover:bg-gray-200'

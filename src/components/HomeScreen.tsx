@@ -139,7 +139,9 @@ const HomeScreen: React.FC = () => {
                     <motion.div
                       className={`absolute bottom-0 left-0 right-0 h-1 ${theme === 'dark' ? 'bg-gray-900' : 'bg-black'}`}
                       layoutId="homeScreenTabIndicator"
+                      layout="position"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      style={{ willChange: 'transform' }}
                     />
                   )}
                 </motion.button>
@@ -164,7 +166,9 @@ const HomeScreen: React.FC = () => {
                     <motion.div
                       className={`absolute bottom-0 left-0 right-0 h-1 ${theme === 'dark' ? 'bg-gray-900' : 'bg-black'}`}
                       layoutId="homeScreenTabIndicator"
+                      layout="position"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      style={{ willChange: 'transform' }}
                     />
                   )}
                 </motion.button>
@@ -189,11 +193,13 @@ const HomeScreen: React.FC = () => {
                     <motion.div
                       className={`absolute bottom-0 left-0 right-0 h-1 ${theme === 'dark' ? 'bg-white/20' : 'bg-black'}`}
                       layoutId="homeScreenTabIndicator"
+                      layout="position"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      style={{ willChange: 'transform' }}
                     />
                   )}
                 </motion.button>
-              </div>
+            </div>
           </div>
 
         </div>

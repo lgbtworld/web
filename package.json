@@ -38,6 +38,7 @@
     "lexical": "^0.38.2",
     "lucide-react": "^0.553.0",
     "ngeohash": "^0.6.3",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-day-picker": "^9.11.1",
     "react-dom": "^19.2.0",

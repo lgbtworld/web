@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, User, Calendar, Heart, X, ChevronLeft, ChevronRight, ChevronDown, MapPin, Bell, Shield } from 'lucide-react';
+import { ArrowRight, ArrowLeft, User, Calendar, Heart, X, ChevronLeft, ChevronRight, ChevronDown, Shield } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { useApp } from '../contexts/AppContext';
@@ -44,9 +44,6 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
   }
 };
 
-  // Location status for UI
-  const [locationStatus, setLocationStatus] = useState<string>('');
-  const [isLocationLoading, setIsLocationLoading] = useState(false);
 
   const [formData, setFormData] = useState<{
     name: string;
@@ -57,16 +54,6 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
     day: string;
     month: string;
     year: string;
-    location: {
-      country_code: string;
-      country_name: string;
-      city: string;
-      region?: string;
-      lat: number;
-      lng: number;
-      timezone?: string;
-      display: string;
-    } | null;
   }>({
     name: '',
     nickname: '',
@@ -75,8 +62,7 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
     birthDate: '',
     day: '',
     month: '',
-    year: '',
-    location: null
+    year: ''
   });
 
   // Date picker state
@@ -116,24 +102,6 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
       type: 'auth-mode'
     },
     {
-      id: 'location',
-      title: t('auth.enable_location_title'),
-      subtitle: t('auth.enable_location_subtitle'),
-      icon: MapPin,
-      field: 'location',
-      placeholder: '',
-      type: 'location'
-    },
-    {
-      id: 'notifications',
-      title: t('auth.enable_notifications_title'),
-      subtitle: t('auth.enable_notifications_subtitle'),
-      icon: Bell,
-      field: 'notifications',
-      placeholder: '',
-      type: 'notifications'
-    },
-    {
       id: 'login-form',
       title: t('auth.sign_in'),
       subtitle: t('auth.sign_in_subtitle'),
@@ -141,15 +109,6 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
       field: 'loginForm',
       placeholder: '',
       type: 'login-form'
-    },
-    {
-      id: 'birthdate',
-      title: t('auth.birthdate_title', { defaultValue: 'When were you born?' }),
-      subtitle: t('auth.birthdate_subtitle', { defaultValue: 'This helps us create better matches' }),
-      icon: Calendar,
-      field: 'birthDate',
-      placeholder: '',
-      type: 'date-picker'
     },
     {
       id: 'nickname',
@@ -254,27 +213,18 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
 
   const handleNext = () => {
     if (currentStep === 0) {
-      setCurrentStep(1);
-    } else if (currentStep === 1) {
-      setCurrentStep(2); // notifications
-    } else if (currentStep === 2) {
       if (authMode === 'login') {
-        setCurrentStep(3); // login-form
+        setCurrentStep(1); // login-form
       } else {
-        setCurrentStep(4); // birthdate (doğum tarihi önce)
+        setCurrentStep(2); // nickname (register için)
       }
-    } else if (currentStep === 3 && authMode === 'login') {
+    } else if (currentStep === 1 && authMode === 'login') {
       setIsLoading(true);
       setError('');
       const loginData: any = {
         nickname: formData.nickname,
         password: formData.password
       };
-      
-      // Add location if available
-      if (formData.location) {
-        loginData.location = formData.location;
-      }
       
       api.handleLogin(loginData)
         .then(response => {
@@ -287,26 +237,18 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
         .finally(() => {
           setIsLoading(false);
         });
-    } else if (currentStep === 4 && authMode === 'register') {
-      setCurrentStep(5); // nickname (hesap oluşturma formu sonra)
-    } else if (currentStep === 5 && authMode === 'register') {
-      setCurrentStep(6); // captcha step
-    } else if (currentStep === 6 && authMode === 'register') {
+    } else if (currentStep === 2 && authMode === 'register') {
+      setCurrentStep(3); // captcha step
+    } else if (currentStep === 3 && authMode === 'register') {
       if (!recaptchaToken) {
         setError(t('auth.captcha_required', { defaultValue: 'Please complete the reCAPTCHA verification' }));
         return;
       }
 
-      const birthDate = selectedDate.day && selectedDate.month && selectedDate.year
-        ? `${selectedDate.year}-${selectedDate.month.toString().padStart(2, '0')}-${selectedDate.day.toString().padStart(2, '0')}`
-        : '';
-
       const user = {
         name: formData.nickname,
         nickname: formData.nickname,
         password: formData.password,
-        birthDate: birthDate,
-        location: formData.location,
         recaptchaToken: recaptchaToken
       };
 
@@ -339,25 +281,21 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
       // Clear error when going back
       setError('');
       
-      // Handle register flow: step 4 (birthdate) should go back to step 2 (notifications), not step 3 (login-form)
-      // Step 5 (nickname) should go back to step 4 (birthdate)
-      // Step 6 (captcha) should go back to step 5 (nickname)
-      if (authMode === 'register' && currentStep === 4) {
-        setCurrentStep(2); // Go back to notifications
-      } else if (authMode === 'register' && currentStep === 5) {
-        setCurrentStep(4); // Go back to birthdate
-      } else if (authMode === 'register' && currentStep === 6) {
-        setCurrentStep(5); // Go back to nickname
+      // Handle register flow
+      if (authMode === 'register' && currentStep === 2) {
+        setCurrentStep(0); // Go back to auth-mode
+      } else if (authMode === 'register' && currentStep === 3) {
+        setCurrentStep(2); // Go back to nickname
         // Reset captcha when going back
         if (recaptchaRef.current) {
           recaptchaRef.current.reset();
         }
         setRecaptchaToken(null);
-      } else if (authMode === 'login' && currentStep === 3) {
-        setCurrentStep(2); // Go back to notifications
+      } else if (authMode === 'login' && currentStep === 1) {
+        setCurrentStep(0); // Go back to auth-mode
       } else {
         // Otherwise go to previous step
-      setCurrentStep(currentStep - 1);
+        setCurrentStep(currentStep - 1);
       }
     }
   };
@@ -376,9 +314,9 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
   // Progress bar mapping
   const getTotalSteps = () => {
     if (authMode === 'login') {
-      return 4; // auth-mode, location, notifications, login-form
+      return 2; // auth-mode, login-form
     } else if (authMode === 'register') {
-      return 6; // auth-mode, location, notifications, birthdate, nickname, captcha
+      return 3; // auth-mode, nickname, captcha
     }
     return steps.length;
   };
@@ -386,16 +324,11 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
   const getCurrentStepIndex = () => {
     if (authMode === 'login') {
       if (currentStep === 0) return 0; // auth-mode
-      if (currentStep === 1) return 1; // location
-      if (currentStep === 2) return 2; // notifications
-      if (currentStep === 3) return 3; // login-form
+      if (currentStep === 1) return 1; // login-form
     } else if (authMode === 'register') {
       if (currentStep === 0) return 0; // auth-mode
-      if (currentStep === 1) return 1; // location
-      if (currentStep === 2) return 2; // notifications
-      if (currentStep === 4) return 3; // birthdate
-      if (currentStep === 5) return 4; // nickname
-      if (currentStep === 6) return 5; // captcha
+      if (currentStep === 2) return 1; // nickname
+      if (currentStep === 3) return 2; // captcha
     }
     return currentStep;
   };
@@ -404,10 +337,6 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
     switch (currentStepData.field) {
       case 'authMode':
         return authMode !== null;
-      case 'location':
-        return !!formData.location;
-      case 'notifications':
-        return true; // optional
       case 'loginForm':
         return formData.nickname.trim() !== '' && formData.password.trim() !== '';
       case 'nickname':
@@ -415,8 +344,6 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
           formData.password.trim() !== '' &&
           formData.confirmPassword.trim() !== '' &&
           formData.password === formData.confirmPassword;
-      case 'birthDate':
-        return selectedDate.day && selectedDate.month && selectedDate.year;
       case 'captcha':
         return !!recaptchaToken;
       default:
@@ -568,185 +495,6 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
           </div>
         );
 
-      case 'location':
-        // Robust geolocation that works better across browsers (incl. Opera)
-        const getPositionWithTimeout = (options: PositionOptions, timeoutMs = 10000) => {
-          return new Promise<GeolocationPosition>((resolve, reject) => {
-            let settled = false;
-            const timer = setTimeout(() => {
-              if (!settled) {
-                settled = true;
-                reject(new Error('Location request timed out'));
-              }
-            }, timeoutMs);
-            navigator.geolocation.getCurrentPosition(
-              (pos) => {
-                if (!settled) {
-                  settled = true;
-                  clearTimeout(timer);
-                  resolve(pos);
-                }
-              },
-              (err) => {
-                if (!settled) {
-                  settled = true;
-                  clearTimeout(timer);
-                  reject(err);
-                }
-              },
-              options
-            );
-          });
-        };
-
-        const fetchIpFallback = async () => {
-          // As a last resort, use IP-based geolocation (approximate city-level)
-          // Multiple providers in case one fails
-          const providers = [
-            'https://ipapi.co/json/',
-            'https://ipinfo.io/json?token=17064ceadbe842', // token optional; will still respond limited
-          ];
-          for (const url of providers) {
-            try {
-              const res = await fetch(url, { cache: 'no-store' });
-              if (!res.ok) continue;
-              const j = await res.json();
-              const locStr: string | undefined = j.loc || (j.latitude && j.longitude ? `${j.latitude},${j.longitude}` : undefined);
-              const [latStr, lngStr] = (locStr || '').split(',');
-              const lat = parseFloat(j.latitude ?? latStr);
-              const lng = parseFloat(j.longitude ?? lngStr);
-              const display = j.city ? `${j.city}, ${j.country_name || j.country || ''}` : `${lat?.toFixed?.(3) || ''}, ${lng?.toFixed?.(3) || ''}`;
-              if (!isNaN(lat) && !isNaN(lng)) {
-                return {
-                  country_code: (j.country_code || j.country || '').toString().toUpperCase(),
-                  country_name: (j.country_name || j.country || '').toString(),
-                  city: (j.city || '').toString(),
-                  region: (j.region || j.region_name || '').toString(),
-                  lat,
-                  lng,
-                  timezone: (j.timezone || '').toString(),
-                  display,
-                };
-              }
-            } catch (_) {
-              // try next provider
-            }
-          }
-          throw new Error('IP geolocation failed');
-        };
-
-        const handleLocationRequest = async () => {
-          setIsLocationLoading(true);
-          try {
-            setLocationStatus(t('location.requesting_permission'));
-            if (!navigator.geolocation) {
-              setLocationStatus(t('location.geo_api_unavailable'));
-              return;
-            }
-
-            // Check permission state if supported
-            try {
-              if ('permissions' in navigator && (navigator as any).permissions?.query) {
-                const status = await (navigator as any).permissions.query({ name: 'geolocation' });
-                if (status.state === 'denied') {
-                  setLocationStatus(t('location.permission_denied'));
-                  return;
-                }
-              }
-            } catch (_) {}
-
-            setLocationStatus(t('location.fetching_accurate'));
-            const pos = await getPositionWithTimeout({ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }, 12000);
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-
-            // Reverse geocode (existing flow)
-            try {
-              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
-              const data = await res.json();
-              const address = data.address || {};
-              updateFormData('location', {
-                country_code: address.country_code?.toUpperCase() || '',
-                country_name: address.country || '',
-                city: address.city || address.town || address.village || '',
-                region: address.state || '',
-                lat,
-                lng,
-                timezone: '',
-                display: `${address.city || address.town || address.village || lat.toFixed(3)}, ${address.country || ''}`,
-              });
-              setLocationStatus(t('location.detected'));
-            } catch (e) {
-              // If reverse geocoding fails, still save coordinates
-              updateFormData('location', {
-                country_code: '',
-                country_name: '',
-                city: '',
-                region: '',
-                lat,
-                lng,
-                timezone: '',
-                display: `${lat.toFixed(3)}, ${lng.toFixed(3)}`,
-              });
-              setLocationStatus(t('location.detected_no_address'));
-            }
-          } catch (geoErr: any) {
-            // Opera and some browsers can hang or error; fallback to IP
-            setLocationStatus(t('location.trying_ip'));
-            try {
-              const ipLoc = await fetchIpFallback();
-              updateFormData('location', ipLoc);
-              setLocationStatus(t('location.approximate_detected'));
-            } catch (_) {
-              setLocationStatus(t('location.failed'));
-            }
-          }
-          finally {
-            setIsLocationLoading(false);
-          }
-        };
-        return (
-          <div className="space-y-6">
-            {locationStatus && (
-              <div className="text-center">
-                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{locationStatus}</p>
-              </div>
-            )}
-
-            {!formData.location && (
-              <motion.button
-                onClick={handleLocationRequest}
-                disabled={isLocationLoading}
-                className={`w-full px-6 py-4 rounded-2xl font-semibold text-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed ${theme === 'dark'
-                  ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-blue-500/25'
-                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-blue-500/25'
-                  }`}
-                whileHover={isLocationLoading ? {} : { scale: 1.02 }}
-                whileTap={isLocationLoading ? {} : { scale: 0.98 }}
-              >
-                {isLocationLoading ? (
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>{t('auth.detecting_location', { defaultValue: 'Detecting location...' })}</span>
-                  </div>
-                ) : (
-                  t('auth.allow_location')
-                )}
-              </motion.button>
-            )}
-
-            {formData.location && (
-              <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-green-900/20 border-green-700' : 'bg-green-50 border-green-200'}`}>
-                <div className="flex items-center">
-                  <div className={`w-2 h-2 rounded-full mr-3 ${theme === 'dark' ? 'bg-green-400' : 'bg-green-500'}`}></div>
-                  <p className={`text-sm font-medium ${theme === 'dark' ? 'text-green-300' : 'text-green-700'}`}>
-                    {t('auth.location_saved')}: {formData.location.display}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        );
       case 'notifications':
         return (
           <div className="space-y-4">
@@ -769,242 +517,6 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
             <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>{t('auth.change_later')}</p>
           </div>
         );
-      case 'date-picker': {
-        // Calculate year range for 20-year navigation
-        const minYear = new Date().getFullYear() - 80;
-        const maxYear = new Date().getFullYear() - 18;
-
-        // 20-year block for year view
-        const decadeYears: number[] = [];
-        for (let y = decadeStart; y < decadeStart + 20; y++) {
-          if (y >= minYear && y <= maxYear) {
-            decadeYears.push(y);
-          }
-        }
-        // For grid: fill to 20 years if possible
-        while (decadeYears.length < 20) {
-          decadeYears.push(NaN);
-        }
-
-        // Calendar Header: separate month and year buttons, highlight active
-        return (
-          <div className="space-y-2 sm:space-y-4">
-            {/* Selected Date Display */}
-            {selectedDate.day > 0 && selectedDate.month > 0 && selectedDate.year > 0 && (
-              <div className={`text-center p-4 sm:p-4 rounded-xl sm:rounded-2xl border ${theme === 'dark'
-                ? 'bg-gray-800/50 border-gray-700 text-white'
-                : 'bg-gray-50 border-gray-200 text-gray-900'
-                }`}>
-                <div className="text-lg sm:text-lg font-semibold">
-                  {selectedDate.day} {months[selectedDate.month - 1]} {selectedDate.year}
-                </div>
-              </div>
-            )}
-            {/* Calendar */}
-            <div className={`p-4 sm:p-4 rounded-xl sm:rounded-2xl border ${theme === 'dark'
-              ? 'bg-gray-800/30 border-gray-700'
-              : 'bg-gray-50/30 border-gray-200'
-              }`}>
-              {/* Calendar Header */}
-              <div className="flex items-center justify-between mb-4 sm:mb-4">
-                {/* Left/Right for year or decade navigation */}
-                {viewMode === 'day' && (
-                  <button
-                    type="button"
-                    className="rounded-full p-2 sm:p-1.5 transition-colors"
-                    onClick={() => navigateMonth('prev')}
-                  >
-                    <ChevronLeft className={`w-5 h-5 sm:w-5 sm:h-5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
-                  </button>
-                )}
-                {viewMode === 'month' && (
-                  <button
-                    type="button"
-                    className="rounded-full p-2 sm:p-1.5 transition-colors"
-                    onClick={() => setCurrentYear(currentYear - 1)}
-                    disabled={currentYear - 1 < minYear}
-                  >
-                    <ChevronLeft className={`w-5 h-5 sm:w-5 sm:h-5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} ${currentYear - 1 < minYear ? 'opacity-30' : ''}`} />
-                  </button>
-                )}
-                {viewMode === 'year' && (
-                  <button
-                    type="button"
-                    className="rounded-full p-2 sm:p-1.5 transition-colors"
-                    onClick={() => setDecadeStart(ds => Math.max(ds - 20, minYear))}
-                    disabled={decadeStart - 20 < minYear}
-                  >
-                    <ChevronLeft className={`w-5 h-5 sm:w-5 sm:h-5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} ${decadeStart - 20 < minYear ? 'opacity-30' : ''}`} />
-                  </button>
-                )}
-                {/* Month and Year buttons */}
-                <div className="grid grid-cols-2 gap-2 w-full flex-1">
-                  <button
-                    type="button"
-                    className={`w-full flex items-center justify-center gap-1 sm:gap-1 px-3 sm:px-3 py-3 sm:py-2 rounded-md sm:rounded-lg text-base sm:text-base font-semibold transition-colors
-                      ${viewMode === 'month'
-                        ? (theme === 'dark'
-                          ? 'bg-indigo-500 text-white'
-                          : 'bg-indigo-100 text-indigo-900')
-                        : (theme === 'dark'
-                          ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-900')
-                      }`}
-                    onClick={() => setViewMode('month')}
-                  >
-                    <span>{months[currentMonth]}</span>
-                    <ChevronDown className={`w-4 h-4 sm:w-4 sm:h-4 ml-1 sm:ml-1 transition-transform ${viewMode === 'month' ? 'rotate-180' : ''}`} />
-                  </button>
-                  <button
-                    type="button"
-                    className={`w-full flex items-center justify-center gap-1 sm:gap-1 px-3 sm:px-3 py-3 sm:py-2 rounded-md sm:rounded-lg text-base sm:text-base font-semibold transition-colors
-                      ${viewMode === 'year'
-                        ? (theme === 'dark'
-                          ? 'bg-indigo-500 text-white'
-                          : 'bg-indigo-100 text-indigo-900')
-                        : (theme === 'dark'
-                          ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-900')
-                      }`}
-                    onClick={() => setViewMode('year')}
-                  >
-                    {currentYear}
-                    <ChevronDown className={`w-4 h-4 sm:w-4 sm:h-4 ml-1 sm:ml-1 transition-transform ${viewMode === 'year' ? 'rotate-180' : ''}`} />
-                  </button>
-                </div>
-                {viewMode === 'day' && (
-                  <button
-                    type="button"
-                    className="rounded-full p-2 sm:p-1.5 transition-colors"
-                    onClick={() => navigateMonth('next')}
-                  >
-                    <ChevronRight className={`w-5 h-5 sm:w-5 sm:h-5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
-                  </button>
-                )}
-                {viewMode === 'month' && (
-                  <button
-                    type="button"
-                    className="rounded-full p-2 sm:p-1.5 transition-colors"
-                    onClick={() => setCurrentYear(currentYear + 1)}
-                    disabled={currentYear + 1 > maxYear}
-                  >
-                    <ChevronRight className={`w-5 h-5 sm:w-5 sm:h-5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} ${currentYear + 1 > maxYear ? 'opacity-30' : ''}`} />
-                  </button>
-                )}
-                {viewMode === 'year' && (
-                  <button
-                    type="button"
-                    className="rounded-full p-2 sm:p-1.5 transition-colors"
-                    onClick={() => setDecadeStart(ds => Math.min(ds + 20, maxYear - 19))}
-                    disabled={decadeStart + 20 > maxYear}
-                  >
-                    <ChevronRight className={`w-5 h-5 sm:w-5 sm:h-5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} ${decadeStart + 20 > maxYear ? 'opacity-30' : ''}`} />
-                  </button>
-                )}
-              </div>
-              {/* AnimatePresence for view modes */}
-              <AnimatePresence mode="wait" initial={false}>
-                {viewMode === 'year' && (
-                  <motion.div
-                    key="year"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div className="grid grid-cols-5 gap-1 sm:gap-2 mb-1 sm:mb-2">
-                      {decadeYears.map((y, idx) =>
-                        isNaN(y) ? (
-                          <div key={idx} />
-                        ) : (
-                          <button
-                            type="button"
-                            key={y}
-                            onClick={() => {
-                              setCurrentYear(y);
-                              setViewMode('month');
-                            }}
-                            className={`rounded-md sm:rounded-lg px-3 sm:px-3 py-3 sm:py-2 text-sm sm:text-sm font-medium transition-colors
-                              ${currentYear === y
-                                ? (theme === 'dark'
-                                  ? 'bg-white text-gray-900'
-                                  : 'bg-gray-900 text-white')
-                                : (theme === 'dark'
-                                  ? 'text-white hover:bg-gray-700'
-                                  : 'text-gray-900 hover:bg-gray-100')
-                              }`}
-                          >
-                            {y}
-                          </button>
-                        )
-                      )}
-                    </div>
-                    <div className="text-[10px] sm:text-xs text-center text-gray-400 mt-0.5 sm:mt-1">
-                      {decadeStart} – {decadeStart + 19}
-                    </div>
-                  </motion.div>
-                )}
-                {viewMode === 'month' && (
-                  <motion.div
-                    key="month"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div className="grid grid-cols-3 gap-1 sm:gap-2 mb-1 sm:mb-2">
-                      {months.map((m, idx) => (
-                        <button
-                          type="button"
-                          key={m}
-                          onClick={() => {
-                            setCurrentMonth(idx);
-                            setViewMode('day');
-                          }}
-                          className={`rounded-md sm:rounded-lg px-3 sm:px-3 py-3 sm:py-2 text-sm sm:text-sm font-medium transition-colors
-                            ${currentMonth === idx
-                              ? (theme === 'dark'
-                                ? 'bg-white text-gray-900'
-                                : 'bg-gray-900 text-white')
-                              : (theme === 'dark'
-                                ? 'text-white hover:bg-gray-700'
-                                : 'text-gray-900 hover:bg-gray-100')
-                            }`}
-                        >
-                          {m}
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-                {viewMode === 'day' && (
-                  <motion.div
-                    key="day"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {/* Days of Week */}
-                    <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2 sm:mb-2">
-                      {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                        <div key={day} className={`text-center text-xs sm:text-xs font-medium py-2 sm:py-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                          {day}
-                        </div>
-                      ))}
-                    </div>
-                    {/* Calendar Grid */}
-                    <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
-                      {renderCalendar()}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        );
-      }
       case 'captcha':
         return (
           <div className="space-y-6">
@@ -1173,7 +685,7 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
                   </div>
                 ) : (
                   <>
-                    <span className="text-base sm:text-base whitespace-nowrap">{currentStep === (authMode === 'login' ? 3 : 6) ? (authMode === 'login' ? t('auth.sign_in') : t('auth.complete_registration')) : t('auth.continue')}</span>
+                    <span className="text-base sm:text-base whitespace-nowrap">{currentStep === (authMode === 'login' ? 1 : 3) ? (authMode === 'login' ? t('auth.sign_in') : t('auth.complete_registration')) : t('auth.continue')}</span>
                     <ArrowRight className="w-5 h-5 sm:w-5 sm:h-5 ml-2 flex-shrink-0" />
                   </>
                 )}

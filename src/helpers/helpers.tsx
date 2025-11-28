@@ -93,8 +93,13 @@ export function formatLastSeen(lastOnline: string): string {
 
   return 'Recently active';
 }
-export function calculateAge(dateOfBirth: string): number {
+
+export function calculateAge(dateOfBirth: string): number | string {
   const birthDate = new Date(dateOfBirth);
+  if (isNaN(birthDate.getTime())) {
+    return '-';
+  }
+
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();

@@ -350,12 +350,17 @@
     "fast_secure_payments": "Fast and secure payments",
     "deposit_success": "Deposit Successful!",
     "deposit_success_message": "Your deposit has been processed successfully. The funds will be available in your wallet shortly.",
+    "deposit_received": "Deposit Received!",
+    "deposit_pending_message": "Your deposit request has been received. The transaction will be completed shortly.",
     "deposit_error": "Deposit Failed",
     "deposit_error_message": "Unfortunately, your deposit could not be processed. Please try again or contact support if the problem persists.",
     "confirm_deposit": "Confirm Deposit",
     "close": "Close",
     "select_provider": "Select Provider",
     "provider": "Provider",
-    "environment": "Environment"
+    "environment": "Environment",
+    "qr_code": "QR Code",
+    "qr_code_hint": "Scan to copy the address instantly.",
+    "qr_code_note": "Show this code to send crypto quickly."
   }
 }

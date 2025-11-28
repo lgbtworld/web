@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Coins, X, Loader2, CheckCircle2, Plus, DollarSign, HandCoins } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Coins, X, Loader2, CheckCircle2, Plus, DollarSign, HandCoins, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -193,6 +194,7 @@ const TipButton: React.FC<TipButtonProps> = ({
 
   const { theme } = useTheme();
   const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
   
   // Get user balance (default to 0 if not available, ensure it's a number)
   const userBalance = useMemo(() => {
@@ -827,18 +829,37 @@ const TipButton: React.FC<TipButtonProps> = ({
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className={`mb-4 p-3 rounded-xl flex items-center gap-2 ${
+                            className="mb-4 space-y-3"
+                          >
+                            <div className={`p-3 rounded-xl flex items-center gap-2 ${
                               theme === 'dark'
                                 ? 'bg-red-500/20 border border-red-500/30'
                                 : 'bg-red-50 border border-red-200'
-                            }`}
-                          >
-                            <X className={`w-4 h-4 ${theme === 'dark' ? 'text-red-400' : 'text-red-600'}`} />
-                            <span className={`text-sm font-medium ${
-                              theme === 'dark' ? 'text-red-400' : 'text-red-600'
                             }`}>
-                              Insufficient balance. You need ${(finalAmount - userBalance).toFixed(2)} more.
-                            </span>
+                              <X className={`w-4 h-4 ${theme === 'dark' ? 'text-red-400' : 'text-red-600'}`} />
+                              <span className={`text-sm font-medium ${
+                                theme === 'dark' ? 'text-red-400' : 'text-red-600'
+                              }`}>
+                                Insufficient balance. You need ${(finalAmount - userBalance).toFixed(2)} more.
+                              </span>
+                            </div>
+                            <motion.button
+                              onClick={() => {
+                                setShowTipModal(false);
+                                navigate('/wallet');
+                              }}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
+                                theme === 'dark'
+                                  ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/50 text-amber-300 hover:from-amber-500/30 hover:to-yellow-500/20 hover:border-amber-500/70'
+                                  : 'bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 text-amber-700 hover:from-amber-100 hover:to-yellow-100 hover:border-amber-300'
+                              }`}
+                            >
+                              <Coins className="w-4 h-4" />
+                              <span>Go to Deposit</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </motion.button>
                           </motion.div>
                         )}
                       </AnimatePresence>

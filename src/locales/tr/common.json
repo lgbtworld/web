@@ -350,12 +350,17 @@
     "fast_secure_payments": "Hızlı ve güvenli ödemeler",
     "deposit_success": "Yatırma Başarılı!",
     "deposit_success_message": "Yatırma işleminiz başarıyla tamamlandı. Fonlar kısa süre içinde cüzdanınızda görünecektir.",
+    "deposit_received": "Yatırma Alındı!",
+    "deposit_pending_message": "İşleminiz alınmıştır, kısa süre içinde gerçekleşecektir.",
     "deposit_error": "Yatırma Başarısız",
     "deposit_error_message": "Maalesef yatırma işleminiz işlenemedi. Lütfen tekrar deneyin veya sorun devam ederse destek ekibiyle iletişime geçin.",
     "confirm_deposit": "Yatırmayı Onayla",
     "close": "Kapat",
     "select_provider": "Sağlayıcı Seç",
     "provider": "Sağlayıcı",
-    "environment": "Ortam"
+    "environment": "Ortam",
+    "qr_code": "QR Kod",
+    "qr_code_hint": "Adresi anında kopyalamak için tarayın.",
+    "qr_code_note": "Kripto göndermek için bu kodu gösterin."
   }
 }

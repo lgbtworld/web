@@ -3044,7 +3044,7 @@ transition={{ duration: 0.15 }}
                 {post.engagements?.counts?.comment_count || 0}
               </span>
             </motion.button>
-            <div 
+            {/* <div 
               data-no-post-click="true"
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
@@ -3099,7 +3099,7 @@ transition={{ duration: 0.15 }}
                   </motion.button>
                 }
               />
-            </div>
+            </div> */}
           </div>
           <motion.button
             data-no-post-click="true"

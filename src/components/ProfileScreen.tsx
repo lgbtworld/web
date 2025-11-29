@@ -4621,7 +4621,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                 {/* Action Buttons */}
                 {isOwnProfile ? (
                   <div className="flex gap-2 relative z-10">
-                    <button
+                    {/* <button
                       onClick={() => navigate('/wallet')}
                       className={`px-4 py-1.5 rounded-full font-bold text-sm transition-colors border ${theme === 'dark'
                         ? 'border-gray-900 hover:bg-gray-900/50'
@@ -4632,7 +4632,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                         <Wallet className="w-4 h-4" />
                         <span>{t('wallet.title') || 'Wallet'}</span>
                       </div>
-                    </button>
+                    </button> */}
                     <button
                       onClick={() => setIsEditMode(true)}
                       className={`px-4 py-1.5 rounded-full font-bold text-sm transition-colors border ${theme === 'dark'

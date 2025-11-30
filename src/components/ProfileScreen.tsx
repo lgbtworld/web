@@ -2618,12 +2618,15 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
           body: { avatar: file },
         });
 
-        // Update local state with new image URL from API response
-        if (response?.user?.avatar?.file?.url) {
-          const imageUrl = response.user.avatar.file.url;
-          setUser({ ...user!, profile_image_url: imageUrl });
-          if (isOwnProfile && authUser) {
-            updateUser({ profile_image_url: imageUrl });
+        // Update local state and auth context with full user object from API response
+        if (response?.user) {
+          const updatedUser = normalizeProfileUser(response.user);
+          if (updatedUser) {
+            setUser(updatedUser);
+            if (isOwnProfile && authUser) {
+              // Update AuthContext with full user object from response
+              updateUser(response.user as any);
+            }
           }
         }
       } catch (err: any) {
@@ -2653,12 +2656,15 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
           body: { cover: file },
         });
 
-        // Update local state with new image URL from API response
-        if (response?.user?.cover?.file?.url) {
-          const imageUrl = response.user.cover.file.url;
-          setUser({ ...user!, cover_image_url: imageUrl });
-          if (isOwnProfile && authUser) {
-            updateUser({ cover_image_url: imageUrl } as any);
+        // Update local state and auth context with full user object from API response
+        if (response?.user) {
+          const updatedUser = normalizeProfileUser(response.user);
+          if (updatedUser) {
+            setUser(updatedUser);
+            if (isOwnProfile && authUser) {
+              // Update AuthContext with full user object from response
+              updateUser(response.user as any);
+            }
           }
         }
       } catch (err: any) {

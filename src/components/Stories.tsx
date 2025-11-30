@@ -89,7 +89,7 @@ const Stories: React.FC = () => {
               null;
           } else {
             // Image için medium variant kullan
-            storyCover = getSafeImageURL(story.media, 'medium') || null;
+            storyCover = getSafeImageURL(story.media, 'large') || null;
           }
 
           return {
@@ -240,7 +240,7 @@ const Stories: React.FC = () => {
               null;
           } else {
             // Image için medium variant kullan
-            storyCover = getSafeImageURL(story.media, 'medium') || null;
+            storyCover = getSafeImageURL(story.media, 'large') || null;
           }
 
           return {

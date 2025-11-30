@@ -1764,7 +1764,7 @@ transition={{ duration: 0.15 }}
 
               // Render video attachments first (YouTube quality)
               const videoRender = videoCount > 0 && (
-                <div className="space-y-4 mb-4">
+                <div className="w-full space-y-4 mb-4">
                   {videoAttachments.map((attachment, index) => {
                     // Video URL'ini variants'tan al - Öncelik: high > medium > low > preview > original
                     const videoUrl = getSafeImageURL(attachment, 'high') || 
@@ -1818,12 +1818,12 @@ transition={{ duration: 0.15 }}
                   <>
                     {videoRender}
                     <div className="grid grid-cols-1 gap-2">
-                      <div className="w-full overflow-hidden rounded-2xl relative aspect-[16/9]">
+                      <div className="w-full  relative ">
                         {!isLoaded && <ImageShimmer className="absolute inset-0 w-full h-full" />}
                         <img
                           src={imageUrl}
                           alt="Post attachment"
-                          className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-300 ${!isLoaded ? 'opacity-0' : 'opacity-100'}`}
+                          className={`mx-auto  rounded-2xl  max-h-[80dvh] aspect-[9/16]  cursor-pointer hover:opacity-90 transition-opacity duration-300 ${!isLoaded ? 'opacity-0' : 'opacity-100'}`}
                           onLoad={() => handleImageLoad(imageUrl)}
                           onClick={(e) => {
                             e.stopPropagation();

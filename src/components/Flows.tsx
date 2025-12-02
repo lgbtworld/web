@@ -10,7 +10,7 @@ type ApiPost = PostComponentApiPost;
 
 interface TimelineResponse {
   posts: ApiPost[];
-  next_cursor: number;
+  next_cursor?: number | string | null;
 }
 
 interface FlowsProps {
@@ -34,9 +34,21 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
         setLoading(true);
         setError(null);
         const response: TimelineResponse = await api.fetchTimeline({ limit: 10, cursor: "" });
+        console.log('Initial fetch response:', response);
         setPosts(response.posts);
-        setNextCursor(response.next_cursor?.toString() || '');
-        setHasMore(response.posts.length > 0);
+        
+        // Handle next_cursor - can be number, string, or null/undefined
+        let newCursor = '';
+        if (response.next_cursor !== null && response.next_cursor !== undefined) {
+          newCursor = String(response.next_cursor);
+        }
+        
+        console.log('Initial cursor:', newCursor);
+        setNextCursor(newCursor);
+        // hasMore should be based on whether there's a next cursor
+        const hasMorePosts = newCursor !== '' && newCursor !== '0' && newCursor !== 'null' && newCursor !== 'undefined';
+        console.log('Initial hasMore:', hasMorePosts);
+        setHasMore(hasMorePosts);
       } catch (err) {
         console.error('Error fetching posts:', err);
         setError('Failed to load posts. Please try again.');
@@ -50,8 +62,9 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
 
   // Load more posts function
   const loadMorePosts = useCallback(async () => {
-    if (!nextCursor || loadingMore) {
-      console.log('Load more skipped:', { nextCursor, loadingMore });
+    // Check if nextCursor is valid (not empty string, not '0', and not null/undefined)
+    if (!nextCursor || nextCursor === '' || nextCursor === '0' || nextCursor === 'null' || nextCursor === 'undefined' || loadingMore || !hasMore) {
+      console.log('Load more skipped:', { nextCursor, loadingMore, hasMore });
       return;
     }
 
@@ -62,47 +75,111 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
 
       console.log('Load more response:', response);
 
-      if (response.posts.length > 0) {
+      if (response.posts && response.posts.length > 0) {
         setPosts(prevPosts => [...prevPosts, ...response.posts]);
-        setNextCursor(response.next_cursor?.toString() || '');
+        
+        // Handle next_cursor - can be number, string, or null/undefined
+        let newCursor = '';
+        if (response.next_cursor !== null && response.next_cursor !== undefined) {
+          newCursor = String(response.next_cursor);
+        }
+        
+        console.log('New cursor after load more:', newCursor);
+        setNextCursor(newCursor);
+        
+        // Update hasMore based on whether there's a next cursor
+        const hasMorePosts = newCursor !== '' && newCursor !== '0' && newCursor !== 'null' && newCursor !== 'undefined';
+        console.log('Has more after load more:', hasMorePosts);
+        setHasMore(hasMorePosts);
       } else {
+        // No more posts
+        console.log('No more posts available');
         setHasMore(false);
+        setNextCursor('');
       }
     } catch (err) {
       console.error('Error loading more posts:', err);
+      setError('Failed to load more posts. Please try again.');
     } finally {
       setLoadingMore(false);
     }
-  }, [nextCursor, loadingMore]);
+  }, [nextCursor, loadingMore, hasMore]);
 
   // Load more posts when scrolling to bottom
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let isRequestPending = false;
+
     const handleScroll = () => {
-      const scrollHeight = document.documentElement.scrollHeight;
-      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      const clientHeight = document.documentElement.clientHeight;
-
-      const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-
-      // Load more when 200px from bottom
-      if (distanceFromBottom <= 200 && hasMore && !loadingMore && !loading) {
-        console.log('Triggering load more:', { distanceFromBottom, hasMore, loadingMore, loading });
-        loadMorePosts();
+      // Skip if already loading or no more posts
+      if (loadingMore || !hasMore || loading || !nextCursor || nextCursor === '' || nextCursor === '0' || nextCursor === 'null' || nextCursor === 'undefined') {
+        return;
       }
+
+      // Debounce scroll events
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      timeoutId = setTimeout(() => {
+        const scrollHeight = document.documentElement.scrollHeight;
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        const clientHeight = document.documentElement.clientHeight;
+
+        const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+
+        // Load more when 500px from bottom (more aggressive)
+        if (distanceFromBottom <= 500 && !isRequestPending) {
+          console.log('Triggering load more:', { 
+            distanceFromBottom, 
+            hasMore, 
+            loadingMore, 
+            loading, 
+            nextCursor,
+            scrollHeight,
+            scrollTop,
+            clientHeight
+          });
+          isRequestPending = true;
+          loadMorePosts().finally(() => {
+            isRequestPending = false;
+          });
+        }
+      }, 150); // 150ms debounce
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasMore, loadingMore, loading, loadMorePosts]);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Also check on initial load if content is short
+    handleScroll();
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [hasMore, loadingMore, loading, loadMorePosts, nextCursor]);
 
   const refreshPosts = async () => {
     try {
       setLoading(true);
       setError(null);
       const response: TimelineResponse = await api.fetchTimeline({ limit: 10, cursor: "" });
+      console.log('Refresh response:', response);
       setPosts(response.posts);
-      setNextCursor(response.next_cursor?.toString() || '');
-      setHasMore(response.posts.length > 0);
+      
+      // Handle next_cursor - can be number, string, or null/undefined
+      let newCursor = '';
+      if (response.next_cursor !== null && response.next_cursor !== undefined) {
+        newCursor = String(response.next_cursor);
+      }
+      
+      console.log('Refresh cursor:', newCursor);
+      setNextCursor(newCursor);
+      // hasMore should be based on whether there's a next cursor
+      const hasMorePosts = newCursor !== '' && newCursor !== '0' && newCursor !== 'null' && newCursor !== 'undefined';
+      console.log('Refresh hasMore:', hasMorePosts);
+      setHasMore(hasMorePosts);
     } catch (err) {
       console.error('Error refreshing posts:', err);
       setError('Failed to load posts. Please try again.');
@@ -118,7 +195,22 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
   }, []);
 
   return (
-    <div className='w-full'>
+    <div className='w-full relative'>
+      {/* Floating Loading Indicator */}
+      {loadingMore && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 ${theme === 'dark' ? 'bg-gray-900/95 border border-gray-800' : 'bg-white/95 border border-gray-200'} backdrop-blur-xl rounded-2xl px-6 py-4 shadow-lg`}
+        >
+          <div className={`flex items-center space-x-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+            <div className={`animate-spin rounded-full h-5 w-5 border-2 ${theme === 'dark' ? 'border-gray-600 border-t-white' : 'border-gray-300 border-t-gray-900'}`}></div>
+            <span className="font-semibold text-sm">Loading more posts...</span>
+          </div>
+        </motion.div>
+      )}
+
       {/* Create Post - Hidden on mobile */}
       <div className={`hidden lg:block ${theme === 'dark' ? 'bg-gray-400 border-b border-gray-900' : 'bg-white border-b border-gray-100'}`}>
         <CreatePost
@@ -225,12 +317,17 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
         )}
         {/* Loading More Indicator */}
         {loadingMore && (
-          <div className={`p-8 text-center border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}`}>
-            <div className={`inline-flex items-center space-x-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
-              <span>Loading more posts...</span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className={`p-8 text-center border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}`}
+          >
+            <div className={`inline-flex items-center space-x-3 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+              <div className={`animate-spin rounded-full h-5 w-5 border-2 ${theme === 'dark' ? 'border-gray-600 border-t-white' : 'border-gray-300 border-t-gray-900'}`}></div>
+              <span className="font-medium">Loading more posts...</span>
             </div>
-          </div>
+          </motion.div>
         )}
         {!hasMore && posts.length > 0 && (
           <div className={`p-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>

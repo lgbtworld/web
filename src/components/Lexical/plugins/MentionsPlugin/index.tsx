@@ -24,6 +24,7 @@ import { User } from 'lucide-react';
 import { api } from '../../../../services/api';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../../../contexts/ThemeContext';
+import { getSafeImageURL } from '../../../../helpers/helpers';
 
 const PUNCTUATION =
   '\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%\'"~=<>_:;';
@@ -299,7 +300,7 @@ export default function NewMentionsPlugin(): JSX.Element | null {
         .map(
           (user) => {
             const displayName = user.displayname || user.username;
-            const avatarUrl = user.avatar?.file?.url || null;
+            const avatarUrl = getSafeImageURL(user.avatar,"icon")
             return new MentionTypeaheadOption(
               displayName,
               user.username,
@@ -319,7 +320,7 @@ export default function NewMentionsPlugin(): JSX.Element | null {
       closeMenu: () => void,
     ) => {
       editor.update(() => {
-        const mentionNode = $createMentionNode(selectedOption.name,undefined,editor._config.theme.mention);
+        const mentionNode = $createMentionNode(`@${selectedOption.name}`,undefined,editor._config.theme.mention);
         if (nodeToReplace) {
           nodeToReplace.replace(mentionNode);
         }

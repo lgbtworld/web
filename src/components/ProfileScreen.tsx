@@ -1208,7 +1208,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   const profileImageInputRef = useRef<HTMLInputElement>(null);
   const coverImageInputRef = useRef<HTMLInputElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
-  const previousAuthUserRef = useRef<typeof authUser>(authUser);
   const skipNextFetchRef = useRef(false);
   const [headerHeight, setHeaderHeight] = useState(57);
   const [selectedField, setSelectedField] = useState<string | null>(null);
@@ -1410,52 +1409,92 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   };
 
   // Bio editor onChange handler
-  const handleBioChange = (editorState: any) => {
+  const handleBioChange = React.useCallback((editorState: any) => {
     if (!bioEditorInstance) return;
+
+    // Mark that user is typing to prevent re-initialization
+    isUserTypingRef.current = true;
 
     editorState.read(() => {
       const htmlString = $generateHtmlFromNodes(bioEditorInstance, null);
 
       // Update editFormData with HTML content
-      setEditFormData({
-        ...editFormData,
+      setEditFormData((prev) => ({
+        ...prev,
         bio: htmlString,
-      });
+      }));
     });
-  };
+
+    // Reset typing flag after a short delay
+    setTimeout(() => {
+      isUserTypingRef.current = false;
+    }, 1000);
+  }, [bioEditorInstance]);
 
   // Initialize bio editor content when user data loads or edit mode opens
   const bioInitializedRef = useRef(false);
+  const lastBioRef = useRef<string>('');
+  const isUserTypingRef = useRef(false);
+  
   useEffect(() => {
-    if (isEditMode && bioEditorInstance && !bioInitializedRef.current) {
-      const initialBio = user?.bio || '';
-      if (initialBio) {
-        try {
-          // Try to parse as HTML
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(initialBio, 'text/html');
-          bioEditorInstance.update(() => {
-            const root = $getRoot();
-            root.clear();
-            const nodes = $generateNodesFromDOM(bioEditorInstance, doc);
-            root.append(...nodes);
-          }, { discrete: true });
-        } catch (error) {
-          // If parsing fails, treat as plain text
-          bioEditorInstance.update(() => {
-            const root = $getRoot();
-            root.clear();
-            const paragraph = $createParagraphNode();
-            paragraph.append($createTextNode(initialBio));
-            root.append(paragraph);
-          }, { discrete: true });
+    // Don't reinitialize if user is currently typing
+    if (isUserTypingRef.current) {
+      return;
+    }
+    
+    if (isEditMode && bioEditorInstance && user) {
+      // Get bio string from user.bio (not from editFormData to avoid re-initialization loop)
+      let bioString = '';
+      
+      if (user?.bio) {
+        if (user.default_language && typeof user.bio === 'object') {
+          bioString = (user.bio as Record<string, string>)[user.default_language] || '';
+        } else if (typeof user.bio === 'string') {
+          bioString = user.bio;
         }
       }
-      bioInitializedRef.current = true;
+      
+      // Only initialize on first load or if user.bio has changed externally
+      if (!bioInitializedRef.current || bioString !== lastBioRef.current) {
+        if (bioString) {
+          try {
+            // Try to parse as HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(bioString, 'text/html');
+            bioEditorInstance.update(() => {
+              const root = $getRoot();
+              root.clear();
+              const nodes = $generateNodesFromDOM(bioEditorInstance, doc);
+              root.append(...nodes);
+            }, { discrete: true });
+          } catch (error) {
+            console.warn('Failed to parse bio as HTML, treating as plain text:', error);
+            // If parsing fails, treat as plain text
+            bioEditorInstance.update(() => {
+              const root = $getRoot();
+              root.clear();
+              const paragraph = $createParagraphNode();
+              paragraph.append($createTextNode(bioString));
+              root.append(paragraph);
+            }, { discrete: true });
+          }
+        } else {
+          // Clear editor if bio is empty
+          bioEditorInstance.update(() => {
+            const root = $getRoot();
+            root.clear();
+            root.append($createParagraphNode());
+          }, { discrete: true });
+        }
+        lastBioRef.current = bioString;
+        bioInitializedRef.current = true;
+      }
     } else if (!isEditMode) {
       bioInitializedRef.current = false;
+      lastBioRef.current = '';
+      isUserTypingRef.current = false;
     }
-  }, [isEditMode, user?.bio, bioEditorInstance]);
+  }, [isEditMode, user?.bio, user?.default_language, bioEditorInstance]);
 
   // Check if viewing own profile
   const isOwnProfile = isAuthenticated && authUser && user && (authUser.username === user.username || authUser.id === user.id);
@@ -2716,31 +2755,45 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
       });
 
       // If there are images, send FormData, otherwise send regular object
+      let response;
       if (profileImageFile || coverImageFile) {
-        await api.updateProfile(formData as any);
+        response = await api.updateProfile(formData as any);
       } else {
-        await api.updateProfile(payload);
+        response = await api.updateProfile(payload);
       }
 
-      // Update local user state
-      const updatedUser = {
-        ...user,
-        ...editFormData,
-        profile_image_url: profileImagePreview || user.profile_image_url,
-        cover_image_url: coverImagePreview || user.cover_image_url,
-      };
-      setUser(updatedUser);
+      // Update local user state from API response if available
+      if (response?.user) {
+        const normalizedUser = normalizeProfileUser(response.user);
+        if (normalizedUser) {
+          setUser(normalizedUser);
+          
+          // Update auth context user if it's the same user
+          if (isOwnProfile && authUser) {
+            updateUser(response.user as any);
+          }
+        }
+      } else {
+        // Fallback: Update local user state from editFormData
+        const updatedUser = {
+          ...user,
+          ...editFormData,
+          profile_image_url: profileImagePreview || user.profile_image_url,
+          cover_image_url: coverImagePreview || user.cover_image_url,
+        };
+        setUser(updatedUser);
 
-      // Update auth context user if it's the same user
-      if (isOwnProfile && authUser) {
-        // Filter out location string, only keep valid User fields
-        const { location: updatedLocation, ...restEditData } = editFormData;
-        updateUser({
-          ...restEditData as any,
-          ...(updatedLocation !== undefined ? { location: updatedLocation } : {}),
-          profile_image_url: profileImagePreview || authUser.profile_image_url,
-          ...(coverImagePreview && { cover_image_url: coverImagePreview }),
-        });
+        // Update auth context user if it's the same user
+        if (isOwnProfile && authUser) {
+          // Filter out location string, only keep valid User fields
+          const { location: updatedLocation, ...restEditData } = editFormData;
+          updateUser({
+            ...restEditData as any,
+            ...(updatedLocation !== undefined ? { location: updatedLocation } : {}),
+            profile_image_url: profileImagePreview || authUser.profile_image_url,
+            ...(coverImagePreview && { cover_image_url: coverImagePreview }),
+          });
+        }
       }
 
       setIsEditMode(false);
@@ -2768,54 +2821,68 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     return () => window.removeEventListener('resize', updateHeaderHeight);
   }, [user, isEditMode]);
 
-  // Fetch user data from API
+  // Track last fetched username to prevent unnecessary refetches
+  const lastFetchedUsernameRef = useRef<string | null>(null);
+
+  // Reset last fetched username when username prop changes
+  useEffect(() => {
+    if (lastFetchedUsernameRef.current !== username) {
+      lastFetchedUsernameRef.current = null;
+    }
+  }, [username]);
+
+  // Update user from authUser when viewing own profile and authUser updates
+  useEffect(() => {
+    if (!username || !isAuthenticated || !authUser) {
+      return;
+    }
+
+    const isOwn = authUser.username === username || authUser.id === username;
+    if (!isOwn) {
+      return;
+    }
+
+    // Only update if we're viewing own profile
+    const followerCount =
+      (authUser as any)?.engagements?.counts?.follower_count ??
+      (authUser as any)?.followers_count ??
+      0;
+    const followingCount =
+      (authUser as any)?.engagements?.counts?.following_count ??
+      (authUser as any)?.following_count ??
+      0;
+
+    setUser({
+      ...(authUser as unknown as ProfileUser),
+      followers_count: followerCount,
+      following_count: followingCount,
+    });
+    setLoading(false);
+    lastFetchedUsernameRef.current = username;
+  }, [username, isAuthenticated, authUser]);
+
+  // Fetch user data from API (only for other users' profiles)
   useEffect(() => {
     const fetchUserData = async () => {
       if (!username) {
         return;
       }
 
-      console.log('ProfileScreen - fetchUserData called, username:', username);
-
+      // Skip if viewing own profile (handled by separate useEffect above)
       const isOwn = isAuthenticated && authUser && (authUser.username === username || authUser.id === username);
-
-      // Use auth user data immediately when viewing own profile
-      if (isOwn && authUser) {
-        console.log('ProfileScreen - Using own profile data from authUser');
-        const followerCount =
-          (authUser as any)?.engagements?.counts?.follower_count ??
-          (authUser as any)?.followers_count ??
-          0;
-        const followingCount =
-          (authUser as any)?.engagements?.counts?.following_count ??
-          (authUser as any)?.following_count ??
-          0;
-
-        setUser({
-          ...(authUser as unknown as ProfileUser),
-          followers_count: followerCount,
-          following_count: followingCount,
-        });
-        setLoading(false);
+      if (isOwn) {
         return;
       }
+
+      // Skip if we already fetched this username
+      if (lastFetchedUsernameRef.current === username) {
+        return;
+      }
+
+      console.log('ProfileScreen - fetchUserData called, username:', username);
 
       if (skipNextFetchRef.current) {
         skipNextFetchRef.current = false;
-        return;
-      }
-
-      // Avoid unnecessary refetch when authUser state updates (e.g., follow/unfollow) but viewer stays the same person
-      const previousAuthUser = previousAuthUserRef.current;
-      const viewerStateOnlyChanged =
-        previousAuthUser &&
-        authUser &&
-        previousAuthUser.id === authUser.id &&
-        previousAuthUser !== authUser &&
-        username !== authUser.username &&
-        user?.username === username;
-
-      if (viewerStateOnlyChanged) {
         return;
       }
 
@@ -2861,6 +2928,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         console.log('ProfileScreen - Normalized user data:', normalizedUserData);
 
         setUser(normalizedUserData as unknown as ProfileUser);
+        lastFetchedUsernameRef.current = username;
       } catch (err: any) {
         console.error('Error fetching user:', err);
         const errorMessage = err.response?.data?.message || err.message || 'Failed to load profile';
@@ -2874,11 +2942,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     if (username) {
       fetchUserData();
     }
-  }, [username, authUser, isAuthenticated, user?.username]);
-
-  useEffect(() => {
-    previousAuthUserRef.current = authUser;
-  }, [authUser]);
+  }, [username]);
 
   // Fetch posts based on active tab
   useEffect(() => {

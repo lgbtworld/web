@@ -52,7 +52,6 @@ const mentionStyle = 'background-color: rgba(24, 119, 232, 0.2)';
 export class MentionNode extends TextNode {
   __mention: string;
   __mentionClass:string;
-
   static getType(): string {
     return 'mention';
   }
@@ -94,6 +93,22 @@ export class MentionNode extends TextNode {
 
     return dom;
   }
+
+  createDOMWithLink(config: EditorConfig): HTMLElement {
+  const dom = document.createElement('a');
+
+  dom.style.cssText = mentionStyle;
+  const mentionClass = (config.theme as any)?.mention || 'mention';
+  dom.className = mentionClass;
+
+  dom.spellcheck = false;
+  dom.href = `/${this.__text}`;
+  dom.textContent = this.__text;
+
+  
+
+  return dom;
+}
 
   exportDOM(): DOMExportOutput {
     const element = document.createElement('a');

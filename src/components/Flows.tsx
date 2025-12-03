@@ -6,35 +6,42 @@ import Post, { type ApiPost as PostComponentApiPost } from './Post';
 import { api } from '../services/api';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 
+// Shimmer styles - defined once globally
+if (typeof document !== 'undefined' && !document.getElementById('skeleton-shimmer-styles')) {
+  const style = document.createElement('style');
+  style.id = 'skeleton-shimmer-styles';
+  style.textContent = `
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+      100% {
+        background-position: 200% 0;
+      }
+    }
+    .shimmer-animation {
+      animation: shimmer 1.5s infinite linear;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 // Post Skeleton Component
 const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
   return (
     <div className={`${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
-      <style>{`
-        @keyframes shimmer {
-          0% {
-            background-position: -200% 0;
-          }
-          100% {
-            background-position: 200% 0;
-          }
-        }
-        .shimmer-animation {
-          animation: shimmer 1.5s infinite linear;
-        }
-      `}</style>
       
       {/* Header */}
       <div className="px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {/* Avatar */}
           <div className={`w-10 h-10 rounded-full overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
           }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
-                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                   : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
                 backgroundSize: '200% 100%'
               }} />
@@ -43,23 +50,23 @@ const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
           {/* Username and timestamp */}
           <div className="space-y-2">
             <div className={`h-4 w-32 rounded overflow-hidden ${
-              theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+              theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
             }`}>
               <div className="w-full h-full shimmer-animation"
                 style={{
                   background: theme === 'dark'
-                    ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                    ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                     : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
                   backgroundSize: '200% 100%'
                 }} />
             </div>
             <div className={`h-3 w-24 rounded overflow-hidden ${
-              theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+              theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
             }`}>
               <div className="w-full h-full shimmer-animation"
                 style={{
                   background: theme === 'dark'
-                    ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                    ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                     : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
                   backgroundSize: '200% 100%'
                 }} />
@@ -69,12 +76,12 @@ const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
         
         {/* Menu button */}
         <div className={`w-8 h-8 rounded-full overflow-hidden ${
-          theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+          theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
         }`}>
           <div className="w-full h-full shimmer-animation"
             style={{
               background: theme === 'dark'
-                ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                 : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
               backgroundSize: '200% 100%'
             }} />
@@ -86,34 +93,34 @@ const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
         {/* Text lines */}
         <div className="space-y-2">
           <div className={`h-4 w-full rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
           }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
-                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                   : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
                 backgroundSize: '200% 100%'
               }} />
           </div>
           <div className={`h-4 w-5/6 rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
           }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
-                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                   : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
                 backgroundSize: '200% 100%'
               }} />
           </div>
           <div className={`h-4 w-4/6 rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
           }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
-                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                   : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
                 backgroundSize: '200% 100%'
               }} />
@@ -122,12 +129,12 @@ const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
         
         {/* Image placeholder */}
         <div className={`w-full h-64 rounded-2xl overflow-hidden ${
-          theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+          theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
         }`}>
           <div className="w-full h-full shimmer-animation"
             style={{
               background: theme === 'dark'
-                ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                 : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
               backgroundSize: '200% 100%'
             }} />
@@ -140,46 +147,46 @@ const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
       }`}>
         <div className="flex items-center gap-6">
           <div className={`w-6 h-6 rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
           }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
-                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                   : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
                 backgroundSize: '200% 100%'
               }} />
           </div>
           <div className={`w-6 h-6 rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
           }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
-                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                   : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
                 backgroundSize: '200% 100%'
               }} />
           </div>
           <div className={`w-6 h-6 rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
           }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
-                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                   : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
                 backgroundSize: '200% 100%'
               }} />
           </div>
         </div>
         <div className={`w-16 h-4 rounded overflow-hidden ${
-          theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+          theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
         }`}>
           <div className="w-full h-full shimmer-animation"
             style={{
               background: theme === 'dark'
-                ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                ? 'linear-gradient(90deg, rgba(17,24,39,0.5) 0%, rgba(31,41,55,0.8) 50%, rgba(17,24,39,0.5) 100%)'
                 : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
               backgroundSize: '200% 100%'
             }} />
@@ -240,12 +247,20 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
   // Wait for posts to render before hiding loading
   useEffect(() => {
     if (posts.length > 0 && loading) {
-      // Wait for React to render posts, then wait for browser to paint
+      // Use requestAnimationFrame for better performance
+      let rafId: number;
       const timeoutId = setTimeout(() => {
-        setLoading(false);
-      }, 100); // Small delay to ensure posts are rendered
+        rafId = requestAnimationFrame(() => {
+          setLoading(false);
+        });
+      }, 50); // Reduced delay
       
-      return () => clearTimeout(timeoutId);
+      return () => {
+        clearTimeout(timeoutId);
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+        }
+      };
     }
   }, [posts, loading]);
 
@@ -325,6 +340,17 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
       setLoadingMore(true);
       isRequestPendingRef.current = true;
       
+      // Wait for skeleton to render (single frame is enough)
+      await new Promise(resolve => {
+        requestAnimationFrame(() => {
+          resolve(undefined);
+        });
+      });
+      
+      // Minimum loading time to ensure skeleton is visible
+      const minLoadingTime = 300; // Reduced to 300ms for better UX
+      const startTime = Date.now();
+      
       const response: TimelineResponse = await api.fetchTimeline({ limit: 10, cursor: currentNextCursor });
 
       console.log('Load more response:', response);
@@ -350,6 +376,14 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
         console.log('No more posts available');
         setHasMore(false);
         setNextCursor('');
+      }
+      
+      // Ensure minimum loading time for skeleton visibility
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+      
+      if (remainingTime > 0) {
+        await new Promise(resolve => setTimeout(resolve, remainingTime));
       }
     } catch (err) {
       console.error('Error loading more posts:', err);
@@ -593,21 +627,6 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
 
   return (
     <div ref={containerRef} className='w-full relative'>
-      {/* Floating Loading Indicator */}
-      {loadingMore && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 ${theme === 'dark' ? 'bg-gray-900/95 border border-gray-800' : 'bg-white/95 border border-gray-200'} backdrop-blur-xl rounded-2xl px-6 py-4 shadow-lg`}
-        >
-          <div className={`flex items-center space-x-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-            <div className={`animate-spin rounded-full h-5 w-5 border-2 ${theme === 'dark' ? 'border-gray-600 border-t-white' : 'border-gray-300 border-t-gray-900'}`}></div>
-            <span className="font-semibold text-sm">Loading more posts...</span>
-          </div>
-        </motion.div>
-      )}
-
       {/* Create Post - Hidden on mobile */}
       <div className={`hidden lg:block ${theme === 'dark' ? 'bg-gray-400 border-b border-gray-900' : 'bg-white border-b border-gray-100'}`}>
         <CreatePost
@@ -625,9 +644,13 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
       {/* Posts Feed */}
       <div className='pb-[25dvh] '>
         {loading ? (
-          <div className={`p-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-            Loading posts...
-          </div>
+          <>
+            {[1, 2, 3, 4, 5].map((index) => (
+              <div key={`initial-skeleton-${index}`}>
+                <PostSkeleton theme={theme} />
+              </div>
+            ))}
+          </>
         ) : error ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -691,12 +714,9 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
           </div>
         ) : (
        
-          posts.map((post, index) => (
-            <motion.div
+          posts.map((post) => (
+            <div
               key={post.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
               className={`${theme === 'dark' ? 'bg-black' : 'bg-white'}`}
             >
               <Post
@@ -708,7 +728,7 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
                 }}
                   onUpdatePost={handlePostUpdate}
               />
-            </motion.div>
+            </div>
           ))
       
         )}
@@ -716,15 +736,9 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
         {loadingMore && (
           <>
             {[1, 2, 3].map((index) => (
-              <motion.div
-                key={`skeleton-${index}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
+              <div key={`skeleton-${index}`}>
                 <PostSkeleton theme={theme} />
-              </motion.div>
+              </div>
             ))}
           </>
         )}

@@ -237,6 +237,18 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
     nextCursorRef.current = nextCursor;
   }, [nextCursor]);
 
+  // Wait for posts to render before hiding loading
+  useEffect(() => {
+    if (posts.length > 0 && loading) {
+      // Wait for React to render posts, then wait for browser to paint
+      const timeoutId = setTimeout(() => {
+        setLoading(false);
+      }, 100); // Small delay to ensure posts are rendered
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [posts, loading]);
+
   // Fetch posts from API
   useEffect(() => {
     const fetchPosts = async () => {
@@ -259,10 +271,14 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
         const hasMorePosts = newCursor !== '' && newCursor !== '0' && newCursor !== 'null' && newCursor !== 'undefined';
         console.log('Initial hasMore:', hasMorePosts);
         setHasMore(hasMorePosts);
+        
+        // If no posts, hide loading immediately
+        if (response.posts.length === 0) {
+          setLoading(false);
+        }
       } catch (err) {
         console.error('Error fetching posts:', err);
         setError('Failed to load posts. Please try again.');
-      } finally {
         setLoading(false);
       }
     };
@@ -556,10 +572,15 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
       const hasMorePosts = newCursor !== '' && newCursor !== '0' && newCursor !== 'null' && newCursor !== 'undefined';
       console.log('Refresh hasMore:', hasMorePosts);
       setHasMore(hasMorePosts);
+      
+      // If no posts, hide loading immediately
+      if (response.posts.length === 0) {
+        setLoading(false);
+      }
+      // Otherwise, the useEffect will handle hiding loading after render
     } catch (err) {
       console.error('Error refreshing posts:', err);
       setError('Failed to load posts. Please try again.');
-    } finally {
       setLoading(false);
     }
   };

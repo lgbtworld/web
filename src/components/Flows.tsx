@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import CreatePost from './CreatePost';
@@ -26,6 +26,33 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [nextCursor, setNextCursor] = useState<string>('');
+
+  // Use refs to track values and avoid stale closures
+  const isRequestPendingRef = useRef(false);
+  const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadingMoreRef = useRef(loadingMore);
+  const hasMoreRef = useRef(hasMore);
+  const loadingRef = useRef(loading);
+  const nextCursorRef = useRef(nextCursor);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLElement | null>(null);
+
+  // Update refs when state changes
+  useEffect(() => {
+    loadingMoreRef.current = loadingMore;
+  }, [loadingMore]);
+
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+
+  useEffect(() => {
+    loadingRef.current = loading;
+  }, [loading]);
+
+  useEffect(() => {
+    nextCursorRef.current = nextCursor;
+  }, [nextCursor]);
 
   // Fetch posts from API
   useEffect(() => {
@@ -60,18 +87,46 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
     fetchPosts();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Load more posts function
+  // Load more posts function - using refs to avoid dependency issues
   const loadMorePosts = useCallback(async () => {
+    // Get current values from refs to avoid stale closure
+    const currentNextCursor = nextCursorRef.current;
+    const currentLoadingMore = loadingMoreRef.current;
+    const currentHasMore = hasMoreRef.current;
+
+    console.log('loadMorePosts called with:', {
+      currentNextCursor,
+      currentLoadingMore,
+      currentHasMore,
+      isPending: isRequestPendingRef.current
+    });
+
     // Check if nextCursor is valid (not empty string, not '0', and not null/undefined)
-    if (!nextCursor || nextCursor === '' || nextCursor === '0' || nextCursor === 'null' || nextCursor === 'undefined' || loadingMore || !hasMore) {
-      console.log('Load more skipped:', { nextCursor, loadingMore, hasMore });
+    if (
+      !currentNextCursor || 
+      currentNextCursor === '' || 
+      currentNextCursor === '0' || 
+      currentNextCursor === 'null' || 
+      currentNextCursor === 'undefined' || 
+      currentLoadingMore || 
+      !currentHasMore ||
+      isRequestPendingRef.current
+    ) {
+      console.log('Load more skipped:', { 
+        nextCursor: currentNextCursor, 
+        loadingMore: currentLoadingMore, 
+        hasMore: currentHasMore,
+        isPending: isRequestPendingRef.current
+      });
       return;
     }
 
     try {
-      console.log('Loading more posts with cursor:', nextCursor);
+      console.log('Loading more posts with cursor:', currentNextCursor);
       setLoadingMore(true);
-      const response: TimelineResponse = await api.fetchTimeline({ limit: 10, cursor: nextCursor });
+      isRequestPendingRef.current = true;
+      
+      const response: TimelineResponse = await api.fetchTimeline({ limit: 10, cursor: currentNextCursor });
 
       console.log('Load more response:', response);
 
@@ -102,63 +157,201 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
       setError('Failed to load more posts. Please try again.');
     } finally {
       setLoadingMore(false);
+      isRequestPendingRef.current = false;
     }
-  }, [nextCursor, loadingMore, hasMore]);
+  }, []); // No dependencies - uses refs instead
 
   // Load more posts when scrolling to bottom
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    let isRequestPending = false;
+    let lastScrollTop = 0;
+    let throttleTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    // Find the scrollable parent container
+    const findScrollContainer = (element: HTMLElement | null): HTMLElement | null => {
+      if (!element || element === document.body || element === document.documentElement) {
+        return null;
+      }
+      
+      // Check if current element is scrollable
+      const style = window.getComputedStyle(element);
+      const isScrollable = 
+        style.overflowY === 'auto' || 
+        style.overflowY === 'scroll' ||
+        style.overflow === 'auto' ||
+        style.overflow === 'scroll';
+      
+      if (isScrollable && element.scrollHeight > element.clientHeight) {
+        return element;
+      }
+      
+      // Check parent
+      return findScrollContainer(element.parentElement);
+    };
+
+    // Function to get or find scroll container
+    const getScrollContainer = (): HTMLElement | null => {
+      // Return cached if found
+      if (scrollContainerRef.current) {
+        return scrollContainerRef.current;
+      }
+
+      // Try to find using containerRef
+      if (containerRef.current) {
+        const found = findScrollContainer(containerRef.current.parentElement);
+        if (found) {
+          scrollContainerRef.current = found;
+          return found;
+        }
+      }
+
+      // Fallback: try to find by common selectors
+      const possibleContainers = document.querySelectorAll('div[style*="overflow"], div[style*="overflow-y"]');
+      for (const container of Array.from(possibleContainers)) {
+        const style = window.getComputedStyle(container as HTMLElement);
+        if ((style.overflowY === 'auto' || style.overflowY === 'scroll') && 
+            (container as HTMLElement).scrollHeight > (container as HTMLElement).clientHeight) {
+          scrollContainerRef.current = container as HTMLElement;
+          return container as HTMLElement;
+        }
+      }
+
+      return null;
+    };
 
     const handleScroll = () => {
-      // Skip if already loading or no more posts
-      if (loadingMore || !hasMore || loading || !nextCursor || nextCursor === '' || nextCursor === '0' || nextCursor === 'null' || nextCursor === 'undefined') {
+      // Quick early exit checks
+      const currentLoadingMore = loadingMoreRef.current;
+      const currentHasMore = hasMoreRef.current;
+      const currentIsPending = isRequestPendingRef.current;
+
+      // Fast path: skip if already loading or no more posts
+      if (currentLoadingMore || !currentHasMore || currentIsPending) {
         return;
       }
 
-      // Debounce scroll events
-      if (timeoutId) {
-        clearTimeout(timeoutId);
+      // Throttle: only check every 50ms for better responsiveness
+      if (throttleTimeout) {
+        return;
       }
 
-      timeoutId = setTimeout(() => {
-        const scrollHeight = document.documentElement.scrollHeight;
-        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-        const clientHeight = document.documentElement.clientHeight;
+      throttleTimeout = setTimeout(() => {
+        throttleTimeout = null;
+
+        // Use refs to get current values (avoid stale closure)
+        const currentLoading = loadingRef.current;
+        const currentNextCursor = nextCursorRef.current;
+
+        // Additional checks
+        if (
+          currentLoading || 
+          !currentNextCursor || 
+          currentNextCursor === '' || 
+          currentNextCursor === '0' || 
+          currentNextCursor === 'null' || 
+          currentNextCursor === 'undefined'
+        ) {
+          return;
+        }
+
+        // Get scroll container (will find it if not cached)
+        const scrollContainer = getScrollContainer();
+
+        // Use scroll container if found, otherwise fall back to window/document
+        let scrollHeight: number;
+        let scrollTop: number;
+        let clientHeight: number;
+
+        if (scrollContainer) {
+          scrollHeight = scrollContainer.scrollHeight;
+          scrollTop = scrollContainer.scrollTop;
+          clientHeight = scrollContainer.clientHeight;
+        } else {
+          scrollHeight = document.documentElement.scrollHeight;
+          scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+          clientHeight = document.documentElement.clientHeight;
+        }
+
+        // Only check if scrolled down (not up)
+        if (scrollTop <= lastScrollTop) {
+          lastScrollTop = scrollTop;
+          return;
+        }
+        lastScrollTop = scrollTop;
 
         const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
 
-        // Load more when 500px from bottom (more aggressive)
-        if (distanceFromBottom <= 500 && !isRequestPending) {
+        // Load more when 1200px from bottom (slightly increased for earlier trigger)
+        if (distanceFromBottom <= 1200) {
           console.log('Triggering load more:', { 
             distanceFromBottom, 
-            hasMore, 
-            loadingMore, 
-            loading, 
-            nextCursor,
-            scrollHeight,
-            scrollTop,
-            clientHeight
+            hasMore: currentHasMore, 
+            loadingMore: currentLoadingMore, 
+            loading: currentLoading, 
+            nextCursor: currentNextCursor
           });
-          isRequestPending = true;
-          loadMorePosts().finally(() => {
-            isRequestPending = false;
-          });
+          
+          loadMorePosts();
         }
-      }, 150); // 150ms debounce
+      }, 50);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    // Also check on initial load if content is short
-    handleScroll();
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
+    // Try to find scroll container - with a small delay to ensure DOM is ready
+    let scrollContainer: HTMLElement | null = null;
+    let currentListenerTarget: HTMLElement | Window | null = null;
+
+    const attachListener = () => {
+      // Remove old listener if exists
+      if (currentListenerTarget) {
+        if (currentListenerTarget === window) {
+          window.removeEventListener('scroll', handleScroll);
+        } else {
+          (currentListenerTarget as HTMLElement).removeEventListener('scroll', handleScroll);
+        }
+      }
+
+      // Try to find scroll container
+      scrollContainer = getScrollContainer();
+
+      // Attach to the appropriate container
+      if (scrollContainer) {
+        console.log('Using scroll container for loadMore:', scrollContainer);
+        scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+        currentListenerTarget = scrollContainer;
+      } else {
+        console.log('Using window scroll for loadMore');
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        currentListenerTarget = window;
       }
     };
-  }, [hasMore, loadingMore, loading, loadMorePosts, nextCursor]);
+
+    // Try immediately
+    attachListener();
+
+    // Also try after a short delay in case DOM isn't ready
+    const timeoutId = setTimeout(() => {
+      if (!scrollContainerRef.current) {
+        attachListener();
+      }
+    }, 100);
+    
+    return () => {
+      if (currentListenerTarget) {
+        if (currentListenerTarget === window) {
+          window.removeEventListener('scroll', handleScroll);
+        } else {
+          (currentListenerTarget as HTMLElement).removeEventListener('scroll', handleScroll);
+        }
+      }
+      if (throttleTimeout) {
+        clearTimeout(throttleTimeout);
+      }
+      clearTimeout(timeoutId);
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+        timeoutIdRef.current = null;
+      }
+    };
+  }, [loadMorePosts]);
 
   const refreshPosts = async () => {
     try {
@@ -195,7 +388,7 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
   }, []);
 
   return (
-    <div className='w-full relative'>
+    <div ref={containerRef} className='w-full relative'>
       {/* Floating Loading Indicator */}
       {loadingMore && (
         <motion.div

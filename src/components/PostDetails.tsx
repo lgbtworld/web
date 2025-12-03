@@ -5,6 +5,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import Post, { PostProps, ApiPost } from './Post';
 import { api } from '../services/api';
 import Container from './Container';
+import { PostSkeleton } from './Flows';
 
 type PostDetailsProps = Omit<PostProps, 'post' | 'defaultShowReply' | 'loadChildren'>;
 
@@ -24,6 +25,11 @@ const PostDetails: React.FC<PostDetailsProps> = ({ showChildren = true, ...restP
   // Handle post click - navigate to post detail page
   const handlePostClick = (postId: string, username: string) => {
     navigate(`/${username}/status/${postId}`, { replace: true });
+  };
+
+  // Handle profile click - navigate to profile page
+  const handleProfileClick = (username: string) => {
+    navigate(`/${username}`, { replace: true });
   };
 
   useEffect(() => {
@@ -52,12 +58,27 @@ const PostDetails: React.FC<PostDetailsProps> = ({ showChildren = true, ...restP
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading post...</p>
+      <Container
+        className={`w-full min-h-[100dvh] overflow-y-auto scrollbar-hide max-h-[100dvh]`}>
+        {/* Post Detail Header */}
+        <div className={`z-40 border-b sticky top-0 ${theme === 'dark' ? 'bg-gray-950 border-gray-800/50' : 'bg-white border-gray-100/50'}`}>
+          <div className="flex items-center px-4 py-3">
+            <button
+              onClick={handleBackClick}
+              className={`p-2 rounded-full transition-all duration-200 mr-3 ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                }`}
+            >
+              <ArrowLeft className={`w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} />
+            </button>
+            <div>
+              <h2 className={`font-bold text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                Post
+              </h2>
+            </div>
+          </div>
         </div>
-      </div>
+        <PostSkeleton theme={theme} />
+      </Container>
     );
   }
 
@@ -114,6 +135,7 @@ const PostDetails: React.FC<PostDetailsProps> = ({ showChildren = true, ...restP
         post={post}
         {...restProps}
         onPostClick={restProps.onPostClick || handlePostClick}
+        onProfileClick={restProps.onProfileClick || handleProfileClick}
         showChildren={showChildren}
         defaultShowReply={true}
         loadChildren={false}

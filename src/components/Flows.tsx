@@ -26,8 +26,8 @@ if (typeof document !== 'undefined' && !document.getElementById('skeleton-shimme
   document.head.appendChild(style);
 }
 
-// Post Skeleton Component
-const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
+// Post Skeleton Component - exported for use in other components
+export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
   return (
     <div className={`${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
       

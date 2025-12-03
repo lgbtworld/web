@@ -6,6 +6,189 @@ import Post, { type ApiPost as PostComponentApiPost } from './Post';
 import { api } from '../services/api';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 
+// Post Skeleton Component
+const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
+  return (
+    <div className={`${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
+      <style>{`
+        @keyframes shimmer {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+        .shimmer-animation {
+          animation: shimmer 1.5s infinite linear;
+        }
+      `}</style>
+      
+      {/* Header */}
+      <div className="px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          {/* Avatar */}
+          <div className={`w-10 h-10 rounded-full overflow-hidden ${
+            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+          }`}>
+            <div className="w-full h-full shimmer-animation"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+                backgroundSize: '200% 100%'
+              }} />
+          </div>
+          
+          {/* Username and timestamp */}
+          <div className="space-y-2">
+            <div className={`h-4 w-32 rounded overflow-hidden ${
+              theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+            }`}>
+              <div className="w-full h-full shimmer-animation"
+                style={{
+                  background: theme === 'dark'
+                    ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                    : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+                  backgroundSize: '200% 100%'
+                }} />
+            </div>
+            <div className={`h-3 w-24 rounded overflow-hidden ${
+              theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+            }`}>
+              <div className="w-full h-full shimmer-animation"
+                style={{
+                  background: theme === 'dark'
+                    ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                    : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+                  backgroundSize: '200% 100%'
+                }} />
+            </div>
+          </div>
+        </div>
+        
+        {/* Menu button */}
+        <div className={`w-8 h-8 rounded-full overflow-hidden ${
+          theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+        }`}>
+          <div className="w-full h-full shimmer-animation"
+            style={{
+              background: theme === 'dark'
+                ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+              backgroundSize: '200% 100%'
+            }} />
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="px-4 pb-3 space-y-3">
+        {/* Text lines */}
+        <div className="space-y-2">
+          <div className={`h-4 w-full rounded overflow-hidden ${
+            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+          }`}>
+            <div className="w-full h-full shimmer-animation"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+                backgroundSize: '200% 100%'
+              }} />
+          </div>
+          <div className={`h-4 w-5/6 rounded overflow-hidden ${
+            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+          }`}>
+            <div className="w-full h-full shimmer-animation"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+                backgroundSize: '200% 100%'
+              }} />
+          </div>
+          <div className={`h-4 w-4/6 rounded overflow-hidden ${
+            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+          }`}>
+            <div className="w-full h-full shimmer-animation"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+                backgroundSize: '200% 100%'
+              }} />
+          </div>
+        </div>
+        
+        {/* Image placeholder */}
+        <div className={`w-full h-64 rounded-2xl overflow-hidden ${
+          theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+        }`}>
+          <div className="w-full h-full shimmer-animation"
+            style={{
+              background: theme === 'dark'
+                ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+              backgroundSize: '200% 100%'
+            }} />
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className={`px-4 py-3 flex items-center justify-between border-t ${
+        theme === 'dark' ? 'border-gray-800/50' : 'border-gray-100'
+      }`}>
+        <div className="flex items-center gap-6">
+          <div className={`w-6 h-6 rounded overflow-hidden ${
+            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+          }`}>
+            <div className="w-full h-full shimmer-animation"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+                backgroundSize: '200% 100%'
+              }} />
+          </div>
+          <div className={`w-6 h-6 rounded overflow-hidden ${
+            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+          }`}>
+            <div className="w-full h-full shimmer-animation"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+                backgroundSize: '200% 100%'
+              }} />
+          </div>
+          <div className={`w-6 h-6 rounded overflow-hidden ${
+            theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+          }`}>
+            <div className="w-full h-full shimmer-animation"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                  : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+                backgroundSize: '200% 100%'
+              }} />
+          </div>
+        </div>
+        <div className={`w-16 h-4 rounded overflow-hidden ${
+          theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200'
+        }`}>
+          <div className="w-full h-full shimmer-animation"
+            style={{
+              background: theme === 'dark'
+                ? 'linear-gradient(90deg, rgba(17,24,39,0.4) 0%, rgba(31,41,55,0.7) 50%, rgba(17,24,39,0.4) 100%)'
+                : 'linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%)',
+              backgroundSize: '200% 100%'
+            }} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 type ApiPost = PostComponentApiPost;
 
 interface TimelineResponse {
@@ -508,19 +691,21 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
           ))
       
         )}
-        {/* Loading More Indicator */}
+        {/* Loading More Skeleton */}
         {loadingMore && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className={`p-8 text-center border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}`}
-          >
-            <div className={`inline-flex items-center space-x-3 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-              <div className={`animate-spin rounded-full h-5 w-5 border-2 ${theme === 'dark' ? 'border-gray-600 border-t-white' : 'border-gray-300 border-t-gray-900'}`}></div>
-              <span className="font-medium">Loading more posts...</span>
-            </div>
-          </motion.div>
+          <>
+            {[1, 2, 3].map((index) => (
+              <motion.div
+                key={`skeleton-${index}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <PostSkeleton theme={theme} />
+              </motion.div>
+            ))}
+          </>
         )}
         {!hasMore && posts.length > 0 && (
           <div className={`p-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>

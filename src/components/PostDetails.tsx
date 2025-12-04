@@ -29,7 +29,15 @@ const PostDetails: React.FC<PostDetailsProps> = ({ showChildren = true, ...restP
 
   // Handle profile click - navigate to profile page
   const handleProfileClick = (username: string) => {
-    navigate(`/${username}`, { replace: true });
+    // Pass state to indicate we came from PostDetails
+    // Use postId from params and username from the clicked profile
+    navigate(`/${username}`, { 
+      state: { 
+        fromPostDetails: true, 
+        postId: postId,
+        postUsername: post?.author?.username || username
+      } 
+    });
   };
 
   useEffect(() => {

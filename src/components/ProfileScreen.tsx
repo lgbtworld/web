@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Calendar, MapPin, Link, MoreHorizontal, Heart, Baby, Cigarette, Wine, Ruler, PawPrint, Church, GraduationCap, Eye, EyeOff, Lock, Palette, Accessibility, Paintbrush, RulerDimensionLine, Vegan, PersonStanding, Sparkles, Drama, Banana, Save, Camera, Image as ImageIcon, ChevronRight, Check, HeartHandshake, AlertTriangle, FileText, MessageCircle, Panda, Ghost, Rainbow, Transgender, Rabbit, ChevronLeft, ChevronDown, LocateFixed, UserCircle, Clock, Smile, HeartPulse, Bubbles, Leaf, Fingerprint, Wallet } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -1088,6 +1088,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   const { username: urlUsername } = useParams<{ username: string }>();
   const username = propUsername || urlUsername;
   const navigate = useNavigate();
+  const location = useLocation();
   const { theme } = useTheme();
   const { user: authUser, isAuthenticated, updateUser } = useAuth();
   const { data: appData, defaultLanguage } = useApp();
@@ -3062,7 +3063,21 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   }, [user?.id, username, activeTab]);
 
   const handleBackClick = () => {
-    navigate(-1);
+    // Check if we came from PostDetails (via state or referrer)
+    const state = location.state as { fromPostDetails?: boolean; postId?: string; postUsername?: string } | null;
+    
+    if (state?.fromPostDetails && state.postId && state.postUsername) {
+      // Navigate back to PostDetails
+      navigate(`/${state.postUsername}/status/${state.postId}`, { replace: true });
+    } else {
+      // Check if we can go back in history
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        // Fallback to home if no history
+        navigate('/', { replace: true });
+      }
+    }
   };
 
   const handleFollowClick = async () => {

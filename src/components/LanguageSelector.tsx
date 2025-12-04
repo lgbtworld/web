@@ -160,7 +160,7 @@ const LanguageSelectorModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         <div className={`text-2xl leading-none transition-transform duration-200 ${
                           isSelected ? 'scale-110' : 'group-hover:scale-110'
                         }`}>
-                          {lang.flag}
+                          <img src={lang.flag} className='w-6 h-6 rounded-sm'/>
                         </div>
                         
                         {/* Language Name */}

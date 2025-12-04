@@ -462,82 +462,12 @@ function AppContent() {
                 {showSidebarInstallCard && (
                   <PwaInstallPrompt variant="card" />
                 )}
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className={`relative overflow-hidden rounded-2xl ${theme === 'dark' ? 'bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-transparent border border-indigo-500/40' : 'bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-white border border-indigo-100/80 shadow-sm'}`}
-                >
-                  <div className="absolute inset-0 pointer-events-none">
-                    <div className={`absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl ${theme === 'dark' ? 'bg-indigo-500/30' : 'bg-indigo-300/30'}`} />
-                    <div className={`absolute -bottom-16 -left-12 w-56 h-56 rounded-full blur-3xl ${theme === 'dark' ? 'bg-purple-500/20' : 'bg-purple-300/25'}`} />
-                  </div>
-                  <div className="relative p-5 space-y-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className={`text-[10px] font-semibold uppercase tracking-[0.4em] ${theme === 'dark' ? 'text-indigo-200/70' : 'text-indigo-500/80'}`}>
-                          {t('app.trending_title')}
-                        </p>
-                        <h2 className={`text-xl font-bold leading-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                          {t('app.trending_hero_title')}
-                        </h2>
-                        <p className={`mt-2 text-sm ${theme === 'dark' ? 'text-indigo-100/80' : 'text-gray-600'}`}>
-                          {t('app.trending_hero_description')}
-                        </p>
-                      </div>
-                      <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-white/10 text-white' : 'bg-white text-indigo-500 shadow'}`}>
-                        <TrendingUp className="w-7 h-7" />
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/search')}
-                      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all ${theme === 'dark'
-                          ? 'bg-white text-black hover:bg-gray-200'
-                          : 'bg-gray-900 text-white hover:bg-gray-800'
-                        }`}
-                    >
-                      <Search className="w-4 h-4" />
-                      {t('app.trending_hero_cta')}
-                    </button>
-                  </div>
-                </motion.div>
+              
 
-                <PopularUsersPanel limit={6} />
+                <PopularUsersPanel limit={12} />
 
                 <TrendsPanel limit={20} onTrendSelect={handleTrendSelect} />
-
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className={`rounded-2xl p-5 ${theme === 'dark' ? 'bg-gray-950 border border-gray-900' : 'bg-white border border-gray-200 shadow-sm'}`}
-                >
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className={`p-2.5 rounded-xl ${theme === 'dark' ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-700'}`}>
-                      <Filter className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className={`text-base font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                        {t('app.trending_saved_title')}
-                      </h3>
-                      <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {t('app.trending_saved_description')}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/search')}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${theme === 'dark'
-                        ? 'bg-white/10 text-white hover:bg-white/15'
-                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                      }`}
-                  >
-                    {t('app.trending_saved_action')}
-                    <ArrowUpRight className="w-4 h-4" />
-                  </button>
-                </motion.div>
+ 
 
               </div>
             </aside>

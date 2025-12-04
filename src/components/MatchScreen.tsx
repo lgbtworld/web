@@ -1178,7 +1178,7 @@ const MatchScreen: React.FC = () => {
                       {/* Compact Profile Sheet */}
                       <motion.div
                         key={`profile-${currentProfile.id}`}
-                        className={`absolute bottom-0 left-0 right-0 z-40 ${theme === 'dark' ? 'bg-[#111111]' : 'bg-white'
+                        className={`absolute bottom-0 left-0 right-0 z-40 ${theme === 'dark' ? 'bg-gray-950 border border-gray-900' : 'bg-white'
                           } rounded-t-[32px] shadow-2xl`}
                         style={{ maxHeight: '85%' }}
                         initial={{ y: '100%' }}
@@ -1206,8 +1206,8 @@ const MatchScreen: React.FC = () => {
                         </div>
 
                         {/* Scrollable Profile Content */}
-                        <div className="overflow-y-auto" style={{ maxHeight: 'calc(85vh - 100px)' }}>
-                          <div className={`${theme === 'dark' ? 'bg-[#111111]' : 'bg-white'}`}>
+                        <div className="overflow-y-auto scrollbar-hide" style={{ maxHeight: 'calc(85vh - 100px)' }}>
+                          <div className={`w-full  pb-50`}>
                             <ProfileScreen 
                               inline={true}
                               isEmbed={true}

@@ -658,12 +658,8 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
             transition={{ duration: 0.3 }}
             className="flex flex-col items-center justify-center py-12 px-4"
           >
-            <div className={`rounded-3xl overflow-hidden backdrop-blur-xl max-w-md w-full ${
-              theme === 'dark'
-                ? 'bg-white/5 border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
-                : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
-            }`}>
-              <div className="p-6 sm:p-8">
+            <div className={`w-full`}>
+              <div className="p-4">
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl flex items-center justify-center backdrop-blur-xl ${
                     theme === 'dark'

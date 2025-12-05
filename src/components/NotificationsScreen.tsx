@@ -24,10 +24,12 @@ import { useSocket } from '../contexts/SocketContext';
 import { useAuth } from '../contexts/AuthContext';
 import NotificationItem, { Notification } from './NotificationItem';
 import { Actions } from '../services/actions';
+import { useTranslation } from 'react-i18next';
 
 const NotificationsScreen: React.FC = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
   const [activeTab, setActiveTab] = useState<'all' | 'messages' | 'matches' | 'likes' | 'follows' | 'gifts' | 'other'>('all');
   const [state, setState] = useAtom(globalState);
   const notifications: Notification[] = state.notifications || [];
@@ -108,13 +110,19 @@ const NotificationsScreen: React.FC = () => {
     const diffDays = Math.floor(diffMs / 86400000);
 
     if (diffMins < 1) {
-      return 'just now';
+      return t('notifications.just_now');
     } else if (diffMins < 60) {
-      return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+      return diffMins === 1 
+        ? t('notifications.min_ago', { count: diffMins })
+        : t('notifications.mins_ago', { count: diffMins });
     } else if (diffHours < 24) {
-      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+      return diffHours === 1
+        ? t('notifications.hour_ago', { count: diffHours })
+        : t('notifications.hours_ago', { count: diffHours });
     } else if (diffDays < 7) {
-      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+      return diffDays === 1
+        ? t('notifications.day_ago', { count: diffDays })
+        : t('notifications.days_ago', { count: diffDays });
     } else {
       return created.toLocaleDateString();
     }
@@ -219,10 +227,10 @@ const NotificationsScreen: React.FC = () => {
               </div>
               <div>
                 <h1 className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  Notifications
+                  {t('notifications.title')}
                 </h1>
                 <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                  {unreadCount} unread
+                  {unreadCount} {t('notifications.unread')}
                 </p>
               </div>
             </div>
@@ -236,7 +244,7 @@ const NotificationsScreen: React.FC = () => {
                     ? 'hover:bg-white/10 text-gray-400 hover:text-white' 
                     : 'hover:bg-black/10 text-gray-500 hover:text-gray-900'
                 }`}
-                title="Mark all as read"
+                title={t('notifications.mark_all_read')}
               >
                 <CheckCheck className="w-5 h-5" />
               </motion.button>
@@ -248,7 +256,7 @@ const NotificationsScreen: React.FC = () => {
                     ? 'hover:bg-white/10 text-gray-400 hover:text-white' 
                     : 'hover:bg-black/10 text-gray-500 hover:text-gray-900'
                 }`}
-                title="Settings"
+                title={t('notifications.settings')}
               >
                 <Settings className="w-5 h-5" />
               </motion.button>
@@ -269,7 +277,7 @@ const NotificationsScreen: React.FC = () => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              All
+              {t('notifications.all')}
               {activeTab === 'all' && (
                 <motion.div
                   layoutId="activeTab"
@@ -292,7 +300,7 @@ const NotificationsScreen: React.FC = () => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Messages
+              {t('notifications.messages')}
               {messageCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
                   theme === 'dark'
@@ -324,7 +332,7 @@ const NotificationsScreen: React.FC = () => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Matches
+              {t('notifications.matches')}
               {matchCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
                   theme === 'dark'
@@ -356,7 +364,7 @@ const NotificationsScreen: React.FC = () => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Likes
+              {t('notifications.likes')}
               {likeCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
                   theme === 'dark'
@@ -388,7 +396,7 @@ const NotificationsScreen: React.FC = () => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Follows
+              {t('notifications.follows')}
               {followCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
                   theme === 'dark'
@@ -420,7 +428,7 @@ const NotificationsScreen: React.FC = () => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Gifts
+              {t('notifications.gifts')}
               {giftCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
                   theme === 'dark'
@@ -452,7 +460,7 @@ const NotificationsScreen: React.FC = () => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Other
+              {t('notifications.other')}
               {otherCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
                   theme === 'dark'
@@ -492,23 +500,34 @@ const NotificationsScreen: React.FC = () => {
               </div>
               <h3 className={`text-lg font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                 {activeTab === 'all' 
-                  ? 'No notifications' 
-                  : `No ${activeTab === 'messages' ? 'messages' : activeTab === 'matches' ? 'matches' : activeTab === 'likes' ? 'likes' : activeTab === 'follows' ? 'follows' : activeTab === 'gifts' ? 'gifts' : 'other notifications'} yet`}
+                  ? t('notifications.no_notifications')
+                  : activeTab === 'messages'
+                  ? t('notifications.no_messages')
+                  : activeTab === 'matches'
+                  ? t('notifications.no_matches')
+                  : activeTab === 'likes'
+                  ? t('notifications.no_likes')
+                  : activeTab === 'follows'
+                  ? t('notifications.no_follows')
+                  : activeTab === 'gifts'
+                  ? t('notifications.no_gifts')
+                  : t('notifications.no_other')
+                }
               </h3>
               <p className={`text-sm text-center max-w-sm ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
                 {activeTab === 'all' 
-                  ? "You're all caught up! When you get notifications, they'll show up here."
+                  ? t('notifications.empty_message_all')
                   : activeTab === 'messages'
-                  ? "When you receive messages, they'll show up here."
+                  ? t('notifications.empty_message_messages')
                   : activeTab === 'matches'
-                  ? "When you get a new match, you'll see it here."
+                  ? t('notifications.empty_message_matches')
                   : activeTab === 'likes'
-                  ? "When someone likes your profile, you'll see it here."
+                  ? t('notifications.empty_message_likes')
                   : activeTab === 'follows'
-                  ? "When someone follows you, you'll see it here."
+                  ? t('notifications.empty_message_follows')
                   : activeTab === 'gifts'
-                  ? "When you receive a gift, you'll see it here."
-                  : "Other notifications will show up here."
+                  ? t('notifications.empty_message_gifts')
+                  : t('notifications.empty_message_other')
                 }
               </p>
             </motion.div>

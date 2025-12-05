@@ -362,5 +362,21 @@
       "qr_code": "Kode QR",
       "qr_code_hint": "Pindai untuk menyalin alamat secara instan.",
       "qr_code_note": "Tunjukkan kode ini untuk mengirim kripto dengan cepat."
-    }
+    },
+  "nearby": {
+    "title": "Orang Terdekat",
+    "people_nearby": "{{count}} orang di dekat",
+    "view_bubble": "Tampilan Gelembung",
+    "view_dome": "Tampilan Kubah",
+    "view_grid": "Tampilan Grid",
+    "view_list": "Tampilan Daftar",
+    "view_card": "Tampilan Kartu",
+    "view_map": "Tampilan Peta",
+    "refresh": "Muat Ulang",
+    "no_matches_found": "Tidak ada yang cocok",
+    "loading_users": "Memuat pengguna terdekat...",
+    "finding_people": "Mencari orang di area Anda",
+    "try_again": "Coba Lagi",
+    "load_more": "Muat Lebih Banyak"
+  }
 }

@@ -362,5 +362,21 @@
       "qr_code": "QRコード",
       "qr_code_hint": "スキャンしてアドレスをコピーできます。",
       "qr_code_note": "このコードを見せると素早く暗号を送れます。"
-    }
+    },
+  "nearby": {
+    "title": "近くの人",
+    "people_nearby": "近くに{{count}}人",
+    "view_bubble": "バブル表示",
+    "view_dome": "ドーム表示",
+    "view_grid": "グリッド表示",
+    "view_list": "リスト表示",
+    "view_card": "カード表示",
+    "view_map": "地図表示",
+    "refresh": "更新",
+    "no_matches_found": "一致する結果が見つかりません",
+    "loading_users": "近くのユーザーを読み込み中...",
+    "finding_people": "お住まいの地域の人を探しています",
+    "try_again": "再試行",
+    "load_more": "さらに読み込む"
   }
+}

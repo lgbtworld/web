@@ -362,5 +362,21 @@
       "qr_code": "Código QR",
       "qr_code_hint": "Escanéalo para copiar la dirección instantáneamente.",
       "qr_code_note": "Muestra este código para enviar cripto rápidamente."
-    }
+    },
+  "nearby": {
+    "title": "Personas Cercanas",
+    "people_nearby": "{{count}} personas cerca",
+    "view_bubble": "Vista de Burbujas",
+    "view_dome": "Vista de Cúpula",
+    "view_grid": "Vista de Cuadrícula",
+    "view_list": "Vista de Lista",
+    "view_card": "Vista de Tarjeta",
+    "view_map": "Vista de Mapa",
+    "refresh": "Actualizar",
+    "no_matches_found": "No se encontraron coincidencias",
+    "loading_users": "Cargando usuarios cercanos...",
+    "finding_people": "Buscando personas en tu área",
+    "try_again": "Intentar de Nuevo",
+    "load_more": "Cargar Más"
   }
+}

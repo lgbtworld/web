@@ -8,6 +8,7 @@ import { api } from '../services/api';
 import { Actions } from '../services/actions';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 import { useAtom } from 'jotai';
 
@@ -22,6 +23,7 @@ const NearbyScreen: React.FC = () => {
   const { theme } = useTheme();
   const { viewMode, setViewMode } = useSettings();
   const { defaultLanguage } = useApp();
+  const { t } = useTranslation('common');
 
   const { user: authUser } = useAuth(); // For future use if needed to filter own user
   const [showFilters, setShowFilters] = useState(false);
@@ -138,10 +140,10 @@ const NearbyScreen: React.FC = () => {
               </div>
               <div>
                 <h1 className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  Nearby People
+                  {t('nearby.title')}
                 </h1>
                 <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                  {state.nearbyUsers.length} people nearby
+                  {t('nearby.people_nearby', { count: state.nearbyUsers.length })}
                 </p>
               </div>
             </div>
@@ -163,7 +165,7 @@ const NearbyScreen: React.FC = () => {
                     ? theme === 'dark' ? 'bg-white text-black' : 'bg-gray-900 text-white'
                     : theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
                     }`}
-                  title="Bubble View"
+                  title={t('nearby.view_bubble')}
                 >
                   <Bubbles className="w-5 h-5" />
                 </motion.button>
@@ -176,7 +178,7 @@ const NearbyScreen: React.FC = () => {
                     ? theme === 'dark' ? 'bg-white text-black' : 'bg-gray-900 text-white'
                     : theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
                     }`}
-                  title="Dome View"
+                  title={t('nearby.view_dome')}
                 >
                   <Earth className="w-5 h-5" />
                 </motion.button>
@@ -190,7 +192,7 @@ const NearbyScreen: React.FC = () => {
                     ? theme === 'dark' ? 'bg-white text-black' : 'bg-gray-900 text-white'
                     : theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
                     }`}
-                  title="Grid View"
+                  title={t('nearby.view_grid')}
                 >
                   <Grid className="w-5 h-5" />
                 </motion.button>
@@ -202,7 +204,7 @@ const NearbyScreen: React.FC = () => {
                     ? theme === 'dark' ? 'bg-white text-black' : 'bg-gray-900 text-white'
                     : theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
                     }`}
-                  title="List View"
+                  title={t('nearby.view_list')}
                 >
                   <List className="w-5 h-5" />
                 </motion.button>
@@ -214,7 +216,7 @@ const NearbyScreen: React.FC = () => {
                     ? theme === 'dark' ? 'bg-white text-black' : 'bg-gray-900 text-white'
                     : theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
                     }`}
-                  title="Card View"
+                  title={t('nearby.view_card')}
                 >
                   <Square className="w-5 h-5" />
                 </motion.button>
@@ -226,7 +228,7 @@ const NearbyScreen: React.FC = () => {
                     ? theme === 'dark' ? 'bg-white text-black' : 'bg-gray-900 text-white'
                     : theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
                     }`}
-                  title="Map View"
+                  title={t('nearby.view_map')}
                 >
                   <MapIcon className="w-5 h-5" />
                 </motion.button>
@@ -258,7 +260,7 @@ const NearbyScreen: React.FC = () => {
                         ? 'bg-gray-900 border border-gray-800 text-gray-300 hover:bg-gray-800'
                     : 'bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200'
                   }`}
-                title="Refresh"
+                title={t('nearby.refresh')}
               >
                 <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
               </motion.button>
@@ -301,7 +303,7 @@ const NearbyScreen: React.FC = () => {
                     <Users className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`} />
                   </div>
                   <h3 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                    No matches found
+                    {t('nearby.no_matches_found')}
                   </h3>
                 </div>
               </motion.div>
@@ -367,7 +369,7 @@ const NearbyScreen: React.FC = () => {
                         : 'bg-gray-900 text-white hover:bg-gray-800'
                         }`}
                     >
-                      Load More
+                      {t('nearby.load_more')}
                     </motion.button>
                   )}
                 </div>
@@ -385,10 +387,10 @@ const NearbyScreen: React.FC = () => {
                         <RefreshCw className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'} animate-spin`} />
                       </div>
                       <h3 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                        Loading nearby users...
+                        {t('nearby.loading_users')}
                       </h3>
                       <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        Finding people in your area
+                        {t('nearby.finding_people')}
                       </p>
                     </div>
                   </motion.div>
@@ -414,7 +416,7 @@ const NearbyScreen: React.FC = () => {
                         : 'bg-red-100 hover:bg-red-200'
                         }`}
                     >
-                      Try Again
+                      {t('nearby.try_again')}
                     </motion.button>
                   </motion.div>
                 )}

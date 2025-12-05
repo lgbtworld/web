@@ -362,5 +362,21 @@
     "qr_code": "二维码",
     "qr_code_hint": "扫描以快速复制地址。",
     "qr_code_note": "展示此码以快速发送加密货币。"
+  },
+  "nearby": {
+    "title": "附近的人",
+    "people_nearby": "附近有{{count}}人",
+    "view_bubble": "气泡视图",
+    "view_dome": "圆顶视图",
+    "view_grid": "网格视图",
+    "view_list": "列表视图",
+    "view_card": "卡片视图",
+    "view_map": "地图视图",
+    "refresh": "刷新",
+    "no_matches_found": "未找到匹配项",
+    "loading_users": "正在加载附近用户...",
+    "finding_people": "正在查找您所在区域的人",
+    "try_again": "重试",
+    "load_more": "加载更多"
   }
 }

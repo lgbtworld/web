@@ -362,5 +362,21 @@
       "qr_code": "QR-Code",
       "qr_code_hint": "Scanne den Code, um die Adresse sofort zu kopieren.",
       "qr_code_note": "Zeige diesen Code, um schnell Krypto zu senden."
-    }
+    },
+  "nearby": {
+    "title": "Personen in der Nähe",
+    "people_nearby": "{{count}} Personen in der Nähe",
+    "view_bubble": "Blasen-Ansicht",
+    "view_dome": "Kuppel-Ansicht",
+    "view_grid": "Raster-Ansicht",
+    "view_list": "Listen-Ansicht",
+    "view_card": "Karten-Ansicht",
+    "view_map": "Karten-Ansicht",
+    "refresh": "Aktualisieren",
+    "no_matches_found": "Keine Übereinstimmungen gefunden",
+    "loading_users": "Personen in der Nähe werden geladen...",
+    "finding_people": "Suche nach Personen in Ihrer Nähe",
+    "try_again": "Erneut versuchen",
+    "load_more": "Mehr laden"
   }
+}

@@ -362,5 +362,21 @@
       "qr_code": "קוד QR",
       "qr_code_hint": "סרוק כדי להעתיק את הכתובת מיד.",
       "qr_code_note": "הצג קוד זה לשליחת קריפטו במהירות."
-    }
+    },
+  "nearby": {
+    "title": "אנשים קרובים",
+    "people_nearby": "{{count}} אנשים קרובים",
+    "view_bubble": "תצוגת בועות",
+    "view_dome": "תצוגת כיפה",
+    "view_grid": "תצוגת רשת",
+    "view_list": "תצוגת רשימה",
+    "view_card": "תצוגת כרטיס",
+    "view_map": "תצוגת מפה",
+    "refresh": "רענון",
+    "no_matches_found": "לא נמצאו התאמות",
+    "loading_users": "טוען משתמשים קרובים...",
+    "finding_people": "מחפש אנשים באזורך",
+    "try_again": "נסה שוב",
+    "load_more": "טען עוד"
   }
+}

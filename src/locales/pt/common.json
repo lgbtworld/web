@@ -362,5 +362,21 @@
       "qr_code": "Código QR",
       "qr_code_hint": "Escaneie para copiar o endereço instantaneamente.",
       "qr_code_note": "Mostre este código para enviar criptomoedas rapidamente."
-    }
+    },
+  "nearby": {
+    "title": "Pessoas Próximas",
+    "people_nearby": "{{count}} pessoas próximas",
+    "view_bubble": "Visualização de Bolhas",
+    "view_dome": "Visualização de Cúpula",
+    "view_grid": "Visualização de Grade",
+    "view_list": "Visualização de Lista",
+    "view_card": "Visualização de Cartão",
+    "view_map": "Visualização de Mapa",
+    "refresh": "Atualizar",
+    "no_matches_found": "Nenhuma correspondência encontrada",
+    "loading_users": "Carregando usuários próximos...",
+    "finding_people": "Procurando pessoas na sua área",
+    "try_again": "Tentar Novamente",
+    "load_more": "Carregar Mais"
   }
+}

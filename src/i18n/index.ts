@@ -19,6 +19,8 @@ import bn from '../locales/bn/common.json';
 import pt from '../locales/pt/common.json';
 import id from '../locales/id/common.json';
 import pl from '../locales/pl/common.json';
+import kp from '../locales/kp/common.json';
+import kr from '../locales/kr/common.json';
 
 
 
@@ -56,6 +58,8 @@ i18n
       pt: { common: pt },
       id: { common: id },
       pl: { common: pl },
+      kp: { common: kp },
+      kr: { common: kr },
     },
     lng,
     fallbackLng,

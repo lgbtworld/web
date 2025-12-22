@@ -29,6 +29,8 @@ const Stories: React.FC = () => {
     hasStory?: boolean;
     storyId?: string;
     storyMedia?: any;
+    userId?: string | number;
+    user?: any; // User object for message functionality
     allStories?: Array<{
       id: string;
       media: any;
@@ -103,6 +105,7 @@ const Stories: React.FC = () => {
             storyId: story.id,
             storyMedia: story.media,
             userId: story.user_id,
+            user: user, // Store user object for message functionality
             created_at: story.created_at,
           };
         });
@@ -254,6 +257,7 @@ const Stories: React.FC = () => {
             storyId: story.id,
             storyMedia: story.media,
             userId: story.user_id,
+            user: user, // Store user object for message functionality
             created_at: story.created_at,
           };
         });
@@ -273,14 +277,13 @@ const Stories: React.FC = () => {
 
 
     const handleSendMessage = async (profile: any) => {
-      console.log("ersan",profile)
-      if (!story?.id || !profile?.id) {
+      if (!authUser?.id || !profile?.id) {
         console.error('User or profile ID is missing');
         return;
       }
   
       try {
-        // Create chat via API
+        // Create chat via API - modal stays open during this process
         const chatResponse = await api.call<{
           chat: {
             id: string;
@@ -305,8 +308,9 @@ const Stories: React.FC = () => {
   
         const chatId = chatResponse?.chat?.id;
   
+        // Navigate to messages screen with chat ID
+        // Modal will close automatically when route changes
         if (chatId) {
-          // Navigate to messages screen with chat ID
           navigate('/messages', {
             state: {
               openChat: chatId,
@@ -317,10 +321,19 @@ const Stories: React.FC = () => {
           });
         } else {
           console.error('Chat creation failed - no chat ID returned');
+          // Navigate anyway
+          navigate('/messages', {
+            state: {
+              openChat: profile.username || profile.id,
+              userId: profile.id,
+              publicId: profile.public_id
+            }
+          });
         }
       } catch (error) {
         console.error('Error creating chat:', error);
         // Navigate anyway, MessagesScreen will handle creating a temporary chat
+        // Modal will close automatically when route changes
         navigate('/messages', {
           state: {
             openChat: profile.username || profile.id,
@@ -707,8 +720,11 @@ const Stories: React.FC = () => {
                       </motion.button>
 
                       <motion.button
-                      onClick={()=>{
-                       handleSendMessage(selectedStory)
+                      onClick={(e) => {
+                       e.stopPropagation(); // Prevent story viewer onClick from closing modal
+                       if (selectedStoryData?.user) {
+                         handleSendMessage(selectedStoryData.user);
+                       }
                       }}
                         whileHover={{ scale: 1.1, y: -5 }}
                         whileTap={{ scale: 0.95 }}

@@ -4,7 +4,7 @@
 
 This is the web interface of a free and open-source social platform designed for LGBTIQ+ individuals.
 
-🌐 Live Demo: [web-qic7.vercel.app](https://web-qic7.vercel.app)
+🌐 Live Demo: [https://coolvibes.lgbt](https://coolvibes.lgbt)
 
 ## About
 

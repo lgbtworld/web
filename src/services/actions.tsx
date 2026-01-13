@@ -2,7 +2,7 @@ export const Actions = {
   // SYSTEM
 
   SYSTEM_INITIAL_SYNC: "system.initial_sync",
-  CMD_PAYMENT_METHODS : "system.payment_methods",
+  CMD_PAYMENT_METHODS: "system.payment_methods",
   CMD_GET_VAPID_PUBLIC_KEY: "system_vapid_get_key",
   CMD_SET_VAPID_SUBSCRIBE: "system_vapid_subscribe",
   CMD_GET_NOTIFICATIONS: "system_notifications",
@@ -15,13 +15,19 @@ export const Actions = {
 
 
   // CHAT
-  CMD_CHAT_CREATE: "chat.create",
+  CMD_CHAT_CREATE: "chat.create", // Chat olustur
   CMD_TYPING: "chat.typing",
-  CMD_SEND_MESSAGE: "chat.send_message",   // Mesaj gönder
-  CMD_DELETE_CHAT: "chat.delete_chat",    // Sohbeti sil
-  CMD_FETCH_CHATS: "chat.fetch_chats",    // Sohbetleri getir
-  CMD_DELETE_MESSAGE: "chat.delete_message", // Mesajı sil
+  CMD_SEND_MESSAGE: "chat.send_message", // Mesaj gönder
+  CMD_DELETE_CHAT: "chat.delete_chat",
+  CMD_FETCH_CHATS: "chat.fetch_chats",   // Sohbetleri getir
+  CMD_DELETE_MESSAGE: "chat.delete_message",// Mesajı sil
   CMD_FETCH_MESSAGES: "chat.fetch_messages", // Mesajları getir
+  CMD_DELETE_MESSAGE_FOR_USER: "chat.delete_message_for_user",
+  CMD_DELETE_CHAT_FOR_USER: "chat.delete_chat_for_user",
+  CMD_DELETE_CHAT_FOR_ALL: "chat.delete_chat_for_all",
+  CMD_DELETE_MESSAGE_FOR_ALL: "chat.delete_message_for_all",
+  CMD_PIN_MESSAGE: "chat.pin_message",
+  CMD_UNPIN_MESSAGE: "chat.unpin_message",
 
 
   // USER
@@ -92,6 +98,8 @@ export const Actions = {
   CMD_USER_DISLIKE: "user.dislike",
   CMD_USER_TOGGLE_LIKE: "user.like.toggle",
   CMD_USER_TOGGLE_DISLIKE: "user.dislike.toggle",
+
+
 
   CMD_USER_UPDATE_PREFERENCES: "user.update_preferences"
 

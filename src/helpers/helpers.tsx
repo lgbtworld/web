@@ -126,3 +126,16 @@ export function urlBase64ToUint8Array(base64String: string) {
 }
 
 export const random = (min: number, max: number): number => Math.random() * (max - min) + min;
+
+export const getLocalizedContent = (contentObj: Record<string, any> | undefined, languageCode: string): any => {
+  if (!contentObj) return "";
+
+  // Önce istenen dilde içerik var mı kontrol et
+  if (contentObj[languageCode]) return contentObj[languageCode];
+
+  // Yoksa ilk bulunan değeri döndür
+  const values = Object.values(contentObj);
+  if (values.length > 0) return values[0];
+
+  return "";
+}

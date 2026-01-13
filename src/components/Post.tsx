@@ -19,7 +19,7 @@ import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {ListNode, ListItemNode} from '@lexical/list';
 import {LinkNode, AutoLinkNode} from '@lexical/link';
 import { MentionNode } from './Lexical/nodes/MentionNode';
-import { getSafeImageURL } from '../helpers/helpers';
+import { getLocalizedContent, getSafeImageURL } from '../helpers/helpers';
 import { ImageNode } from './Lexical/nodes/ImageNode';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { HashtagPlugin } from '@lexical/react/LexicalHashtagPlugin';
@@ -285,6 +285,7 @@ const PostContentEditor = React.memo(({ content }: { content: string }) => {
   const [editor] = useLexicalComposerContext();
   const contentRef = useRef<string>(content);
   const isInitializedRef = useRef<boolean>(false);
+  const { data: appData, defaultLanguage } = useApp();
 
   useEffect(() => {
     // Only update if content actually changed
@@ -1472,6 +1473,9 @@ const Post: React.FC<PostProps> = ({
     setTipAmountDisplay(tipAmount);
   }, [tipCount, tipAmount]);
 
+ 
+  
+
   return (
     <>
 <motion.div
@@ -1715,7 +1719,7 @@ transition={{ duration: 0.15 }}
 
 
         <LexicalComposer initialConfig={editorConfig}>
-                  <PostContentEditor content={post.content?.en || ""} />
+                  <PostContentEditor content={getLocalizedContent(post.content, defaultLanguage)} />
                   <div className="relative">
                     <HashtagPlugin/>
                     <ListPlugin/>
@@ -2157,10 +2161,7 @@ transition={{ duration: 0.15 }}
                           <h4 className={`font-semibold text-sm tracking-tight ${
                             theme === 'dark' ? 'text-white' : 'text-gray-900'
                       }`}>
-                      {poll.question?.en && poll.question.en !== 'Pool Question'
-                        ? poll.question.en
-                        : 'Poll'}
-                    </h4>
+                      {getLocalizedContent(poll.question, defaultLanguage)}                    </h4>
                   </div>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${
@@ -2318,7 +2319,7 @@ transition={{ duration: 0.15 }}
                                 <span className={`font-medium text-sm tracking-tight leading-relaxed ${
                                   theme === 'dark' ? 'text-white' : 'text-gray-900'
                                 }`}>
-                                  {choice.label?.en || ''}
+                                  {getLocalizedContent(choice.label, defaultLanguage) || ""}
                                 </span>
                               </div>
                             </div>

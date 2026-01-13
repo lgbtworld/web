@@ -14,7 +14,7 @@ import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useSettings } from './contexts/SettingsContext';
 import AuthWizard from './components/AuthWizard';
-import { Search, MapPin, Heart, MessageCircle, User, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, TrendingUp, Filter, ArrowUpRight } from 'lucide-react';
+import { Search, MapPin, Heart, MessageCircle, User, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, TrendingUp, Filter, ArrowUpRight, Building2 } from 'lucide-react';
 import TrendsPanel, { NormalizedTrend } from './components/TrendsPanel';
 import PopularUsersPanel from './components/PopularUsersPanel';
 import PlacesScreen from './components/PlacesScreen';
@@ -110,7 +110,7 @@ function AppContent() {
     // { id: 'search', label: t('app.nav.search'), icon: Search },
     { id: 'nearby', label: t('app.nav.nearby'), icon: "/icons/nearby.webp" },
     { id: 'match', label: t('app.nav.match'), icon: "/icons/matches.webp" },
-    // { id: 'places', label: t('app.nav.places'), icon: Building2 },
+   //  { id: 'places', label: t('app.nav.places'), icon: Building2 },
     { id: 'messages', label: t('app.nav.messages'), icon: "/icons/chat.webp" },
     //{ id: 'notifications', label: t('app.nav.notifications'), icon: Bell },
     //{ id: 'classifieds', label: t('app.nav.classifieds'), icon: FileText },
@@ -201,6 +201,7 @@ function AppContent() {
                   { id: 'match', label: t('app.nav.matches'), icon: Heart },
                   { id: 'messages', label: t('app.nav.messages'), icon: MessageCircle },
                   { id: 'notifications', label: t('app.nav.notifications'), icon: Bell },
+                  //{ id: 'places', label: t('app.nav.places'), icon: Building2 },
                   { id: 'profile', label: t('app.nav.profile'), icon: User },
                 ].map((item) => {
                   const Icon = item.icon;

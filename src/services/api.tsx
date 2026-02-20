@@ -162,8 +162,8 @@ export class ApiService {
 
   async fetchPost(postId: string) {
     return this.call(Actions.POST_FETCH, {
-      method: "GET",
-      params: { id: postId },
+      method: "POST",
+      body: { post_id: postId },
     });
   }
 

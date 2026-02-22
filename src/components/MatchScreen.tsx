@@ -9,7 +9,7 @@ import Container from './Container';
 import ProfileScreen from './ProfileScreen';
 import { api } from '../services/api';
 import { Actions } from '../services/actions';
-import { getSafeImageURL } from '../helpers/helpers';
+import { getSafeImageURL, getSafeImageURLEx } from '../helpers/helpers';
 
 interface Fantasy {
   id: string;
@@ -150,7 +150,7 @@ const MatchScreen: React.FC = () => {
   const mapApiUserToProfile = useCallback((apiUser: ApiUser): Profile => {
     const images: string[] = [];
     if (apiUser.avatar) {
-      const imageUrl = getSafeImageURL(apiUser.avatar, "small");
+      const imageUrl = getSafeImageURLEx(apiUser.public_id,apiUser.avatar, "small");
       if (imageUrl) {
         images.push(imageUrl);
       }
@@ -253,8 +253,6 @@ const MatchScreen: React.FC = () => {
 
   // Debug: Track match animation state changes
   useEffect(() => {
-    console.log('🎭 showMatchAnimation changed:', showMatchAnimation);
-    console.log('👤 matchedProfile:', matchedProfile ? `${matchedProfile.name} (ID: ${matchedProfile.id})` : 'null');
   }, [showMatchAnimation, matchedProfile]);
   
   useEffect(() => {
@@ -947,7 +945,7 @@ const MatchScreen: React.FC = () => {
               >
                 <div className="absolute inset-0 w-full h-full">
                   <img
-                    src={nextProfile.images[0]}
+                    src={getSafeImageURLEx(nextProfile.public_id,null,"cover")}
                     alt={nextProfile.name}
                     className="w-full h-full object-cover opacity-60 blur-[1px]"
                     draggable={false}
@@ -1025,7 +1023,8 @@ const MatchScreen: React.FC = () => {
                     <AnimatePresence mode="wait">
                       <motion.img
                         key={currentImageIndex}
-                        src={currentProfile.images[currentImageIndex]}
+                          src={getSafeImageURLEx(currentProfile.public_id,null,"cover")}
+
                         alt={currentProfile.name}
                         className="w-full h-full object-cover"
                         initial={{ opacity: 0, scale: 1.08 }}
@@ -1328,7 +1327,7 @@ const MatchScreen: React.FC = () => {
                     transition={{ duration: 0.3 }}
                   >
                     <img
-                      src={profile.images[0]}
+                      src={getSafeImageURLEx(profile.public_id,null,"cover")}
                       alt={profile.name}
                       className="w-full h-full object-cover"
                     />
@@ -1424,7 +1423,7 @@ const MatchScreen: React.FC = () => {
                     transition={{ duration: 0.3 }}
                   >
                     <img
-                      src={profile.images[0]}
+                      src={getSafeImageURLEx(profile.public_id,null,"cover")}
                       alt={profile.name}
                       className="w-full h-full object-cover"
                     />
@@ -1509,7 +1508,7 @@ const MatchScreen: React.FC = () => {
                     transition={{ duration: 0.3 }}
                   >
                     <img
-                      src={profile.images[0]}
+                      src={getSafeImageURLEx(profile.public_id,null,"cover")}
                       alt={profile.name}
                       className="w-full h-full object-cover grayscale"
                     />

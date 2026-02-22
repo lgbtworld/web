@@ -11,7 +11,7 @@ import MarkerIconWrapper from './MarkerIconWrapper';
 import LeafletDivIcon from '../LeafletDivIcon';
 import LeafletPopup from '../LeafletPopup';
 import { decodeGeoHash } from '../lib/helper/geocoder';
-import { getSafeImageURL } from '../../../helpers/helpers';
+import { getSafeImageURL, getSafeImageURLEx } from '../../../helpers/helpers';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -73,7 +73,7 @@ export const CustomMarker = ({ item }: CustomMarkerProps) => {
           <MarkerIconWrapper
             item={{
               group: false,
-              image: getSafeImageURL(item?.avatar,"icon"),
+              image: getSafeImageURLEx(item.public_id,item?.avatar,"icon"),
               data:item
             }}   
             color= {generateAlphaColorFromIndex(item?.public_id)}  

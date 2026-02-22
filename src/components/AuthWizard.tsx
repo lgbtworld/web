@@ -249,7 +249,8 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
         name: formData.nickname,
         nickname: formData.nickname,
         password: formData.password,
-        recaptchaToken: recaptchaToken
+        recaptchaToken: recaptchaToken,
+        domain:"coolvibes.lgbt",
       };
 
       setIsLoading(true);

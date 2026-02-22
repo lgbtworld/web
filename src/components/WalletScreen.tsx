@@ -27,7 +27,7 @@ import { api } from '../services/api';
 import {QRCodeSVG} from 'qrcode.react';
 
 // Crypto currency types
-type CryptoCurrency = 'BNB' | 'USDT' | 'USDC' | 'ETH' | 'CHZ';
+type CryptoCurrency = 'BNB' | 'USDT' | 'USDC' | 'ETH' | 'CHZ' | 'LGBT' | 'SOL';
 
 interface Package {
   id: string;
@@ -126,8 +126,8 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
   const { t } = useTranslation('common');
 
   const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview');
-  const [depositCurrency, setDepositCurrency] = useState<CryptoCurrency>('BNB');
-  const [withdrawCurrency, setWithdrawCurrency] = useState<CryptoCurrency>('USDT');
+  const [depositCurrency, setDepositCurrency] = useState<CryptoCurrency>('SOL');
+  const [withdrawCurrency, setWithdrawCurrency] = useState<CryptoCurrency>('LGBT');
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showDepositDropdown, setShowDepositDropdown] = useState(false);
@@ -613,51 +613,13 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
     {
       id: '1',
       type: 'deposit',
-      currency: 'BNB',
-      amount: '0.5',
-      amountUSD: '150.00',
+      currency: 'LGBT',
+      amount: '1000',
+      amountUSD: '-',
       status: 'completed',
       timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      txHash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
+      txHash: 'https://coolvibes.lgbt'
     },
-    {
-      id: '2',
-      type: 'deposit',
-      currency: 'USDT',
-      amount: '100',
-      amountUSD: '100.00',
-      status: 'completed',
-      timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      txHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
-    },
-    {
-      id: '3',
-      type: 'withdraw',
-      currency: 'BNB',
-      amount: '0.1',
-      amountUSD: '30.00',
-      status: 'completed',
-      timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      txHash: '0x9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba'
-    },
-    {
-      id: '4',
-      type: 'deposit',
-      currency: 'USDC',
-      amount: '50',
-      amountUSD: '50.00',
-      status: 'pending',
-      timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: '5',
-      type: 'withdraw',
-      currency: 'USDT',
-      amount: '25',
-      amountUSD: '25.00',
-      status: 'failed',
-      timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
-    }
   ]);
 
 
@@ -710,6 +672,8 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
         return '💵';
       case 'CHZ':
         return '💵';
+      case 'LGBT':
+        return '💦';
       default:
         return '💰';
     }
@@ -841,7 +805,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                                   {t('wallet.balance') || 'Total Balance'}
                                 </p>
                                 <h2 className={`text-3xl font-bold mt-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                                  ${totalBalanceUSD} USD
+                                  ${totalBalanceUSD} LGBT
                                 </h2>
                               </div>
                               <div className={`p-4 rounded-xl ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'}`}>
@@ -888,7 +852,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                               </motion.button>
                               <motion.button
                                 onClick={() => {
-                                  setWithdrawCurrency('USDT');
+                                  setWithdrawCurrency('LGBT');
                                   setShowWithdrawModal(true);
                                 }}
                                 whileHover={{ scale: 1.02 }}
@@ -960,11 +924,11 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                                         </p>
                                         {transaction.txHash && (
                                           <button
-                                            onClick={() => window.open(`https://bscscan.com/tx/${transaction.txHash}`, '_blank')}
+                                            onClick={() => window.open(`https://coolvibes.lgbt`, '_blank')}
                                             className={`flex items-center gap-1 mt-1 text-xs ${theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`}
                                           >
                                             <ExternalLink className="w-3 h-3" />
-                                            View on BSCScan
+                                            View on Explorer
                                           </button>
                                         )}
                                       </div>
@@ -2933,7 +2897,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                           {t('wallet.available_balance') || 'Available Balance'}
                         </span>
                         <span className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                          ${(Number(user.balance) || 0).toFixed(2)} USD
+                          ${(Number(user.balance) || 0).toFixed(2)} LGBT
                         </span>
                       </div>
                     </div>
@@ -2951,9 +2915,9 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                       }`}>
                       <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-lg ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'
                         }`}>
-                        {getCurrencyIcon('USDT')}
+                        {getCurrencyIcon('LGBT')}
                       </div>
-                      <span className="text-sm font-semibold">USDT</span>
+                      <span className="text-sm font-semibold">LGBT</span>
                     </div>
                   </div>
 

@@ -14,7 +14,7 @@ import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useSettings } from './contexts/SettingsContext';
 import AuthWizard from './components/AuthWizard';
-import { Search, MapPin, Heart, MessageCircle, User, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, TrendingUp, Filter, ArrowUpRight, Building2 } from 'lucide-react';
+import { Search, MapPin, Heart, MessageCircle, User, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, TrendingUp, Filter, ArrowUpRight, Building2, Wallet } from 'lucide-react';
 import TrendsPanel, { NormalizedTrend } from './components/TrendsPanel';
 import PopularUsersPanel from './components/PopularUsersPanel';
 import PlacesScreen from './components/PlacesScreen';
@@ -25,7 +25,7 @@ import './i18n';
 import { useTranslation } from 'react-i18next';
 import { applicationName } from './appSettings.tsx';
 import LandingPage from './components/LandingPage.tsx';
-import { getSafeImageURL } from './helpers/helpers.tsx';
+import { getSafeImageURL, getSafeImageURLEx } from './helpers/helpers.tsx';
 import TestPage from './components/TestPage.tsx';
 import PwaInstallPrompt, { PwaInstallProvider, usePwaInstall } from './components/PwaInstallPrompt';
 import PremiumScreen from './components/PremiumScreen.tsx';
@@ -73,6 +73,8 @@ function AppContent() {
       setActiveScreen('notifications');
     } else if (path === '/places') {
       setActiveScreen('places');
+          } else if (path === '/wallet') {
+      setActiveScreen('wallet');
     } else if (path === '/classifieds') {
       setActiveScreen('classifieds');
     } else if (path.startsWith('/') && path.split('/').length === 2) {
@@ -201,7 +203,8 @@ function AppContent() {
                   { id: 'match', label: t('app.nav.matches'), icon: Heart },
                   { id: 'messages', label: t('app.nav.messages'), icon: MessageCircle },
                   { id: 'notifications', label: t('app.nav.notifications'), icon: Bell },
-                  //{ id: 'places', label: t('app.nav.places'), icon: Building2 },
+                  /*{ id: 'places', label: t('app.nav.places'), icon: Building2 },*/
+                  { id: 'wallet', label: t('wallet.title'), icon: Wallet },
                   { id: 'profile', label: t('app.nav.profile'), icon: User },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -251,7 +254,7 @@ function AppContent() {
                           <div className="relative">
                             <div className={`w-11 h-11 rounded-full ring-2 ${theme === 'dark' ? 'ring-white/20' : 'ring-black/20'}`}>
                               <img
-                                src={getSafeImageURL((user as any)?.avatar, "icon") || undefined}
+                                src={getSafeImageURLEx((user as any)?.public_id,(user as any)?.avatar, "icon") || undefined}
                                 alt="Profile"
                                 className="w-full h-full rounded-full object-cover"
                               />
@@ -443,6 +446,7 @@ function AppContent() {
                 <Route path="/match" element={<MatchScreen />} />
                 <Route path="/nearby" element={<NearbyScreen />} />
                 <Route path="/places" element={<PlacesScreen />} />
+                <Route path="/wallet" element={<WalletScreen />} />
                 <Route path="/profile" element={<ProfileScreen />} />
 
                 <Route path="/messages" element={<MessagesScreen />} />

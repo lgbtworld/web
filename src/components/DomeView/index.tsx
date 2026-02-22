@@ -3,7 +3,7 @@ import { useGesture } from '@use-gesture/react';
 import './style.css';
 import { useAtom } from 'jotai';
 import { globalState } from '../../state/nearby'; // atomun tanımlı olduğu dosya
-import { getSafeImageURL } from '../../helpers/helpers';
+import { getSafeImageURL, getSafeImageURLEx } from '../../helpers/helpers';
 
 
 
@@ -48,9 +48,9 @@ function buildItems(pool, seg) {
 
 
 const normalizedImages = pool.map(user => {
-  let imageURL = getSafeImageURL(user.avatar);
+  let imageURL =   getSafeImageURLEx(user.public_id,user.avatar,"large")
   let imageUser = user.displayname;
-  return { src: imageURL || 'https://picsum.photos/300/300?grayscale', alt: imageUser || '' };
+  return { src: imageURL, alt: imageUser || '' };
 });
 
 const usedImages = [];

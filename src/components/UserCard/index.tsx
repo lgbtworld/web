@@ -6,10 +6,9 @@ import { Heart, Gift, MapPin, HeartCrack, Shield } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import GiftSelector from '../GiftSelector';
 import QuickMessages from '../QuickMessages';
-import { calculateAge, getSafeImageURL } from '../../helpers/helpers';
+import { calculateAge, getSafeImageURL, getSafeImageURLEx } from '../../helpers/helpers';
 import { Actions } from '../../services/actions';
 import { api } from '../../services/api';
-import { LikeIcon, DislikeIcon, ChatIcon, BlockIcon } from './icons';
 import { ActionBar, burstConfig, BurstOverlayState, BurstType, createOverlayConfetti, createOverlayParticles, createOverlayStreaks } from './ActionBar';
 
 interface UserCardProps {
@@ -209,6 +208,13 @@ export const UserCard: React.FC<UserCardProps> = ({ user, viewMode = 'card' }) =
   // Compact View
 
   const CompactView = () => {
+
+
+    const avatarURL = getSafeImageURLEx(user.public_id, user?.avatar, "large")
+    var userAge = calculateAge(user.date_of_birth)
+    userAge = userAge == "-" ? "" : userAge
+
+
     return (
       <motion.div
         className={`select-none group rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.02] ${baseCardStyle}`}
@@ -220,23 +226,20 @@ export const UserCard: React.FC<UserCardProps> = ({ user, viewMode = 'card' }) =
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={{
-                backgroundImage: `linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0) 60%), url("${getSafeImageURL(
-                  user.avatar,
-                  'large'
-                )}")`,
+                backgroundImage: `linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0) 60%), url("${avatarURL}")`,
               }}
             ></div>
             {/* "YENI" etiketi kaldırıldı */}
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <div className="flex items-baseline gap-2">
                 <h2 className="text-2xl font-semibold tracking-wide">
-                  {user.name || user.displayname || 'İsim Yok'},{' '}
+                  {user.name || user.displayname || '-'},{' '}
                 </h2>
-                <span className="text-2xl font-light">{calculateAge(user.date_of_birth)}</span>
+                <span className="text-2xl font-light">{userAge}</span>
                 {user.isOnline && <div className="w-2.5 h-2.5 rounded-full bg-green-500 ml-1"></div>}
               </div>
               <p className="text-sm font-medium opacity-90">
-                {location || 'Bilinmeyen konum'}
+                {location ? location : ''}
               </p>
             </div>
           </div>
@@ -278,73 +281,80 @@ export const UserCard: React.FC<UserCardProps> = ({ user, viewMode = 'card' }) =
   }
 
   const ListView = () => {
-  return (
-    <motion.div
-      whileHover={{ scale: 1.01 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-      onClick={handleProfileClick}
-      className={`select-none group flex items-center gap-4 w-full rounded-xl px-4 py-3 cursor-pointer transition-all duration-300 ${baseCardStyle}`}
-    >
-      <div className="relative flex-shrink-0 w-32 h-32 rounded-xl overflow-hidden shadow-md">
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-          style={{
-            backgroundImage: `linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0) 60%), url("${getSafeImageURL(
-              user.avatar,
-              'medium'
-            )}")`,
-          }}
-        ></div>
-        {user.isOnline && (
-          <div className="absolute bottom-1 right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-black animate-pulse" />
-        )}
-      </div>
+    const avatarURL = getSafeImageURLEx(user.public_id, user?.avatar, "large")
+    var userAge = calculateAge(user.date_of_birth)
+    userAge = userAge == "-" ? "" : userAge
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-lg truncate">
-            {user.displayname || user.name || 'İsim Yok'}
-          </h3>
-          <span className="text-sm opacity-70">{calculateAge(user.date_of_birth)}</span>
+    return (
+      <motion.div
+        whileHover={{ scale: 1.01 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        onClick={handleProfileClick}
+        className={`select-none group flex items-center gap-4 w-full rounded-xl px-4 py-3 cursor-pointer transition-all duration-300 ${baseCardStyle}`}
+      >
+        <div className="relative flex-shrink-0 w-32 h-32 rounded-xl overflow-hidden shadow-md">
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+            style={{
+              backgroundImage: `linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0) 60%), url("${avatarURL}")`,
+            }}
+          ></div>
+          {user.isOnline && (
+            <div className="absolute bottom-1 right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-black animate-pulse" />
+          )}
         </div>
 
-        <div className="flex items-center gap-1 text-sm mt-0.5 opacity-80">
-          <MapPin className="w-4 h-4" />
-          {location || 'Bilinmeyen konum'}
-        </div>
-      </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-lg truncate">
+              {user.displayname || user.name || 'İsim Yok'}
+            </h3>
+            <span className="text-sm opacity-70">{userAge}</span>
+          </div>
 
-      <div className="flex-shrink-0 flex items-end gap-3">
-        <ActionBar
-          viewMode='list'
-          liked={liked}
-          disliked={disliked}
-          blocked={blocked}
-          onBlockToggle={() => {
-            setIsBlocked((prev) => !prev)
-            handleBlock(user)
-          }}
-          onLikeToggle={() => {
-            setLiked((prev) => !prev)
-            handleSendLike(user)
-          }}
-          onDislikeToggle={() => {
-            setDisliked((prev) => !prev)
-            handleSendDislike(user)
-          }}
-          onOpenGiftSelector={() => setIsGiftSelectorOpen(true)}
-          onOpenQuickMessageSelector={() => {
-            handleSendMessage(user)
-          }}
-          baseButtonStyle={baseButtonStyle}
-          onTriggerOverlay={handleTriggerOverlay}
-        />
-      </div>
-    </motion.div>
-  )
-}
+          <div className="flex items-center gap-1 text-sm mt-0.5 opacity-80">
+            <MapPin className="w-4 h-4" />
+            {location || ''}
+          </div>
+        </div>
+
+        <div className="flex-shrink-0 flex items-end gap-3">
+          <ActionBar
+            viewMode='list'
+            liked={liked}
+            disliked={disliked}
+            blocked={blocked}
+            onBlockToggle={() => {
+              setIsBlocked((prev) => !prev)
+              handleBlock(user)
+            }}
+            onLikeToggle={() => {
+              setLiked((prev) => !prev)
+              handleSendLike(user)
+            }}
+            onDislikeToggle={() => {
+              setDisliked((prev) => !prev)
+              handleSendDislike(user)
+            }}
+            onOpenGiftSelector={() => setIsGiftSelectorOpen(true)}
+            onOpenQuickMessageSelector={() => {
+              handleSendMessage(user)
+            }}
+            baseButtonStyle={baseButtonStyle}
+            onTriggerOverlay={handleTriggerOverlay}
+          />
+        </div>
+      </motion.div>
+    )
+  }
 
   const CardView = () => {
+
+    const avatarURL = getSafeImageURLEx(user.public_id, user?.avatar, "large")
+    var userAge = calculateAge(user.date_of_birth)
+    userAge = userAge == "-" ? "" : userAge
+
+
     return (
       <motion.div
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
@@ -355,19 +365,15 @@ export const UserCard: React.FC<UserCardProps> = ({ user, viewMode = 'card' }) =
           <div
             className="relative flex-grow flex flex-col justify-end bg-cover bg-center"
             style={{
-              backgroundImage: `linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0) 60%), url("${getSafeImageURL(
-                user.avatar,
-                'large'
-              )}")`,
+              backgroundImage: `linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0) 60%), url("${avatarURL}")`,
               aspectRatio: '3/4',
             }}
           >
-            {/* "YENI" etiketi kaldırıldı */}
             <div className="p-4 pt-8">
               <div className="flex items-center gap-2 text-white">
                 <p className="text-[20px]">
-                  <span className="font-bold">{user.name || user.displayname || 'İsim Yok'},{' '}</span>{' '}
-                  <span className="font-normal">{calculateAge(user.date_of_birth)}</span>
+                  <span className="font-bold">{user.name || user.displayname || '-'},{' '}</span>{' '}
+                  <span className="font-normal">{userAge}</span>
                 </p>
                 {user.isOnline && <div className="h-2 w-2 rounded-full bg-green-500 border-2 border-white" />}
               </div>
@@ -396,7 +402,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, viewMode = 'card' }) =
                 }}
                 onDislikeToggle={() => {
                   setDisliked((prev) => !prev)
-                handleSendDislike(user)
+                  handleSendDislike(user)
                 }}
                 onOpenGiftSelector={() => setIsGiftSelectorOpen(true)}
                 onOpenQuickMessageSelector={() => {

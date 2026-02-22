@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Users, RefreshCw } from 'lucide-react';
@@ -6,7 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
 import { Actions } from '../services/actions';
-import { getSafeImageURL } from '../helpers/helpers';
+import { generateFallbackImage, getSafeImageURL, getSafeImageURLEx } from '../helpers/helpers';
 
 interface PopularUsersPanelProps {
   limit?: number;
@@ -85,13 +85,21 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
     fetchPopularUsers();
   }, [fetchPopularUsers]);
 
-  const resolveAvatar = React.useCallback((user: PopularUser) => {
+  const resolveAvatar = useCallback((user: PopularUser) => {
     return (
-      getSafeImageURL((user as any).avatar, 'icon') ||
-      user.profile_image_url ||
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayname || user.username)}&background=random`
+      getSafeImageURLEx(user.username, (user as any).avatar, 'icon') as string
     );
   }, []);
+
+ 
+
+
+
+  const handleAvatarError = (e: React.SyntheticEvent<HTMLImageElement, Event>, user: PopularUser) => {
+    const target = e.currentTarget;
+    target.onerror = null; // sonsuz döngüyü önlemek için
+    target.src = generateFallbackImage(user.username);
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -100,9 +108,8 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
           {Array.from({ length: limit }).map((_, index) => (
             <div
               key={`popular-skeleton-${index}`}
-              className={`relative overflow-hidden rounded-3xl border ${
-                theme === 'dark' ? 'border-gray-900 bg-gray-950' : 'border-gray-100 bg-gray-50'
-              } aspect-[3/4] animate-pulse`}
+              className={`relative overflow-hidden rounded-3xl border ${theme === 'dark' ? 'border-gray-900 bg-gray-950' : 'border-gray-100 bg-gray-50'
+                } aspect-[3/4] animate-pulse`}
             >
               <div className="absolute inset-0">
                 <div className={`h-2/3 w-full ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-200'}`} />
@@ -121,21 +128,19 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
     if (error) {
       return (
         <div
-          className={`rounded-2xl border p-4 ${
-            theme === 'dark'
+          className={`rounded-2xl border p-4 ${theme === 'dark'
               ? 'border-red-900/40 bg-red-900/10 text-red-200'
               : 'border-red-100 bg-red-50 text-red-600'
-          }`}
+            }`}
         >
           <p className="text-sm font-medium">{error}</p>
           <button
             type="button"
             onClick={fetchPopularUsers}
-            className={`mt-3 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
-              theme === 'dark'
+            className={`mt-3 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${theme === 'dark'
                 ? 'bg-red-800/60 text-red-100 hover:bg-red-800/80'
                 : 'bg-red-100 text-red-700 hover:bg-red-200'
-            }`}
+              }`}
           >
             <RefreshCw className="h-4 w-4" />
             {t('app.popular_users_retry')}
@@ -147,15 +152,15 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
     if (users.length === 0) {
       return (
         <div
-          className={`rounded-2xl border p-5 text-center ${
-            theme === 'dark' ? 'border-gray-900 bg-gray-950 text-gray-400' : 'border-gray-200 bg-white text-gray-500'
-          }`}
+          className={`rounded-2xl border p-5 text-center ${theme === 'dark' ? 'border-gray-900 bg-gray-950 text-gray-400' : 'border-gray-200 bg-white text-gray-500'
+            }`}
         >
           <Users className="mx-auto mb-3 h-6 w-6" />
           <p className="text-sm font-medium">{t('app.popular_users_empty')}</p>
         </div>
       );
     }
+
 
     return (
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
@@ -169,14 +174,14 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.04 }}
-              className={`group relative overflow-hidden rounded-3xl border ${
-                theme === 'dark'
+              className={`group relative overflow-hidden rounded-3xl border ${theme === 'dark'
                   ? 'border-gray-900 bg-gray-950 hover:border-indigo-500/40 hover:shadow-indigo-500/20'
                   : 'border-gray-100 bg-white hover:border-gray-300 hover:shadow-[0_12px_30px_-16px_rgba(79,70,229,0.55)]'
-              } aspect-[3/4] transition-all`}
+                } aspect-[3/4] transition-all`}
             >
               <img
                 src={resolveAvatar(user)}
+                onError={(e) => handleAvatarError(e, user)}
                 alt={user.displayname || user.username}
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
@@ -188,9 +193,9 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
                 <p className="text-sm font-medium text-white/80">
                   {age !== null
                     ? t('app.popular_users_age_years', {
-                        age,
-                        defaultValue: `${age} ${t('app.popular_users_age_suffix', { defaultValue: 'yaş' })}`,
-                      })
+                      age,
+                      defaultValue: `${age} ${t('app.popular_users_age_suffix', { defaultValue: 'yaş' })}`,
+                    })
                     : t('app.popular_users_age_unknown', { defaultValue: 'Yaş bilgisi yok' })}
                 </p>
               </div>
@@ -206,9 +211,8 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className={`rounded-3xl border p-5 sm:p-6 ${
-        theme === 'dark' ? 'border-gray-900 bg-gray-950/90' : 'border-gray-100 bg-white'
-      }`}
+      className={`rounded-3xl border p-5 sm:p-6 ${theme === 'dark' ? 'border-gray-900 bg-gray-950/90' : 'border-gray-100 bg-white'
+        }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div>

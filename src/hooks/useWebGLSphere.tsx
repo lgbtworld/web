@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { mat4, quat, vec2, vec3 } from 'gl-matrix';
-import { getSafeImageURL } from '../helpers/helpers';
+import { generateFallbackImage, getSafeImageURL, getSafeImageURLEx } from '../helpers/helpers';
+import { DEFAULT_AVATAR_URL } from '../constants/constants';
 
 // --- SHADERS ---
 const discVertShaderSource = `#version 300 es
@@ -303,13 +304,12 @@ class InfiniteGridMenu {
         const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const cellSize = 512;
         canvas.width = this.atlasSize * cellSize; canvas.height = this.atlasSize * cellSize;
         Promise.all(this.items.map(item => new Promise<HTMLImageElement>(resolve => {
-            const imageURL = getSafeImageURL(item.avatar, 'large');
-
-            let  imageURI = `https://placehold.co/400?text=${item.displayname}&font=roboto`
+            const imageURL = getSafeImageURLEx(item.public_id, item.avatar, 'large');
+            let fallbackImage = generateFallbackImage(item.public_id)
             const img = new Image(); img.crossOrigin = 'anonymous';
             img.onload = () => resolve(img);
-            img.onerror = () => { img.src = imageURL ? imageURL : imageURI }; // Fallback
-            img.src = imageURL ? imageURL : imageURI;
+            img.onerror = () => { img.src = fallbackImage }; // Fallback
+            img.src = imageURL ? imageURL : fallbackImage;
         }))).then(images => {
             images.forEach((img, i) => { const x = (i % this.atlasSize) * cellSize; const y = Math.floor(i / this.atlasSize) * cellSize; ctx?.drawImage(img, x, y, cellSize, cellSize); });
             gl.bindTexture(gl.TEXTURE_2D, this.tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas); gl.generateMipmap(gl.TEXTURE_2D);

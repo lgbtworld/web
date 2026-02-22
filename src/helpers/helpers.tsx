@@ -1,4 +1,6 @@
 import { defaultServiceServerId, serviceURL } from "../appSettings";
+import { DEFAULT_AVATAR_URL } from "../constants/constants";
+import { pickSeededColorsString } from "./colors";
 
 // helpers/safeUrl.ts
 export function buildSafeURL(
@@ -33,7 +35,14 @@ export function buildSafeURL(
   }
   
 
-  // helpers/imageUrl.ts
+
+export function generateFallbackImage(seed : any) : string{
+
+  let randColor = pickSeededColorsString(seed,3)
+  console.log("FALLBACK",seed ,randColor)
+
+  return `${DEFAULT_AVATAR_URL}${seed}&backgroundColor=${randColor}&backgroundType=gradientLinear,solid`
+}
 
 export function getSafeImageURL(
     attachment: any,
@@ -58,20 +67,55 @@ export function getSafeImageURL(
   
       // Sadece http veya https izin ver
       if (!["https:", "http:"].includes(url.protocol)) {
-        console.warn("🚫 Unsafe protocol:", url.protocol);
         return null;
       }
 
       return url.href.toString();
       
     } catch (err) {
-      console.warn("🚫 Invalid or unsafe URL:", err);
+      
       return null;
     }
 
   }
+
+export function getSafeImageURLEx(
+    publicId : any,
+    attachment: any,
+    variant: string = "small"
+  ): string | null {
+    var serviceURI = serviceURL[defaultServiceServerId]
+    try {
+      // Try multiple path structures:
+      // 1. attachment.file.variants.image[variant].url (for nested file structure like avatar/cover)
+      // 2. attachment.variants.image[variant].url (for direct file structure like media)
+      // 3. attachment.file.variants.video[variant].url (for video files)
+      // 4. attachment.variants.video[variant].url (for direct video structure)
+      let path = attachment?.file?.variants?.image?.[variant]?.url || 
+                 attachment?.variants?.image?.[variant]?.url ||
+                 attachment?.file?.variants?.video?.[variant]?.url ||
+                 attachment?.variants?.video?.[variant]?.url;
+      
+      if (!path) {
+        return generateFallbackImage(publicId)
+      };
   
-  // ✅ Kolay kullanım fonksiyonu
+      // Eğer path mutlak değilse base URL ile birleştir
+      const url = path.startsWith("http") ? new URL(path) : new URL(path, serviceURI);
+  
+      // Sadece http veya https izin ver
+      if (!["https:", "http:"].includes(url.protocol)) {
+           return generateFallbackImage(publicId)
+      }
+
+      return url.href.toString();
+      
+    } catch (err) {
+         return generateFallbackImage(publicId)
+    }
+
+  }
+  
   export function getImageURL(attachment: any, variant: string = "small"): string | null {
     return getSafeImageURL(attachment, variant);
   }

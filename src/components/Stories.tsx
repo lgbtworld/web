@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import { api } from '../services/api';
 import { Actions } from '../services/actions';
 import { useAuth } from '../contexts/AuthContext';
-import { getSafeImageURL } from '../helpers/helpers';
+import { getSafeImageURL, getSafeImageURLEx } from '../helpers/helpers';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 
@@ -94,12 +94,15 @@ const Stories: React.FC = () => {
             storyCover = getSafeImageURL(story.media, 'large') || null;
           }
 
+            const avatarIcon = getSafeImageURLEx(user.public_id, user?.avatar, "icon")
+             const avatarMedium = getSafeImageURLEx(user.public_id, user?.avatar, "medium")
+
           return {
             id: story.id,
             name: user?.displayname || user?.username || 'User',
-            avatar: getSafeImageURL(user.avatar, 'icon'),
+            avatar: avatarIcon,
             cover: storyCover,
-            userCover: getSafeImageURL(user?.cover, 'medium') || null,
+            userCover: avatarMedium,
             isOwn: story.user_id === authUser?.id,
             hasStory: true,
             storyId: story.id,

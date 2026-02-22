@@ -54,8 +54,11 @@ export default function BubbleView() {
             : 'border border-gray-300 text-gray-700 hover:bg-gray-400 hover:text-gray-900';
 
     useEffect(() => {
+        console.log(state.nearbyUsers)
         setIsOverlayReady(true);
     }, []);
+
+    
 
     const users = useMemo(() => state.nearbyUsers.length ? state.nearbyUsers : defaultItems, [state.nearbyUsers]);
 

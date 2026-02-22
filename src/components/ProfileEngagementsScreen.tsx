@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import Container from './Container';
 import { api } from '../services/api';
 import { Actions } from '../services/actions';
-import { getSafeImageURL } from '../helpers/helpers';
+import { getSafeImageURL, getSafeImageURLEx } from '../helpers/helpers';
 
 type EngagementType = 'followers' | 'followings';
 
@@ -255,10 +255,7 @@ const ProfileEngagementsScreen: React.FC = () => {
 
   const renderAvatar = (engagementUser: EngagementUser) => {
     return (
-      getSafeImageURL(engagementUser.avatar, 'icon') ||
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(
-        engagementUser.displayname || engagementUser.username
-      )}&background=random`
+      getSafeImageURLEx(engagementUser.id,engagementUser.avatar, 'icon')
     );
   };
 

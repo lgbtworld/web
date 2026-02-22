@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Gift, Heart, HeartCrack, Shield } from "lucide-react";
+import { Gift, Heart, HeartCrack, HeartOff, MessageCircleHeart, Shield, ShieldBan } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BlockIcon, ChatIcon, DislikeIcon, LikeIcon } from "./icons";
 
@@ -233,7 +233,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
         className={`cursor-pointer rounded-full transition-all ${buttonStyle}  ${baseButtonStyle}`}
         aria-label="Send Message"
       >
-        <ChatIcon className={iconStyle} />
+        <MessageCircleHeart className="w-8 h-8" />
       </motion.button>
 
       <motion.button
@@ -262,7 +262,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
             }`}
           aria-label="Like"
         >
-          <LikeIcon className={iconStyle} />
+        <Heart className="w-8 h-8" />
 
         </motion.button>
         <AnimatePresence>
@@ -275,7 +275,8 @@ export const ActionBar: React.FC<ActionBarProps> = ({
               transition={{ duration: 0.6, ease: 'easeOut' }}
               className="pointer-events-none absolute inset-0 flex items-center justify-center"
             >
-              <Heart className="h-9 w-9 text-red-500 drop-shadow-lg" />
+                      <Heart className="w-8 h-8" />
+
             </motion.div>
           )}
         </AnimatePresence>
@@ -294,7 +295,8 @@ export const ActionBar: React.FC<ActionBarProps> = ({
             }`}
           aria-label="Dislike"
         >
-          <DislikeIcon className={iconStyle} />
+                                <HeartOff className="w-8 h-8" />
+
         </motion.button>
         <AnimatePresence>
           {animation?.type === 'dislike' && (
@@ -324,7 +326,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
           className={`cursor-pointer rounded-full transition-all ${buttonStyle} ${blocked ? "text-red-500" : baseButtonStyle
             }`}
           aria-label="Block">
-          <BlockIcon className={iconStyle} />
+          <ShieldBan className="w-8 h-8" />
 
         </motion.button>
         <AnimatePresence>

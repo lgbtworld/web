@@ -369,12 +369,7 @@ const ProfileEngagementsScreen: React.FC = () => {
                 >
                   <div className="relative">
                   <img
-                    src={
-                      getSafeImageURL(profile.avatar, 'icon') ||
-                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        profile.displayname || profile.username
-                      )}&background=random`
-                    }
+                    src={getSafeImageURLEx(profile.public_id,profile.avatar, 'icon')}
                     alt={profile.displayname || profile.username}
                           className={`w-14 h-14 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ${
                         theme === 'dark' ? 'ring-gray-900' : 'ring-gray-200/50'

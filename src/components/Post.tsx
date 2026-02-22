@@ -19,7 +19,7 @@ import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {ListNode, ListItemNode} from '@lexical/list';
 import {LinkNode, AutoLinkNode} from '@lexical/link';
 import { MentionNode } from './Lexical/nodes/MentionNode';
-import { getLocalizedContent, getSafeImageURL } from '../helpers/helpers';
+import { getLocalizedContent, getSafeImageURL, getSafeImageURLEx } from '../helpers/helpers';
 import { ImageNode } from './Lexical/nodes/ImageNode';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { HashtagPlugin } from '@lexical/react/LexicalHashtagPlugin';
@@ -904,13 +904,7 @@ const Post: React.FC<PostProps> = ({
 
   const authorAvatarUrl = useMemo(() => {
     const avatar = (post.author as any)?.avatar;
-    if (!avatar) return '';
-    return (
-      getSafeImageURL(avatar, 'small') ||
-      getSafeImageURL(avatar, 'icon') ||
-      getSafeImageURL(avatar, 'thumbnail') ||
-      ''
-    );
+     return getSafeImageURLEx(post.author.public_id, avatar, 'thumbnail')
   }, [post.author]);
 
   // Helper function to format timestamp

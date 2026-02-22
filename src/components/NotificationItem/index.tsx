@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { MoreVertical } from 'lucide-react';
-import { getSafeImageURL } from '../../helpers/helpers';
+import { getSafeImageURL, getSafeImageURLEx } from '../../helpers/helpers';
 
 export interface Notification {
   id: string;
@@ -110,23 +110,14 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             <div className={`w-12 h-12 rounded-full overflow-hidden ring-2 ${
               theme === 'dark' ? 'ring-gray-800' : 'ring-gray-200'
             }`}>
-              {notification.sender?.avatar ? (
+      
                 <img
-                  src={(getSafeImageURL(notification.sender?.avatar, 'small') || getSafeImageURL(notification.sender?.avatar, 'medium') || '')}
+                  src={getSafeImageURLEx(notification.sender?.public_id,notification.sender?.avatar, 'small')}
                   alt={notification.sender.displayname || notification.sender.username}
                   className="w-full h-full object-cover"
                 />
-              ) : (
-                <div className={`w-full h-full flex items-center justify-center ${
-                  theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
-                }`}>
-                  <span className={`text-lg font-bold ${
-                    theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                  }`}>
-                    {(notification.sender?.displayname || notification.sender?.username || 'U')[0].toUpperCase()}
-                  </span>
-                </div>
-              )}
+        
+              
             </div>
           </div>
         </div>

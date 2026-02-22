@@ -187,7 +187,7 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-95" />
               <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 p-4 text-left">
-                <p className="truncate text-base font-semibold text-white sm:text-lg">
+                <p className="truncate text-base font-semibold text-white text-sm">
                   {user.displayname || user.username}
                 </p>
                 <p className="text-sm font-medium text-white/80">
@@ -196,7 +196,7 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
                       age,
                       defaultValue: `${age} ${t('app.popular_users_age_suffix', { defaultValue: 'yaş' })}`,
                     })
-                    : t('app.popular_users_age_unknown', { defaultValue: 'Yaş bilgisi yok' })}
+                    : ""}
                 </p>
               </div>
             </motion.button>

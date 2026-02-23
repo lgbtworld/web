@@ -47,13 +47,18 @@ function AppContent() {
   const { showBottomBar, setShowBottomBar } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const { canInstall } = usePwaInstall();
   const previousCanInstallRef = React.useRef(false);
   const showSidebarInstallCard = canInstall && !showInstallBanner;
   const handleBannerDismiss = React.useCallback(() => {
     setShowInstallBanner(false);
   }, []);
+  const languageDisplay = React.useMemo(() => {
+    const lang = i18n?.language || 'en';
+    const base = lang.split('-')[0] || lang;
+    return base.toUpperCase();
+  }, [i18n?.language]);
 
   // Update activeScreen based on current URL
   React.useEffect(() => {
@@ -106,6 +111,95 @@ function AppContent() {
 
     previousCanInstallRef.current = canInstall;
   }, [canInstall]);
+
+  const sidebarNavItems = React.useMemo(() => [
+    {
+      id: 'pride',
+      label: 'Pride',
+      path: '/',
+      icon: HandFist,
+      accent: 'from-rose-500/90 via-fuchsia-500/80 to-purple-500/70',
+      helper: t('app.nav.discover', 'Trending')
+    },
+    {
+      id: 'nearby',
+      label: t('app.nav.nearby'),
+      path: '/nearby',
+      icon: MapPin,
+      accent: 'from-amber-400/80 to-orange-500/80',
+      helper: t('app.nav.nearby_helper', 'IRL vibes')
+    },
+    {
+      id: 'match',
+      label: t('app.nav.matches'),
+      path: '/match',
+      icon: Heart,
+      accent: 'from-rose-400/80 to-red-500/80',
+      helper: t('app.nav.matches_helper', 'Curated pairs')
+    },
+    {
+      id: 'messages',
+      label: t('app.nav.messages'),
+      path: '/messages',
+      icon: MessageCircle,
+      accent: 'from-sky-400/80 to-indigo-500/80',
+      helper: t('app.nav.messages_helper', 'Keep chatting')
+    },
+    {
+      id: 'notifications',
+      label: t('app.nav.notifications'),
+      path: '/notifications',
+      icon: Bell,
+      accent: 'from-emerald-400/80 to-teal-500/80',
+      helper: t('app.nav.notifications_helper', 'Fresh alerts')
+    },
+    {
+      id: 'wallet',
+      label: t('wallet.title'),
+      path: '/wallet',
+      icon: Wallet,
+      accent: 'from-cyan-400/80 to-blue-500/80',
+      helper: t('wallet.sidebar_helper', 'Boost status')
+    },
+    {
+      id: 'profile',
+      label: t('app.nav.profile'),
+      path: `/${user?.username || 'profile'}`,
+      icon: User,
+      accent: 'from-gray-900/80 to-gray-700/80',
+      helper: t('app.nav.profile_helper', 'View identity')
+    }
+  ], [t, user?.username]);
+
+  const sidebarNavSections = React.useMemo(() => {
+    const primaryOrder = ['pride', 'nearby', 'match', 'messages'];
+    const secondaryOrder = ['notifications', 'wallet', 'profile'];
+
+    const sortByOrder = (ids: string[]) =>
+      ids
+        .map((id) => sidebarNavItems.find((item) => item.id === id))
+        .filter(Boolean) as typeof sidebarNavItems;
+
+    return [
+      {
+        id: 'primary',
+        title: t('app.sidebar.primary', 'Discover'),
+        items: sortByOrder(primaryOrder)
+      },
+      {
+        id: 'secondary',
+        title: t('app.sidebar.secondary', 'Manage'),
+        items: sortByOrder(secondaryOrder)
+      }
+    ];
+  }, [sidebarNavItems, t]);
+
+  const orderedSidebarNavItems = React.useMemo(
+    () => sidebarNavSections.flatMap((section) => section.items),
+    [sidebarNavSections]
+  );
+
+  const sidebarGridItems = React.useMemo(() => orderedSidebarNavItems, [orderedSidebarNavItems]);
 
   const mobileNavItems = [
     { id: 'pride', label: "Pride", icon: "/icons/pride.webp" },
@@ -179,7 +273,7 @@ function AppContent() {
 
           {/* Left Sidebar - Fixed */}
           <aside className={`hidden    scrollbar-hide lg:flex flex-col w-[280px]`}>
-            <div className="p-4 sticky top-0 h-screen overflow-y-auto flex flex-col">
+            <div className="p-4 sticky top-0 h-screen overflow-y-auto scrollbar-hide flex flex-col">
               {/* Logo */}
               <div className="flex items-center justify-center mb-4 pt-2">
                 <button className="flex items-center space-x-3 p-3 rounded-full hover:bg-opacity-10 transition-colors group">
@@ -195,97 +289,44 @@ function AppContent() {
                 </button>
               </div>
 
-              {/* Navigation */}
-              <nav className="space-y-1 flex-1">
-                {[
-                  { id: 'pride', label: "Pride", icon: HandFist },
-                  { id: 'nearby', label: t('app.nav.nearby'), icon: MapPin },
-                  { id: 'match', label: t('app.nav.matches'), icon: Heart },
-                  { id: 'messages', label: t('app.nav.messages'), icon: MessageCircle },
-                  { id: 'notifications', label: t('app.nav.notifications'), icon: Bell },
-                  /*{ id: 'places', label: t('app.nav.places'), icon: Building2 },*/
-                  { id: 'wallet', label: t('wallet.title'), icon: Wallet },
-                  { id: 'profile', label: t('app.nav.profile'), icon: User },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeScreen === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        if (item.id === 'home') {
-                          navigate('/');
-                        } else if (item.id === 'profile') {
-                          navigate(`/${user?.username || 'profile'}`);
-                        } else {
-                          navigate(`/${item.id}`);
-                        }
-                      }}
-                      className={`w-full flex items-center space-x-4 px-5 py-3.5 rounded-full transition-all duration-200 group ${isActive
-                          ? theme === 'dark'
-                            ? 'bg-gray-200 text-black shadow-lg shadow-gray/20'
-                            : 'bg-black text-white shadow-lg shadow-black/20'
-                          : theme === 'dark'
-                            ? 'text-gray-400 hover:text-white hover:bg-white/10'
-                            : 'text-gray-600 hover:text-black hover:bg-gray-100'
-                        }`}>
-                      <Icon className={`w-6 h-6 transition-transform duration-200  rounded-full ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                      <span className=" font-semibold text-base tracking-wide">{item.label}</span>
-                    </button>
-                  );
-                })}
-              </nav>
-
-              {/* Bottom Section */}
-              <div className="mt-auto pt-4 pb-2 space-y-3">
-
-                {/* User Profile Card */}
+              <div className="flex flex-col gap-5 flex-1">
                 {isAuthenticated ? (
-                  <div className="space-y-3 relative">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => navigate(`/${user?.username || 'profile'}`)}
-                        className={`flex-1 p-3 rounded-2xl transition-all duration-200 border border-transparent hover:border-opacity-30 ${theme === 'dark'
-                            ? 'hover:bg-white/5 hover:border-white/30'
-                            : 'hover:bg-black/5 hover:border-black/30'
-                          }`}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="relative">
-                            <div className={`w-11 h-11 rounded-full ring-2 ${theme === 'dark' ? 'ring-white/20' : 'ring-black/20'}`}>
-                              <img
-                                src={getSafeImageURLEx((user as any)?.public_id,(user as any)?.avatar, "icon") || undefined}
-                                alt="Profile"
-                                className="w-full h-full rounded-full object-cover"
-                              />
-                            </div>
-                            <div className={`absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ${theme === 'dark' ? 'ring-black' : 'ring-white'}`}></div>
-                          </div>
-                          <div className="flex-1 text-left min-w-0">
-                            <p className={`font-bold text-sm truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                              {user?.displayname || user?.username || 'User'}
-                            </p>
-                            <p className={`text-xs truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                              @{user?.username || 'username'}
-                            </p>
-                          </div>
+                  <div className={`rounded-[22px] border px-4 py-4 ${theme === 'dark'
+                      ? 'border-white/10 bg-white/[0.02]'
+                      : 'border-black/[0.08] bg-white'
+                    }`}>
+                    <div className="flex items-center gap-3">
+                      <div className="relative shrink-0">
+                        <div className={`w-11 h-11 rounded-[16px] overflow-hidden ring-2 ${theme === 'dark' ? 'ring-white/10' : 'ring-black/10'}`}>
+                          <img
+                            src={getSafeImageURLEx((user as any)?.public_id,(user as any)?.avatar, "icon") || undefined}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                      </button>
+                        <span className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 ring-2 ${theme === 'dark' ? 'ring-black' : 'ring-white'}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-semibold truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                          {user?.displayname || user?.username || 'User'}
+                        </p>
+                        <p className={`text-xs text-gray-500 truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                          @{user?.username || 'username'}
+                        </p>
+                      </div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setIsProfileMenuOpen(!isProfileMenuOpen);
                         }}
-                        className={`p-2 rounded-xl transition-all duration-200 ${theme === 'dark'
-                            ? 'hover:bg-white/10 text-gray-400 hover:text-white'
-                            : 'hover:bg-black/10 text-gray-600 hover:text-black'
-                          } ${isProfileMenuOpen ? (theme === 'dark' ? 'bg-white/10 text-white' : 'bg-black/10 text-black') : ''}`}
+                        className={`p-2 rounded-xl transition ${theme === 'dark'
+                            ? 'text-white/70 hover:bg-white/10'
+                            : 'text-gray-600 hover:bg-gray-100'
+                          } ${isProfileMenuOpen ? (theme === 'dark' ? 'bg-white/10 text-white' : 'bg-gray-200 text-gray-900') : ''}`}
                       >
-                        <MoreHorizontal className="w-5 h-5" />
+                        <MoreHorizontal className="w-4 h-4" />
                       </button>
                     </div>
-
-                    {/* Profile Dropdown Menu */}
                     <AnimatePresence>
                       {isProfileMenuOpen && (
                         <>
@@ -301,9 +342,9 @@ function AppContent() {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
                             transition={{ duration: 0.2 }}
-                            className={`absolute bottom-full left-0 right-0 mb-2 rounded-2xl overflow-hidden z-50 ${theme === 'dark'
-                                ? 'bg-gray-900 border border-gray-800 shadow-2xl'
-                                : 'bg-white border border-gray-200 shadow-2xl'
+                            className={`absolute bottom-full left-0 right-0 mb-3 rounded-2xl overflow-hidden border ${theme === 'dark'
+                                ? 'bg-gray-900 border-gray-800'
+                                : 'bg-white border-gray-200 shadow-lg'
                               }`}
                           >
                             <button
@@ -311,13 +352,13 @@ function AppContent() {
                                 navigate(`/${user?.username || 'profile'}`);
                                 setIsProfileMenuOpen(false);
                               }}
-                              className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-colors ${theme === 'dark'
-                                  ? 'hover:bg-white/10 text-white'
-                                  : 'hover:bg-black/5 text-gray-900'
+                              className={`w-full px-4 py-3 flex items-center gap-3 text-left ${theme === 'dark'
+                                  ? 'text-white hover:bg-white/10'
+                                  : 'text-gray-900 hover:bg-gray-50'
                                 }`}
                             >
-                              <User className="w-5 h-5" />
-                              <span className="font-semibold text-sm">{t('app.nav.profile')}</span>
+                              <User className="w-4 h-4" />
+                              <span className="text-sm font-semibold">{t('app.nav.profile')}</span>
                             </button>
                             <div className={`h-px ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
                             <button
@@ -328,79 +369,168 @@ function AppContent() {
                                   setIsProfileMenuOpen(false);
                                 }
                               }}
-                              className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-colors ${theme === 'dark'
-                                  ? 'hover:bg-red-500/10 text-red-400'
-                                  : 'hover:bg-red-50 text-red-600'
+                              className={`w-full px-4 py-3 flex items-center gap-3 text-left ${theme === 'dark'
+                                  ? 'text-red-400 hover:bg-red-500/10'
+                                  : 'text-red-600 hover:bg-red-50'
                                 }`}
                             >
-                              <LogOut className="w-5 h-5" />
-                              <span className="font-semibold text-sm">{t('app.logout')}</span>
+                              <LogOut className="w-4 h-4" />
+                              <span className="text-sm font-semibold">{t('app.logout')}</span>
                             </button>
                           </motion.div>
                         </>
                       )}
                     </AnimatePresence>
+                    <div className="grid grid-cols-2 gap-2 mt-4">
+                      <button
+                        onClick={() => navigate(`/${user?.username || 'profile'}`)}
+                        className={`rounded-xl px-3 py-2 text-sm font-semibold ${theme === 'dark'
+                            ? 'bg-white text-black'
+                            : 'bg-gray-900 text-white'
+                          }`}
+                      >
+                        {t('app.view_profile', 'Profile')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm(t('app.logout_confirmation'))) {
+                            logout();
+                            navigate('/');
+                          }
+                        }}
+                        className={`rounded-xl px-3 py-2 text-sm font-semibold ${theme === 'dark'
+                            ? 'bg-white/5 text-white hover:bg-white/10'
+                            : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                          }`}
+                      >
+                        {t('app.logout')}
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => setIsAuthWizardOpen(true)}
-                    className={`w-full px-4 py-3.5 rounded-full font-bold transition-all duration-200 shadow-lg hover:scale-105 ${theme === 'dark'
-                        ? 'bg-gradient-to-r from-white to-gray-200 text-black hover:shadow-white/20'
-                        : 'bg-gradient-to-r from-black to-gray-800 text-white hover:shadow-black/20'
-                      }`}
-                  >
-                    {t('app.join_now')}
-                  </button>
+                  <div className={`rounded-[24px] border px-4 py-4 ${theme === 'dark'
+                      ? 'bg-white/[0.02] border-white/10'
+                      : 'bg-white border-black/[0.06]'
+                    }`}>
+                    <p className="text-xs uppercase tracking-[0.3em] opacity-60">
+                      {t('app.join_title', 'Welcome')}
+                    </p>
+                    <p className="text-lg font-semibold mt-1">
+                      {t('app.join_subtitle', 'Create your profile')}
+                    </p>
+                    <button
+                      onClick={() => setIsAuthWizardOpen(true)}
+                      className={`mt-4 w-full px-4 py-3 rounded-2xl font-semibold transition-all ${theme === 'dark'
+                          ? 'bg-white text-black hover:bg-white/90'
+                          : 'bg-black text-white hover:bg-black/90'
+                        }`}
+                    >
+                      {t('app.join_now')}
+                    </button>
+                  </div>
                 )}
 
+                {/* Navigation */}
+                <nav className="flex-1">
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {sidebarGridItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeScreen === item.id;
+                      return (
+                        <motion.button
+                          key={item.id}
+                          onClick={() => navigate(item.path || '/')}
+                          whileHover={{ y: -2 }}
+                          whileTap={{ scale: 0.97 }}
+                          className={`relative rounded-2xl px-2.5 py-2 min-h-[88px] flex flex-col justify-between border ${theme === 'dark'
+                              ? 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                              : 'border-black/[0.05] bg-white hover:shadow-sm'
+                            } ${isActive ? (theme === 'dark' ? 'ring-1 ring-white/40' : 'ring-1 ring-black/20 shadow') : ''}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${item.accent} text-white shadow-lg shadow-black/15`}>
+                              <Icon className="w-[15px] h-[15px]" />
+                            </div>
+                            <ArrowUpRight className={`w-4 h-4 ${theme === 'dark' ? 'text-white/50' : 'text-black/50'}`} />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                              {item.label}
+                            </p>
+                          </div>
+                          {isActive && (
+                            <div
+                              className="absolute inset-0 rounded-2xl pointer-events-none"
+                              style={{
+                                background: theme === 'dark'
+                                  ? 'linear-gradient(140deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))'
+                                  : 'linear-gradient(140deg, rgba(0,0,0,0.04), rgba(0,0,0,0))'
+                              }}
+                            />
+                          )}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </nav>
+
                 {/* Quick Actions */}
-                <div className="space-y-2">
-                  {/* Theme Toggle */}
+                <div className="flex flex-col gap-2 pt-2">
                   <motion.button
                     onClick={toggleTheme}
-                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-[16px] font-semibold text-[15px] tracking-[-0.011em] transition-all duration-200 ${theme === 'dark'
-                        ? 'bg-gradient-to-br from-gray-900 to-gray-800 hover:bg-white/[0.12] text-white'
-                        : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:bg-black/[0.12] text-black'
-                      }`}
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
-                    style={{ willChange: 'transform' }}
+                    className={`rounded-2xl border px-3.5 py-3 text-left transition-all ${theme === 'dark'
+                        ? 'border-white/10 bg-white/[0.04] hover:bg-white/[0.07] text-white'
+                        : 'border-black/[0.06] bg-white hover:shadow-sm text-gray-900'
+                      }`}
                   >
-                    <div className="flex items-center space-x-3">
-                      {theme === 'dark' ? (
-                        <Sun className="w-5 h-5" />
-                      ) : (
-                        <Moon className="w-5 h-5" />
-                      )}
-                      <span>{theme === 'dark' ? t('app.light_mode') : t('app.dark_mode')}</span>
-                    </div>
-                    <div className={`w-11 h-6 rounded-full transition-colors duration-200 relative ${theme === 'dark' ? 'bg-white/20' : 'bg-black/20'
-                      }`}>
-                      <motion.div
-                        className={`absolute top-0.5 w-5 h-5 rounded-full ${theme === 'dark' ? 'bg-white' : 'bg-black'
-                          }`}
-                        animate={{ x: theme === 'dark' ? 22 : 2 }}
-                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                      />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {theme === 'dark' ? (
+                          <Sun className="w-4 h-4 text-amber-300" />
+                        ) : (
+                          <Moon className="w-4 h-4 text-indigo-500" />
+                        )}
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.3em] opacity-70">
+                            {t('app.theme', 'Theme')}
+                          </p>
+                          <p className="text-sm font-semibold">
+                            {theme === 'dark' ? t('app.light_mode') : t('app.dark_mode')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={`w-11 h-5 rounded-full flex items-center px-1 ${theme === 'dark' ? 'bg-white/15' : 'bg-black/10'}`}>
+                        <span
+                          aria-hidden="true"
+                          className={`block h-4 w-4 rounded-full transition-transform duration-200 ease-out ${theme === 'dark'
+                              ? 'translate-x-[1.25rem] bg-white'
+                              : 'translate-x-0 bg-black'
+                            }`}
+                        />
+                      </div>
                     </div>
                   </motion.button>
 
-                  {/* Language Selector */}
                   <motion.button
                     onClick={() => setIsLanguageSelectorOpen(true)}
-                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-[16px] font-semibold text-[15px] tracking-[-0.011em] transition-all duration-200 ${theme === 'dark'
-                        ? 'bg-gradient-to-br from-gray-900 to-gray-800 hover:bg-white/[0.12] text-white'
-                        : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:bg-black/[0.12] text-black'
-                      }`}
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
-                    style={{ willChange: 'transform' }}
+                    className={`rounded-2xl border px-3.5 py-3 text-left transition-all ${theme === 'dark'
+                        ? 'border-white/10 bg-white/[0.04] hover:bg-white/[0.07] text-white'
+                        : 'border-black/[0.06] bg-white hover:shadow-sm text-gray-900'
+                      }`}
                   >
-                    <div className="flex items-center space-x-3">
-                      <Languages className="w-5 h-5" />
-                      <span>{t('app.language')}</span>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] opacity-70">
+                          {t('app.language')}
+                        </p>
+                        <p className="text-sm font-semibold">{languageDisplay}</p>
+                      </div>
+                      <ChevronRight className={`w-4 h-4 ${theme === 'dark' ? 'text-white/60' : 'text-black/60'}`} />
                     </div>
-                    <ChevronRight className="w-4 h-4" />
                   </motion.button>
                 </div>
               </div>
@@ -487,7 +617,7 @@ function AppContent() {
               <div className="flex items-center justify-around px-4 py-3">
                 {[
                   { id: 'pride', icon: "/icons/pride.webp", label: "Pride" },
-                  { id: 'nearby', label: t('app.nav.nearby'), icon: "/icons/nearby.webp" },
+                  { id: 'nearby', icon: "/icons/nearby.webp", label: t('app.nav.nearby') },
                   { id: 'match', icon: "/icons/matches.webp", label: t('app.nav.match') },
                   { id: 'messages', icon: "/icons/chat.webp", label: t('app.nav.messages') },
                   { id: 'profile', icon: "/icons/profile.webp", label: t('app.nav.profile') },
@@ -620,7 +750,7 @@ function AppContent() {
                           } blur-sm`} />
                         <div className="relative">
                           <img
-                            src={getSafeImageURL((user as any)?.avatar, "icon") || undefined}
+                            src={getSafeImageURLEx((user as any)?.public_id,(user as any)?.avatar, "icon") || undefined}
                             alt="Profile"
                             className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10"
                           />
@@ -644,11 +774,12 @@ function AppContent() {
                         <div className="flex items-center gap-3 mt-1.5">
                           <span className={`text-[11px] font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
                             }`}>
-                            <span className={theme === 'dark' ? 'text-white' : 'text-black'}>234</span> {t('app.following')}
+                            <span className={theme === 'dark' ? 'text-white' : 'text-black'}>{(user as any)?.engagements?.counts?.follower_count ? (user as any)?.engagements?.counts?.follower_count : "0"}</span> {t('app.following')}
                           </span>
-                          <span className={`text-[11px] font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
-                            }`}>
-                            <span className={theme === 'dark' ? 'text-white' : 'text-black'}>1.2K</span> {t('app.followers')}
+                          <span className={`text-[11px] font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
+                            <span className={theme === 'dark' ? 'text-white' : 'text-black'}>
+                            {(user as any)?.engagements?.counts?.following_count ? (user as any)?.engagements?.counts?.following_count : "0" }  
+                            </span> {t('app.followers')}
                           </span>
                         </div>
                       </div>

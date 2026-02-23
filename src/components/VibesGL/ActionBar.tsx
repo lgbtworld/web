@@ -75,9 +75,10 @@ interface ActionBarProps {
     onMessage: () => void;
     onShare: () => void;
     onBlock: () => void;
+    openProfile : () => void;
 }
 
-export const ActionBar: React.FC<ActionBarProps> = ({ avatarUrl, onLike, onMessage, onShare, onBlock }) => {
+export const ActionBar: React.FC<ActionBarProps> = ({ avatarUrl, onLike, onMessage,openProfile, onShare, onBlock }) => {
     const [overlay, setOverlay] = useState<BurstOverlayState | null>(null);
     const [isOverlayReady, setIsOverlayReady] = useState(false);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -107,18 +108,24 @@ export const ActionBar: React.FC<ActionBarProps> = ({ avatarUrl, onLike, onMessa
     return (
         <>
             <div className="flex flex-col items-center justify-end gap-5 text-white">
-                <div className="relative mb-2">
-                    <img src={getSafeImageURL(avatarUrl, 'small')} className="w-14 h-14 rounded-full border-2 border-white object-cover bg-gray-700" alt="User avatar" />
-                    <button className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 bg-rose-500 rounded-full flex items-center justify-center border-2 border-black hover:bg-rose-600 transition-colors" aria-label="Follow user">
+                <div onClick={()=>{
+                         openProfile()
+                }} className="relative mb-2">
+                    <img src={avatarUrl} className="w-14 h-14 rounded-full border-2 border-white object-cover bg-gray-700" alt="User avatar" />
+                    <button onClick={()=>{
+                        openProfile()
+                    }} className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 bg-rose-500 rounded-full flex items-center justify-center border-2 border-black hover:bg-rose-600 transition-colors" aria-label="Follow user">
                         <Plus className="w-4 h-4 text-white" strokeWidth={3} />
                     </button>
                 </div>
                 
                 <ActionButton icon={Heart} label="Like" onClick={createHandler(onLike, BurstType.LIKE)} />
                 <ActionButton icon={MessageCircle} label="Message" onClick={onMessage} />
-                <ActionButton icon={Share} label="Share" onClick={onShare} />
 
-                <div className="relative">
+              
+                {/* <ActionButton icon={Share} label="Share" onClick={onShare} /> */}
+
+                {/* <div className="relative">
                     <button onClick={() => setShowMoreMenu(prev => !prev)} className="flex flex-col items-center gap-1.5 transition-transform hover:scale-110" aria-label="More options">
                         <MoreHorizontal className="w-9 h-9 drop-shadow-md" />
                     </button>
@@ -138,7 +145,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({ avatarUrl, onLike, onMessa
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div>
+                </div> */}
             </div>
             {isOverlayReady && overlay && createPortal(<BurstOverlay overlay={overlay} />, document.body)}
         </>

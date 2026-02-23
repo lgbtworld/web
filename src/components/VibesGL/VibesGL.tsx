@@ -9,7 +9,7 @@ import { useAtom } from "jotai";
 import { globalState } from "../../state/nearby";
 import { VibeItem } from "./VibeItem";
 import { api } from "../../services/api";
-import { getSafeImageURL } from "../../helpers/helpers";
+import { getSafeImageURL, getSafeImageURLEx } from "../../helpers/helpers";
 import { defaultServiceServerId, serviceURL } from "../../appSettings";
 import { useWebGLCoverflow } from "../../hooks/useWebGLCoverflow";
 
@@ -35,11 +35,10 @@ const VibesGL: React.FC = () => {
     // ------------------------------------------------------------
     const fetchVibesFromAPI = useCallback(
         async (loadMore = false) => {
-            console.log("🔥 FETCH VIBES → loadMore:", loadMore);
             try {
                 setIsLoading(true);
 
-                const currentCursor = loadMore ? state.vibesCursor || "" : "";
+                const currentCursor  = loadMore ? state.vibesCursor?.toString || "" : "";
 
                 const response = await api.fetchVibes({
                     limit: 10,
@@ -92,23 +91,18 @@ const VibesGL: React.FC = () => {
                                 "";
                         }
 
-                        const avatar =
-                            getSafeImageURL(author.avatar, "small") ||
-                            getSafeImageURL(author.avatar, "medium") ||
-                            "";
+                        const avatar = getSafeImageURLEx(author.public_id,author.avatar, "small");
 
                         return {
-                            id:
-                                attachment.id ||
-                                attachment.public_id ||
-                                post.id,
+                            id:post.public_id,
                             mediaUrl,
                             mediaType: isVideo ? "video" : "image",
                             posterUrl: isVideo ? posterUrl : undefined,
                             username: author.username || "Unknown",
                             date_of_birth: author.date_of_birth,
                             avatar,
-                            description: file?.name || "Vibe"
+                            description: file?.name || "Vibe",
+                            author:author
                         };
                     });
 
@@ -165,7 +159,7 @@ const VibesGL: React.FC = () => {
         isMuted:isMuted
     });
     
-    const activeUser = useMemo(() => vibes[activeIndex], [vibes, activeIndex]);
+    const currentVibe = useMemo(() => vibes[activeIndex], [vibes, activeIndex]);
 
 
     // ------------------------------------------------------------
@@ -213,7 +207,7 @@ const VibesGL: React.FC = () => {
                 ref={canvasRef}
                 className="absolute inset-0 w-full h-full"
             />
-                {activeUser && <VibeItem key={activeUser.id} user={activeUser} />}
+                {currentVibe && <VibeItem key={currentVibe.id} vibe={currentVibe} />}
         </div>
     );
 };

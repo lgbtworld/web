@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
-import { getSafeImageURL } from '../helpers/helpers';
+import { getSafeImageURL, getSafeImageURLEx } from '../helpers/helpers';
 import { serviceURL, defaultServiceServerId } from '../appSettings';
 
 interface Reel {
@@ -111,14 +111,14 @@ export default function Vibes({ reels: initialReels, activeTab: _activeTab, onPo
           }
 
           // User avatar'ını al
-          const avatarUrl = (getSafeImageURL(author.avatar, 'small') || getSafeImageURL(author.avatar, 'medium') || '')
+          const avatarUrl = getSafeImageURLEx(author.public_id,author.avatar, 'thumbnail') 
 
           return {
             id: attachment.id || attachment.public_id || post.id || post.public_id,
             mediaUrl: mediaUrl,
             mediaType: isVideo ? 'video' : 'image',
             posterUrl: isVideo ? posterUrl : undefined,
-            username: author?.username || author?.displayname || 'Kullanıcı',
+            username: author?.username || author?.displayname,
             avatar: avatarUrl,
             description: file?.name?.replace(/\.(jpg|jpeg|png|webp|gif|mp4|mov)$/i, '') || 'Vibe',
             likes: Math.floor(Math.random() * 10000) + 100, // Random like sayısı
@@ -630,7 +630,7 @@ export default function Vibes({ reels: initialReels, activeTab: _activeTab, onPo
                 className="w-10 h-10 rounded-full border-2 border-white"
               />
               <span className="text-white font-semibold text-sm">
-                    {reel.username}
+                    {reel.username} 
               </span>
                   <motion.button 
                     whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,1)', color: '#000' }}

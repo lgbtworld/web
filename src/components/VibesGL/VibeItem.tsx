@@ -1,33 +1,118 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSetAtom } from 'jotai';
 import { globalState } from '../../state/nearby';
 import { calculateAge } from '../../helpers/helpers';
 import { ActionBar } from './ActionBar';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../../services/api';
+import { Actions } from '../../services/actions';
 
 interface ReelItemProps {
-    user: any;
+    vibe: any;
 }
 
-export const VibeItem: React.FC<ReelItemProps> = ({ user }) => {
+export const VibeItem: React.FC<ReelItemProps> = ({ vibe }) => {
     const setState = useSetAtom(globalState);
+  const navigate = useNavigate();
 
-    const handleAction = (userId: string, action: 'like' | 'block') => {
-        console.log(`Action: ${action} on user: ${userId}`);
+  
+      const handleBlockAction = async (userId: string) => {
+            let action = "block"
+
+      }
+    const handleLikeAction = async (postId: string) => {
+      let action = "like"
         setState(prevState => ({
             ...prevState,
             nearbyUsers: prevState.nearbyUsers.map(u =>
-                u.id === userId ? { ...u, [action + 'd']: !(u as any)[action + 'd'] } : u
+                u.id === postId ? { ...u, [action + 'd']: !(u as any)[action + 'd'] } : u
             ),
         }));
-    };
 
-    const handleMessage = (userId: string) => {
-        console.log(`Start messaging user: ${userId}`);
+      try{
+           await api.call(Actions.CMD_POST_LIKE, {
+                method: 'POST',
+                body: {
+                  post_id: postId,
+                },
+              });
+        
+        
+            } catch (error) {
+              console.error('Error toggling like:', error);
+            }
+
+    };
+    const handleOpenProfile = async(user:any) => {
+        navigate('/'+user.username)
+
+    }
+ 
+const handleMessage =async (user: any) => {
+  if (!user?.id ){
+      console.error('User or profile ID is missing');
+      return;
+    }
+
+    try {
+      // Create chat via API
+      const chatResponse = await api.call<{
+        chat: {
+          id: string;
+          type: string;
+          participants?: Array<{
+            user_id: string;
+            user?: {
+              id: string;
+              username?: string;
+              displayname?: string;
+            };
+          }>;
+        };
+        success: boolean;
+      }>(Actions.CMD_CHAT_CREATE, {
+        method: "POST",
+        body: {
+          type: 'private',
+          participant_ids: [user.id],
+        },
+      });
+
+      const chatId = chatResponse?.chat?.id;
+
+      if (chatId) {
+        // Navigate to messages screen with chat ID
+        navigate('/messages', {
+          state: {
+            openChat: chatId,
+            userId: user.id,
+            publicId: user.public_id,
+            username: user.username
+          }
+        });
+      } else {
+        console.error('Chat creation failed - no chat ID returned');
+      }
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      // Navigate anyway, MessagesScreen will handle creating a temporary chat
+      navigate('/messages', {
+        state: {
+          openChat: user.username || user.id,
+          userId: user.id,
+          publicId: user.public_id
+        }
+      });
+    }
+        
+
     };
 
     const handleShare = (userId: string) => {
         console.log(`Sharing user profile: ${userId}`);
     };
+
+    console.log("VIBE",vibe)
 
     return (
         // This is now an overlay for the WebGL canvas.
@@ -39,24 +124,23 @@ export const VibeItem: React.FC<ReelItemProps> = ({ user }) => {
             {/* Left Side: User Info - Re-enable pointer events for interaction */}
             <div className="flex-1 min-w-0 self-end z-10 pointer-events-auto">
                 <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
-                    {user.username}
-                    <span className="ml-2 font-light text-xl sm:text-2xl">
-                        {calculateAge(user.date_of_birth)}
+                    {vibe.username}
+                     <span className="ml-2 font-light text-xl sm:text-2xl">
+                        {calculateAge(vibe.date_of_birth)}
                     </span>
                 </h2>
                 <p className="mt-1 text-sm sm:text-base text-gray-200 drop-shadow-lg max-w-md">
-                    {user.bio}
+                    {vibe.bio}
                 </p>
             </div>
-
-            {/* Right Side: Actions - Re-enable pointer events for interaction */}
             <div className="flex-shrink-0 z-10 pointer-events-auto">
                 <ActionBar
-                    avatarUrl={user.avatar}
-                    onLike={() => handleAction(user.id, 'like')}
-                    onBlock={() => handleAction(user.id, 'block')}
-                    onMessage={() => handleMessage(user.id)}
-                    onShare={() => handleShare(user.id)}
+                    avatarUrl={vibe.avatar}
+                    onLike={() => handleLikeAction(vibe.id)}
+                    onBlock={() => handleBlockAction(vibe.id)}
+                    onMessage={() => handleMessage(vibe.author)}
+                    openProfile={()=>handleOpenProfile(vibe.author)}
+                    onShare={() => handleShare(vibe.author.public_id)}
                 />
             </div>
         </div>

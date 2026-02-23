@@ -194,23 +194,14 @@ function AppContent() {
     ];
   }, [sidebarNavItems, t]);
 
-  const orderedSidebarNavItems = React.useMemo(
-    () => sidebarNavSections.flatMap((section) => section.items),
-    [sidebarNavSections]
-  );
-
-  const sidebarGridItems = React.useMemo(() => orderedSidebarNavItems, [orderedSidebarNavItems]);
-
   const mobileNavItems = [
-    { id: 'pride', label: "Pride", icon: "/icons/pride.webp" },
-    // { id: 'search', label: t('app.nav.search'), icon: Search },
-    { id: 'nearby', label: t('app.nav.nearby'), icon: "/icons/nearby.webp" },
-    { id: 'match', label: t('app.nav.match'), icon: "/icons/matches.webp" },
-   //  { id: 'places', label: t('app.nav.places'), icon: Building2 },
-    { id: 'messages', label: t('app.nav.messages'), icon: "/icons/chat.webp" },
-    //{ id: 'notifications', label: t('app.nav.notifications'), icon: Bell },
-    //{ id: 'classifieds', label: t('app.nav.classifieds'), icon: FileText },
-    { id: 'profile', label: t('app.nav.profile'), icon: "/icons/profile.webp" },
+    { id: 'pride', label: 'Pride', icon: HandFist, accent: 'from-rose-500/90 via-fuchsia-500/80 to-purple-500/70' },
+    { id: 'nearby', label: t('app.nav.nearby'), icon: MapPin, accent: 'from-amber-400/80 to-orange-500/80' },
+    { id: 'match', label: t('app.nav.match'), icon: Heart, accent: 'from-rose-400/80 to-red-500/80' },
+    { id: 'messages', label: t('app.nav.messages'), icon: MessageCircle, accent: 'from-sky-400/80 to-indigo-500/80' },
+    { id: 'notifications', label: t('app.nav.notifications'), icon: Bell, accent: 'from-emerald-400/80 to-teal-500/80' },
+    { id: 'wallet', label: t('wallet.title'), icon: Wallet, accent: 'from-cyan-400/80 to-blue-500/80' },
+    { id: 'profile', label: t('app.nav.profile'), icon: User, accent: 'from-gray-900/80 to-gray-700/80' },
   ];
 
   const handleTrendSelect = React.useCallback((trend: NormalizedTrend) => {
@@ -272,27 +263,35 @@ function AppContent() {
           </header>
 
           {/* Left Sidebar - Fixed */}
-          <aside className={`hidden    scrollbar-hide lg:flex flex-col w-[280px]`}>
+          <aside className={`hidden scrollbar-hide lg:flex flex-col w-[304px]`}>
             <div className="p-4 sticky top-0 h-screen overflow-y-auto scrollbar-hide flex flex-col">
               {/* Logo */}
-              <div className="flex items-center justify-center mb-4 pt-2">
-                <button className="flex items-center space-x-3 p-3 rounded-full hover:bg-opacity-10 transition-colors group">
-                  <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-200 group-hover:scale-110 ${theme === 'dark'
-                    ? 'bg-gradient-to-br from-white to-gray-300 text-black'
-                    : 'bg-gradient-to-br from-black to-gray-700 text-white'
+              <div className={`mb-4 rounded-2xl border px-4 py-3 ${theme === 'dark'
+                  ? 'border-gray-800/90 bg-gray-900/30'
+                  : 'border-black/[0.08] bg-white'
+                }`}>
+                <button className="w-full flex items-center gap-3 rounded-xl transition-colors group">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${theme === 'dark'
+                      ? 'bg-white text-black'
+                      : 'bg-black text-white'
                     }`}>
-                    <span className="text-xl font-bold">C</span>
+                    <span className="text-base font-bold">C</span>
                   </div>
-                  <h1 className={`text-2xl font-extrabold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                    {applicationName}
-                  </h1>
+                  <div className="min-w-0 text-left">
+                    <h1 className={`text-[19px] leading-5 font-black tracking-tight truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                      {applicationName}
+                    </h1>
+                    <p className={`text-[11px] mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {t('app.nav.discover', 'Trending')}
+                    </p>
+                  </div>
                 </button>
               </div>
 
               <div className="flex flex-col gap-5 flex-1">
                 {isAuthenticated ? (
-                  <div className={`rounded-[22px] border px-4 py-4 ${theme === 'dark'
-                      ? 'border-white/10 bg-white/[0.02]'
+                  <div className={`relative rounded-2xl border px-4 py-4 ${theme === 'dark'
+                      ? 'border-gray-800/90 bg-gray-900/30'
                       : 'border-black/[0.08] bg-white'
                     }`}>
                     <div className="flex items-center gap-3">
@@ -313,6 +312,20 @@ function AppContent() {
                         <p className={`text-xs text-gray-500 truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                           @{user?.username || 'username'}
                         </p>
+                        <div className="mt-1.5 flex items-center gap-3">
+                          <span className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <span className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                              {(user as any)?.engagements?.counts?.following_count ?? 0}
+                            </span>{' '}
+                            {t('app.following')}
+                          </span>
+                          <span className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <span className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                              {(user as any)?.engagements?.counts?.follower_count ?? 0}
+                            </span>{' '}
+                            {t('app.followers')}
+                          </span>
+                        </div>
                       </div>
                       <button
                         onClick={(e) => {
@@ -409,7 +422,7 @@ function AppContent() {
                   </div>
                 ) : (
                   <div className={`rounded-[24px] border px-4 py-4 ${theme === 'dark'
-                      ? 'bg-white/[0.02] border-white/10'
+                      ? 'bg-gray-900/30 border-gray-800/90'
                       : 'bg-white border-black/[0.06]'
                     }`}>
                     <p className="text-xs uppercase tracking-[0.3em] opacity-60">
@@ -432,45 +445,50 @@ function AppContent() {
 
                 {/* Navigation */}
                 <nav className="flex-1">
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {sidebarGridItems.map((item) => {
-                      const Icon = item.icon;
-                      const isActive = activeScreen === item.id;
-                      return (
-                        <motion.button
-                          key={item.id}
-                          onClick={() => navigate(item.path || '/')}
-                          whileHover={{ y: -2 }}
-                          whileTap={{ scale: 0.97 }}
-                          className={`relative rounded-2xl px-2.5 py-2 min-h-[88px] flex flex-col justify-between border ${theme === 'dark'
-                              ? 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
-                              : 'border-black/[0.05] bg-white hover:shadow-sm'
-                            } ${isActive ? (theme === 'dark' ? 'ring-1 ring-white/40' : 'ring-1 ring-black/20 shadow') : ''}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${item.accent} text-white shadow-lg shadow-black/15`}>
-                              <Icon className="w-[15px] h-[15px]" />
-                            </div>
-                            <ArrowUpRight className={`w-4 h-4 ${theme === 'dark' ? 'text-white/50' : 'text-black/50'}`} />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                              {item.label}
-                            </p>
-                          </div>
-                          {isActive && (
-                            <div
-                              className="absolute inset-0 rounded-2xl pointer-events-none"
-                              style={{
-                                background: theme === 'dark'
-                                  ? 'linear-gradient(140deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))'
-                                  : 'linear-gradient(140deg, rgba(0,0,0,0.04), rgba(0,0,0,0))'
-                              }}
-                            />
-                          )}
-                        </motion.button>
-                      );
-                    })}
+                  <div className={`rounded-2xl border p-2.5 space-y-3 ${theme === 'dark'
+                      ? 'border-gray-800/90 bg-gray-900/25'
+                      : 'border-black/[0.06] bg-white'
+                    }`}>
+                    {sidebarNavSections.map((section) => (
+                      <div key={section.id}>
+                        <p className={`px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {section.title}
+                        </p>
+                        <div className="space-y-1.5">
+                          {section.items.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = activeScreen === item.id;
+                            return (
+                              <motion.button
+                                key={item.id}
+                                onClick={() => navigate(item.path || '/')}
+                                whileHover={{ x: 2 }}
+                                whileTap={{ scale: 0.99 }}
+                                className={`w-full relative rounded-xl px-3 py-2.5 border transition-all flex items-center justify-between ${theme === 'dark'
+                                    ? 'border-gray-800/80 bg-transparent hover:bg-gray-800/45'
+                                    : 'border-black/[0.06] bg-transparent hover:bg-black/[0.03]'
+                                  } ${isActive
+                                    ? (theme === 'dark'
+                                      ? 'ring-1 ring-gray-600/60 bg-gray-800/55'
+                                      : 'ring-1 ring-black/15 bg-black/[0.03]')
+                                    : ''
+                                  }`}
+                              >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${item.accent} text-white`}>
+                                    <Icon className="w-4 h-4" />
+                                  </div>
+                                  <p className={`text-sm font-semibold truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                                    {item.label}
+                                  </p>
+                                </div>
+                                <ChevronRight className={`w-4 h-4 shrink-0 ${theme === 'dark' ? 'text-white/45' : 'text-black/45'}`} />
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </nav>
 
@@ -480,9 +498,9 @@ function AppContent() {
                     onClick={toggleTheme}
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`rounded-2xl border px-3.5 py-3 text-left transition-all ${theme === 'dark'
-                        ? 'border-white/10 bg-white/[0.04] hover:bg-white/[0.07] text-white'
-                        : 'border-black/[0.06] bg-white hover:shadow-sm text-gray-900'
+                    className={`rounded-xl border px-3 py-2.5 text-left transition-all ${theme === 'dark'
+                        ? 'border-gray-800/90 bg-gray-900/35 hover:bg-gray-800/60 text-white'
+                        : 'border-black/[0.06] bg-white hover:bg-black/[0.03] text-gray-900'
                       }`}
                   >
                     <div className="flex items-center justify-between">
@@ -493,7 +511,7 @@ function AppContent() {
                           <Moon className="w-4 h-4 text-indigo-500" />
                         )}
                         <div>
-                          <p className="text-xs uppercase tracking-[0.3em] opacity-70">
+                          <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">
                             {t('app.theme', 'Theme')}
                           </p>
                           <p className="text-sm font-semibold">
@@ -517,14 +535,14 @@ function AppContent() {
                     onClick={() => setIsLanguageSelectorOpen(true)}
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`rounded-2xl border px-3.5 py-3 text-left transition-all ${theme === 'dark'
-                        ? 'border-white/10 bg-white/[0.04] hover:bg-white/[0.07] text-white'
-                        : 'border-black/[0.06] bg-white hover:shadow-sm text-gray-900'
+                    className={`rounded-xl border px-3 py-2.5 text-left transition-all ${theme === 'dark'
+                        ? 'border-gray-800/90 bg-gray-900/35 hover:bg-gray-800/60 text-white'
+                        : 'border-black/[0.06] bg-white hover:bg-black/[0.03] text-gray-900'
                       }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] opacity-70">
+                        <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">
                           {t('app.language')}
                         </p>
                         <p className="text-sm font-semibold">{languageDisplay}</p>
@@ -707,7 +725,7 @@ function AppContent() {
                     backfaceVisibility: 'hidden'
                   }}
                   className={`fixed top-0 left-0 bottom-0 w-[320px] max-w-[85vw] z-[101] ${theme === 'dark'
-                      ? 'bg-gradient-to-br from-gray-900/98 to-black/98 backdrop-blur-2xl border-r border-white/[0.08]'
+                      ? 'bg-gradient-to-br from-gray-900/98 to-black/98 backdrop-blur-2xl border-r border-gray-800/80'
                       : 'bg-gradient-to-br from-white via-gray-50 to-white backdrop-blur-2xl border-r border-black/[0.08]'
                     } flex flex-col shadow-2xl`}
                   onAnimationStart={() => {
@@ -733,72 +751,64 @@ function AppContent() {
                     <X className="w-5 h-5" />
                   </motion.button>
 
-                  {/* Profile Section - Enhanced */}
-                  <div className={`relative px-6 py-8 ${theme === 'dark' ? 'border-b border-white/[0.08]' : 'border-b border-black/[0.08]'
+                  {/* Profile Section */}
+                  <div className={`px-4 pt-16 pb-5 border-b ${theme === 'dark' ? 'border-gray-800/80' : 'border-black/[0.08]'
                     }`}>
                     <motion.div
-                      className="flex items-center space-x-4"
+                      className={`rounded-2xl border p-3.5 ${theme === 'dark'
+                          ? 'border-gray-800/90 bg-gray-900/40'
+                          : 'border-black/[0.08] bg-white'
+                        }`}
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
+                      transition={{ delay: 0.08 }}
                     >
-                      {/* Avatar with Gradient Ring */}
-                      <div className="relative">
-                        <div className={`absolute -inset-0.5 rounded-2xl bg-gradient-to-br ${theme === 'dark'
-                            ? 'from-white/20 to-white/5'
-                            : 'from-black/20 to-black/5'
-                          } blur-sm`} />
+                      <div className="flex items-center gap-3">
                         <div className="relative">
                           <img
                             src={getSafeImageURLEx((user as any)?.public_id,(user as any)?.avatar, "icon") || undefined}
                             alt="Profile"
-                            className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10"
+                            className={`w-14 h-14 rounded-xl object-cover border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}
                           />
-                          {/* Online Status */}
-                          <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 ${theme === 'dark' ? 'border-gray-900' : 'border-white'
-                            }`} />
+                          <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 ${theme === 'dark' ? 'border-gray-900' : 'border-white'}`} />
                         </div>
-                      </div>
-
-                      {/* User Info */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className={`text-[15px] font-bold tracking-[-0.011em] truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'
-                          }`}>
-                          {user?.displayname || user?.username || t('app.guest_user')}
-                        </h3>
-                        <p className={`text-[13px] truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                          @{user?.username || 'username'}
-                        </p>
-                        {/* Stats */}
-                        <div className="flex items-center gap-3 mt-1.5">
-                          <span className={`text-[11px] font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
-                            }`}>
-                            <span className={theme === 'dark' ? 'text-white' : 'text-black'}>{(user as any)?.engagements?.counts?.follower_count ? (user as any)?.engagements?.counts?.follower_count : "0"}</span> {t('app.following')}
-                          </span>
-                          <span className={`text-[11px] font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
-                            <span className={theme === 'dark' ? 'text-white' : 'text-black'}>
-                            {(user as any)?.engagements?.counts?.following_count ? (user as any)?.engagements?.counts?.following_count : "0" }  
-                            </span> {t('app.followers')}
-                          </span>
+                        <div className="flex-1 min-w-0">
+                          <h3 className={`text-[14px] font-bold truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                            {user?.displayname || user?.username || t('app.guest_user')}
+                          </h3>
+                          <p className={`text-[12px] truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                            @{user?.username || 'username'}
+                          </p>
+                          <div className="mt-1.5 flex items-center gap-3">
+                            <span className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                              <span className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                                {(user as any)?.engagements?.counts?.following_count ? (user as any)?.engagements?.counts?.following_count : "0"}
+                              </span>{' '}
+                              {t('app.following')}
+                            </span>
+                            <span className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                              <span className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                                {(user as any)?.engagements?.counts?.follower_count ? (user as any)?.engagements?.counts?.follower_count : "0"}
+                              </span>{' '}
+                              {t('app.followers')}
+                            </span>
+                          </div>
                         </div>
+                        {isAuthenticated && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsMobileProfileMenuOpen(!isMobileProfileMenuOpen);
+                            }}
+                            className={`p-2 rounded-lg transition-all flex-shrink-0 ${theme === 'dark'
+                                ? 'hover:bg-white/10 text-gray-400 hover:text-white'
+                                : 'hover:bg-black/10 text-gray-600 hover:text-black'
+                              } ${isMobileProfileMenuOpen ? (theme === 'dark' ? 'bg-white/10 text-white' : 'bg-black/10 text-black') : ''}`}
+                          >
+                            <MoreHorizontal className="w-5 h-5" />
+                          </button>
+                        )}
                       </div>
-
-                      {/* More Options Button */}
-                      {isAuthenticated && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsMobileProfileMenuOpen(!isMobileProfileMenuOpen);
-                          }}
-                          className={`p-2 rounded-xl transition-all duration-200 flex-shrink-0 ${theme === 'dark'
-                              ? 'hover:bg-white/10 text-gray-400 hover:text-white'
-                              : 'hover:bg-black/10 text-gray-600 hover:text-black'
-                            } ${isMobileProfileMenuOpen ? (theme === 'dark' ? 'bg-white/10 text-white' : 'bg-black/10 text-black') : ''}`}
-                        >
-                          <MoreHorizontal className="w-5 h-5" />
-                        </button>
-                      )}
                     </motion.div>
 
                     {/* Mobile Profile Dropdown Menu */}
@@ -810,7 +820,7 @@ function AppContent() {
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.2 }}
-                            className={`mt-4 rounded-2xl overflow-hidden ${theme === 'dark'
+                            className={`mt-3 rounded-2xl overflow-hidden ${theme === 'dark'
                                 ? 'bg-gray-900/50 border border-gray-800'
                                 : 'bg-white/50 border border-gray-200'
                               }`}
@@ -853,74 +863,64 @@ function AppContent() {
                     )}
                   </div>
 
-                  {/* Navigation - Modern Grid Layout */}
-                  <nav className="flex-1 px-4 py-6 overflow-y-auto scrollbar-hide">
-                    <div className="grid grid-cols-3 gap-3">
-                      {mobileNavItems.map((item, index) => {
-                        const isActive = activeScreen === item.id;
-                        return (
-                          <motion.button
-                            key={item.id}
-                            className="relative"
-                            onClick={() => {
-                              if (item.id === 'pride') {
-                                navigate('/');
-                              } else if (item.id === 'profile') {
-                                navigate(`/${user?.username || 'profile'}`);
-                              } else {
-                                navigate(`/${item.id}`);
-                              }
-                              setIsMobileMenuOpen(false);
-                            }}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{
-                              delay: 0.15 + index * 0.04,
-                              duration: 0.3,
-                              ease: [0.16, 1, 0.3, 1]
-                            }}
-                            whileTap={{ scale: 0.95 }}
-                            style={{ willChange: 'transform, opacity' }}
-                          >
-                            {/* Card Container */}
-                            <div className={`relative flex flex-col items-center justify-center p-4 rounded-[20px] transition-all duration-200 ${isActive
-                                ? theme === 'dark'
-                                  ? 'bg-white/[0.15]'
-                                  : 'bg-black/[0.12]'
-                                : theme === 'dark'
-                                  ? 'bg-white/[0.06] hover:bg-white/[0.10]'
-                                  : 'bg-black/[0.04] hover:bg-black/[0.08]'
-                              }`}>
-                              {/* Icon */}
-                              <div className={`mb-2.5 ${isActive ? 'scale-110' : ''
-                                } transition-transform duration-200`}>
-                                {
-                                  <img src={item.icon} />
+                  {/* Navigation - Professional List Layout */}
+                  <nav className="flex-1 px-4 py-5 overflow-y-auto scrollbar-hide">
+                    <div className={`rounded-2xl border p-2.5 ${theme === 'dark'
+                        ? 'border-gray-800/90 bg-gray-900/30'
+                        : 'border-black/[0.08] bg-white'
+                      }`}>
+                      <p className={`px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {t('app.sidebar.primary', 'Discover')}
+                      </p>
+                      <div className="space-y-1.5">
+                        {mobileNavItems.map((item, index) => {
+                          const isActive = activeScreen === item.id;
+                          return (
+                            <motion.button
+                              key={item.id}
+                              onClick={() => {
+                                if (item.id === 'pride') {
+                                  navigate('/');
+                                } else if (item.id === 'profile') {
+                                  navigate(`/${user?.username || 'profile'}`);
+                                } else {
+                                  navigate(`/${item.id}`);
                                 }
-
-
+                                setIsMobileMenuOpen(false);
+                              }}
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.1 + index * 0.04, duration: 0.2 }}
+                              whileTap={{ scale: 0.99 }}
+                              className={`w-full rounded-xl px-3 py-2.5 border transition-all flex items-center justify-between ${theme === 'dark'
+                                  ? 'border-gray-800/80 hover:bg-gray-800/45'
+                                  : 'border-black/[0.08] hover:bg-black/[0.03]'
+                                } ${isActive
+                                  ? (theme === 'dark'
+                                    ? 'ring-1 ring-gray-600/70 bg-gray-800/55'
+                                    : 'ring-1 ring-black/15 bg-black/[0.03]')
+                                  : ''
+                                }`}
+                              style={{ willChange: 'transform, opacity' }}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br ${item.accent} text-white`}>
+                                  <item.icon className="w-4 h-4" />
+                                </div>
+                                <span className={`text-sm font-semibold truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                                  {item.label}
+                                </span>
                               </div>
-
-                              {/* Label */}
-                              <span className={`text-xs font-semibold tracking-tight text-center transition-colors duration-200 ${isActive
-                                  ? theme === 'dark'
-                                    ? 'text-white'
-                                    : 'text-black'
-                                  : theme === 'dark'
-                                    ? 'text-gray-400'
-                                    : 'text-gray-600'
-                                }`}>
-                                {item.label}
-                              </span>
-                            </div>
-                          </motion.button>
-                        );
-                      })}
+                              <ChevronRight className={`w-4 h-4 shrink-0 ${theme === 'dark' ? 'text-white/45' : 'text-black/45'}`} />
+                            </motion.button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </nav>
 
                   {/* Footer - Enhanced */}
-                  <div className={`px-4 py-4 border-t ${theme === 'dark' ? 'border-white/[0.08]' : 'border-black/[0.08]'
+                  <div className={`px-4 py-4 border-t ${theme === 'dark' ? 'border-gray-800/80' : 'border-black/[0.08]'
                     }`}>
                     <div className="space-y-2">
                       {/* Theme Toggle */}

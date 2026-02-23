@@ -158,7 +158,8 @@
     "mbti_type": "性格类型",
     "cronotype": "时间类型",
     "sense_of_humor": "幽默感"
-  },
+  ,
+  "send_message": "发送消息"},
   "app": {
     "social": "社交",
     "join_now": "立即加入",

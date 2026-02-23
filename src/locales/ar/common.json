@@ -158,7 +158,8 @@
       "mbti_type": "نوع الشخصية",
       "cronotype": "نوع الإيقاع اليومي",
       "sense_of_humor": "روح الدعابة"
-    },
+    ,
+    "send_message": "إرسال رسالة"},
     "app": {
       "social": "اجتماعي",
       "join_now": "انضم الآن",

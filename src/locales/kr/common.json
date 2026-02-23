@@ -158,7 +158,8 @@
     "mbti_type": "성격 유형",
     "cronotype": "크로노타입",
     "sense_of_humor": "유머 감각"
-  },
+  ,
+  "send_message": "메시지 보내기"},
   "app": {
     "social": "소셜",
     "join_now": "지금 가입",

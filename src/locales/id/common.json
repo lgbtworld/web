@@ -158,7 +158,8 @@
       "mbti_type": "Tipe kepribadian",
       "cronotype": "Kronotipe",
       "sense_of_humor": "Selera humor"
-    },
+    ,
+    "send_message": "Kirim Pesan"},
     "app": {
       "social": "SOSIAL",
       "join_now": "Gabung Sekarang",

@@ -158,7 +158,8 @@
       "mbti_type": "व्यक्तित्व प्रकार",
       "cronotype": "क्रोनोटाइप",
       "sense_of_humor": "हास्य बोध"
-    },
+    ,
+    "send_message": "संदेश भेजें"},
     "app": {
       "social": "सोशल",
       "join_now": "अभी जुड़ें",

@@ -3107,6 +3107,61 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     }
   };
 
+  const handleSendMessage = async (profile: any) => {
+    if (!authUser?.id || !profile?.id) {
+      console.error('User or profile ID is missing');
+      return;
+    }
+
+    try {
+      const chatResponse = await api.call<{
+        chat: {
+          id: string;
+          type: string;
+          participants?: Array<{
+            user_id: string;
+            user?: {
+              id: string;
+              username?: string;
+              displayname?: string;
+            };
+          }>;
+        };
+        success: boolean;
+      }>(Actions.CMD_CHAT_CREATE, {
+        method: "POST",
+        body: {
+          type: 'private',
+          participant_ids: [profile.id],
+        },
+      });
+
+      const chatId = chatResponse?.chat?.id;
+
+      if (chatId) {
+        navigate('/messages', {
+          state: {
+            openChat: chatId,
+            userId: profile.id,
+            publicId: profile.public_id,
+            username: profile.username,
+          },
+        });
+      } else {
+        console.error('Chat creation failed - no chat ID returned');
+      }
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      navigate('/messages', {
+        state: {
+          openChat: profile.username || profile.id,
+          userId: profile.id,
+          publicId: profile.public_id,
+        },
+      });
+    }
+  };
+
   const formatJoinDate = (dateString: string) => {
     const date = new Date(dateString);
     const locale = defaultLanguage === 'tr' ? 'tr-TR' : 'en-US';
@@ -4682,7 +4737,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
             {/* Profile Info */}
             <div className="px-4">
               {/* Profile Picture & Edit Button Row */}
-              <div className="flex items-end justify-between -mt-16 mb-3 relative">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-16 mb-3 relative gap-3">
                 {/* Profile Picture */}
                 <div className={`relative w-32 h-32 rounded-full border-4 ${theme === 'dark' ? 'border-black' : 'border-white'} ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} z-10`}>
                   <img
@@ -4694,12 +4749,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
 
                 {/* Action Buttons */}
                 {isOwnProfile ? (
-                  <div className="flex gap-2 relative z-10">
+                  <div className="flex flex-wrap justify-end gap-2 relative z-10 w-full sm:w-auto">
                     <button
                       onClick={() => navigate('/wallet')}
-                      className={`px-4 py-1.5 rounded-full font-bold text-sm transition-colors border ${theme === 'dark'
-                        ? 'border-gray-900 hover:bg-gray-900/50'
-                        : 'border-gray-300 hover:bg-gray-50'
+                      className={`px-3 sm:px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap transition-colors border ${theme === 'dark'
+                        ? 'border-gray-700 text-white hover:bg-gray-900'
+                        : 'border-gray-300 text-gray-900 hover:bg-gray-50'
                         }`}
                     >
                       <div className="flex items-center gap-1.5">
@@ -4708,20 +4763,32 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                       </div>
                     </button>
                     <button
+                      onClick={() => navigate('/messages')}
+                      className={`px-3 sm:px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap transition-colors border ${theme === 'dark'
+                        ? 'border-gray-700 text-white hover:bg-gray-900'
+                        : 'border-gray-300 text-gray-900 hover:bg-gray-50'
+                        }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <MessageCircle className="w-4 h-4" />
+                        <span>{t('app.nav.messages', { defaultValue: 'Chat' })}</span>
+                      </div>
+                    </button>
+                    <button
                       onClick={() => setIsEditMode(true)}
-                      className={`px-4 py-1.5 rounded-full font-bold text-sm transition-colors border ${theme === 'dark'
-                        ? 'border-gray-900 hover:bg-gray-900/50'
-                        : 'border-gray-300 hover:bg-gray-50'
+                      className={`px-3 sm:px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap transition-colors border ${theme === 'dark'
+                        ? 'border-gray-700 text-white hover:bg-gray-900'
+                        : 'border-gray-300 text-gray-900 hover:bg-gray-50'
                         }`}
                     >
                       {t('profile.edit_profile_button')}
                     </button>
                   </div>
                 ) : (
-                  <div className="flex gap-2 relative z-10">
+                  <div className="flex flex-wrap justify-end gap-2 relative z-10 w-full sm:w-auto">
                     <button
                       onClick={handleFollowClick}
-                      className={`px-4 py-1.5 rounded-full font-bold text-sm transition-colors ${isFollowing
+                      className={`px-3 sm:px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap transition-colors ${isFollowing
                         ? `border ${theme === 'dark' ? 'border-gray-700 hover:bg-gray-900' : 'border-gray-300 hover:bg-gray-50'}`
                         : theme === 'dark'
                           ? 'bg-white text-black hover:bg-gray-200'
@@ -4731,12 +4798,14 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                       {isFollowing ? t('profile.following') : t('profile.follow')}
                     </button>
                     <button
-                      className={`px-2 py-1.5 rounded-full transition-colors border ${theme === 'dark'
-                        ? 'border-gray-700 hover:bg-gray-900'
-                        : 'border-gray-300 hover:bg-gray-50'
+                      onClick={() => handleSendMessage(user)}
+                      className={`px-3 sm:px-4 py-1.5 rounded-full transition-colors border inline-flex items-center gap-1.5 font-bold text-xs sm:text-sm whitespace-nowrap ${theme === 'dark'
+                        ? 'border-gray-700 text-white hover:bg-gray-900'
+                        : 'border-gray-300 text-gray-900 hover:bg-gray-50'
                         }`}
                     >
-                      <MoreHorizontal className="w-5 h-5" />
+                      <MessageCircle className="w-4 h-4" />
+                      <span>{t('profile.send_message', { defaultValue: 'Send Message' })}</span>
                     </button>
                   </div>
                 )}

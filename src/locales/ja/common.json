@@ -158,7 +158,8 @@
       "mbti_type": "MBTI タイプ",
       "cronotype": "クロノタイプ",
       "sense_of_humor": "ユーモアのタイプ"
-    },
+    ,
+    "send_message": "メッセージを送る"},
     "app": {
       "social": "ソーシャル",
       "join_now": "今すぐ参加",

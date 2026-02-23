@@ -158,7 +158,8 @@
     "mbti_type": "個性類型",
     "cronotype": "生理時鐘類型",
     "sense_of_humor": "幽默感"
-  },
+  ,
+  "send_message": "發送訊息"},
   "app": {
     "social": "社交",
     "join_now": "立即加入",

@@ -158,7 +158,8 @@
       "mbti_type": "סוג אישיות",
       "cronotype": "כרונוטיפ",
       "sense_of_humor": "חוש הומור"
-    },
+    ,
+    "send_message": "שלח הודעה"},
     "app": {
       "social": "חברתי",
       "join_now": "הצטרף עכשיו",

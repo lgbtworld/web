@@ -158,7 +158,8 @@
       "mbti_type": "Tipo de personalidade",
       "cronotype": "Cronotipo",
       "sense_of_humor": "Senso de humor"
-    },
+    ,
+    "send_message": "Enviar mensagem"},
     "app": {
       "social": "SOCIAL",
       "join_now": "Junte-se agora",

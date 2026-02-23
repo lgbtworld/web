@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { useSocket } from '../contexts/SocketContext';
 import { defaultServiceServerId, serviceURL } from '../appSettings';
-import { getSafeImageURL, buildSafeURL } from '../helpers/helpers';
+import { getSafeImageURL, buildSafeURL, getSafeImageURLEx } from '../helpers/helpers';
 import { useTranslation } from 'react-i18next';
 
 interface MessageItemProps {
@@ -794,7 +794,7 @@ const MessagesScreen: React.FC = () => {
             const otherUser = otherParticipant?.user;
             const displayName = otherUser?.displayname || otherUser?.username || 'Unknown';
             const username = otherUser?.username || '';
-            const avatar = otherUser?.avatar?.file?.url || null;
+            const avatar = getSafeImageURLEx(otherUser?.public_id,otherUser?.avatar,"thumbnail");
             const avatarLetter = displayName.charAt(0).toUpperCase();
 
             // Format last message time

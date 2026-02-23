@@ -59,6 +59,11 @@ function AppContent() {
     const base = lang.split('-')[0] || lang;
     return base.toUpperCase();
   }, [i18n?.language]);
+  const profilePath = React.useMemo(() => `/${user?.username || 'profile'}`, [user?.username]);
+  const displayName = user?.displayname || user?.username || 'User';
+  const username = user?.username || 'username';
+  const followingCount = (user as any)?.engagements?.counts?.following_count ?? 0;
+  const followerCount = (user as any)?.engagements?.counts?.follower_count ?? 0;
 
   // Update activeScreen based on current URL
   React.useEffect(() => {
@@ -164,12 +169,12 @@ function AppContent() {
     {
       id: 'profile',
       label: t('app.nav.profile'),
-      path: `/${user?.username || 'profile'}`,
+      path: profilePath,
       icon: User,
       accent: 'from-gray-900/80 to-gray-700/80',
       helper: t('app.nav.profile_helper', 'View identity')
     }
-  ], [t, user?.username]);
+  ], [profilePath, t]);
 
   const sidebarNavSections = React.useMemo(() => {
     const primaryOrder = ['pride', 'nearby', 'match', 'messages'];
@@ -217,6 +222,35 @@ function AppContent() {
       navigate('/search');
     }
   }, [navigate]);
+
+  const navigateByNavId = React.useCallback((id: string) => {
+    if (id === 'pride') {
+      navigate('/');
+      return;
+    }
+    if (id === 'profile') {
+      navigate(profilePath);
+      return;
+    }
+    navigate(`/${id}`);
+  }, [navigate, profilePath]);
+
+  const handleLogout = React.useCallback((after?: () => void) => {
+    if (!window.confirm(t('app.logout_confirmation'))) {
+      return;
+    }
+    logout();
+    navigate('/');
+    after?.();
+  }, [logout, navigate, t]);
+
+  const bottomNavItems = React.useMemo(() => [
+    { id: 'pride', icon: '/icons/pride.webp', label: 'Pride' },
+    { id: 'nearby', icon: '/icons/nearby.webp', label: t('app.nav.nearby') },
+    { id: 'match', icon: '/icons/matches.webp', label: t('app.nav.match') },
+    { id: 'messages', icon: '/icons/chat.webp', label: t('app.nav.messages') },
+    { id: 'profile', icon: '/icons/profile.webp', label: t('app.nav.profile') },
+  ], [t]);
 
 
 
@@ -307,21 +341,21 @@ function AppContent() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className={`text-sm font-semibold truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                          {user?.displayname || user?.username || 'User'}
+                          {displayName}
                         </p>
                         <p className={`text-xs text-gray-500 truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                          @{user?.username || 'username'}
+                          @{username}
                         </p>
                         <div className="mt-1.5 flex items-center gap-3">
                           <span className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                             <span className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                              {(user as any)?.engagements?.counts?.following_count ?? 0}
+                              {followingCount}
                             </span>{' '}
                             {t('app.following')}
                           </span>
                           <span className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                             <span className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                              {(user as any)?.engagements?.counts?.follower_count ?? 0}
+                              {followerCount}
                             </span>{' '}
                             {t('app.followers')}
                           </span>
@@ -362,7 +396,7 @@ function AppContent() {
                           >
                             <button
                               onClick={() => {
-                                navigate(`/${user?.username || 'profile'}`);
+                                navigate(profilePath);
                                 setIsProfileMenuOpen(false);
                               }}
                               className={`w-full px-4 py-3 flex items-center gap-3 text-left ${theme === 'dark'
@@ -375,13 +409,7 @@ function AppContent() {
                             </button>
                             <div className={`h-px ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
                             <button
-                              onClick={() => {
-                                if (window.confirm(t('app.logout_confirmation'))) {
-                                  logout();
-                                  navigate('/');
-                                  setIsProfileMenuOpen(false);
-                                }
-                              }}
+                              onClick={() => handleLogout(() => setIsProfileMenuOpen(false))}
                               className={`w-full px-4 py-3 flex items-center gap-3 text-left ${theme === 'dark'
                                   ? 'text-red-400 hover:bg-red-500/10'
                                   : 'text-red-600 hover:bg-red-50'
@@ -396,7 +424,7 @@ function AppContent() {
                     </AnimatePresence>
                     <div className="grid grid-cols-2 gap-2 mt-4">
                       <button
-                        onClick={() => navigate(`/${user?.username || 'profile'}`)}
+                        onClick={() => navigate(profilePath)}
                         className={`rounded-xl px-3 py-2 text-sm font-semibold ${theme === 'dark'
                             ? 'bg-white text-black'
                             : 'bg-gray-900 text-white'
@@ -405,12 +433,7 @@ function AppContent() {
                         {t('app.view_profile', 'Profile')}
                       </button>
                       <button
-                        onClick={() => {
-                          if (window.confirm(t('app.logout_confirmation'))) {
-                            logout();
-                            navigate('/');
-                          }
-                        }}
+                        onClick={() => handleLogout()}
                         className={`rounded-xl px-3 py-2 text-sm font-semibold ${theme === 'dark'
                             ? 'bg-white/5 text-white hover:bg-white/10'
                             : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
@@ -633,29 +656,12 @@ function AppContent() {
                 : 'bg-white/95 border-t border-black/[0.08]'
               } backdrop-blur-xl safe-area-inset-bottom`}>
               <div className="flex items-center justify-around px-4 py-3">
-                {[
-                  { id: 'pride', icon: "/icons/pride.webp", label: "Pride" },
-                  { id: 'nearby', icon: "/icons/nearby.webp", label: t('app.nav.nearby') },
-                  { id: 'match', icon: "/icons/matches.webp", label: t('app.nav.match') },
-                  { id: 'messages', icon: "/icons/chat.webp", label: t('app.nav.messages') },
-                  { id: 'profile', icon: "/icons/profile.webp", label: t('app.nav.profile') },
-                ].map((item) => {
+                {bottomNavItems.map((item) => {
                   const isActive = activeScreen === item.id;
                   return (
                     <button
                       key={item.id}
-                      onClick={() => {
-                        if (item.id === 'pride') {
-                          navigate('/');
-                        } else if (item.id === 'pride') {
-                          navigate(`/pride'}`);
-                        }
-                        else if (item.id === 'profile') {
-                          navigate(`/${user?.username || 'profile'}`);
-                        } else {
-                          navigate(`/${item.id}`);
-                        }
-                      }}
+                      onClick={() => navigateByNavId(item.id)}
                       className="relative flex flex-col items-center justify-center flex-1 py-2 px-1 min-w-0"
                     >
                       {/* Active Background */}
@@ -774,21 +780,21 @@ function AppContent() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className={`text-[14px] font-bold truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                            {user?.displayname || user?.username || t('app.guest_user')}
+                          {user?.displayname || user?.username || t('app.guest_user')}
                           </h3>
                           <p className={`text-[12px] truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                            @{user?.username || 'username'}
+                            @{username}
                           </p>
                           <div className="mt-1.5 flex items-center gap-3">
                             <span className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                               <span className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                                {(user as any)?.engagements?.counts?.following_count ? (user as any)?.engagements?.counts?.following_count : "0"}
+                                {followingCount}
                               </span>{' '}
                               {t('app.following')}
                             </span>
                             <span className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                               <span className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                                {(user as any)?.engagements?.counts?.follower_count ? (user as any)?.engagements?.counts?.follower_count : "0"}
+                                {followerCount}
                               </span>{' '}
                               {t('app.followers')}
                             </span>
@@ -827,7 +833,7 @@ function AppContent() {
                           >
                             <button
                               onClick={() => {
-                                navigate(`/${user?.username || 'profile'}`);
+                                navigate(profilePath);
                                 setIsMobileProfileMenuOpen(false);
                                 setIsMobileMenuOpen(false);
                               }}
@@ -841,14 +847,10 @@ function AppContent() {
                             </button>
                             <div className={`h-px ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
                             <button
-                              onClick={() => {
-                                if (window.confirm(t('app.logout_confirmation'))) {
-                                  logout();
-                                  navigate('/');
-                                  setIsMobileProfileMenuOpen(false);
-                                  setIsMobileMenuOpen(false);
-                                }
-                              }}
+                              onClick={() => handleLogout(() => {
+                                setIsMobileProfileMenuOpen(false);
+                                setIsMobileMenuOpen(false);
+                              })}
                               className={`w-full px-4 py-3.5 text-left flex items-center gap-3 transition-colors ${theme === 'dark'
                                   ? 'hover:bg-red-500/10 text-red-400'
                                   : 'hover:bg-red-50 text-red-600'
@@ -879,13 +881,7 @@ function AppContent() {
                             <motion.button
                               key={item.id}
                               onClick={() => {
-                                if (item.id === 'pride') {
-                                  navigate('/');
-                                } else if (item.id === 'profile') {
-                                  navigate(`/${user?.username || 'profile'}`);
-                                } else {
-                                  navigate(`/${item.id}`);
-                                }
+                                navigateByNavId(item.id);
                                 setIsMobileMenuOpen(false);
                               }}
                               initial={{ opacity: 0, y: 8 }}

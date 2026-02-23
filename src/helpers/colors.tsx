@@ -44,9 +44,10 @@ function extractHexColors(styles: typeof RainbowRankStyles): string[] {
 
 // Basit string -> number hash fonksiyonu
 function stringToSeed(str: string): number {
+  const safe = typeof str === 'string' ? str : String(str ?? '');
   let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
+  for (let i = 0; i < safe.length; i++) {
+    hash = (hash << 5) - hash + safe.charCodeAt(i);
     hash |= 0; // 32-bit integer
   }
   return Math.abs(hash);

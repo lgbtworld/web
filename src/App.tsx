@@ -14,7 +14,7 @@ import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useSettings } from './contexts/SettingsContext';
 import AuthWizard from './components/AuthWizard';
-import { Search, MapPin, Heart, MessageCircle, User, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, TrendingUp, Filter, ArrowUpRight, Building2, Wallet } from 'lucide-react';
+import { MapPin, Heart, MessageCircle, User, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Wallet } from 'lucide-react';
 import TrendsPanel, { NormalizedTrend } from './components/TrendsPanel';
 import PopularUsersPanel from './components/PopularUsersPanel';
 import PlacesScreen from './components/PlacesScreen';
@@ -25,12 +25,27 @@ import './i18n';
 import { useTranslation } from 'react-i18next';
 import { applicationName } from './appSettings.tsx';
 import LandingPage from './components/LandingPage.tsx';
-import { getSafeImageURL, getSafeImageURLEx } from './helpers/helpers.tsx';
+import { getSafeImageURLEx } from './helpers/helpers.tsx';
 import TestPage from './components/TestPage.tsx';
 import PwaInstallPrompt, { PwaInstallProvider, usePwaInstall } from './components/PwaInstallPrompt';
 import PremiumScreen from './components/PremiumScreen.tsx';
 import PostDetails from './components/PostDetails.tsx';
 import WalletScreen from './components/WalletScreen.tsx';
+
+const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
+  '/': 'pride',
+  '/pride': 'pride',
+  '/search': 'search',
+  '/nearby': 'nearby',
+  '/match': 'match',
+  '/messages': 'messages',
+  '/notifications': 'notifications',
+  '/places': 'places',
+  '/wallet': 'wallet',
+  '/classifieds': 'classifieds',
+};
+
+const RIGHT_SIDEBAR_HIDDEN_PATHS = new Set(['/messages', '/landing', '/classifieds', '/places', '/match', '/nearby']);
 
 function AppContent() {
   const [activeScreen, setActiveScreen] = useState('pride');
@@ -64,29 +79,15 @@ function AppContent() {
   const username = user?.username || 'username';
   const followingCount = (user as any)?.engagements?.counts?.following_count ?? 0;
   const followerCount = (user as any)?.engagements?.counts?.follower_count ?? 0;
+  const avatarIconSrc = getSafeImageURLEx((user as any)?.public_id, (user as any)?.avatar, 'icon') || undefined;
+  const shouldShowRightSidebar = !RIGHT_SIDEBAR_HIDDEN_PATHS.has(location.pathname);
 
   // Update activeScreen based on current URL
   React.useEffect(() => {
     const path = location.pathname;
-    if (path === '/' || path === '/pride') {
-      setActiveScreen('pride');
-    } else if (path === '/search') {
-      setActiveScreen('search');
-    } else if (path === '/nearby') {
-      setActiveScreen('nearby');
-    } else if (path === '/match') {
-      setActiveScreen('match');
-    } else if (path === '/messages') {
-      setActiveScreen('messages');
-      // Don't set bottom bar here - MessagesScreen manages it based on selectedChat
-    } else if (path === '/notifications') {
-      setActiveScreen('notifications');
-    } else if (path === '/places') {
-      setActiveScreen('places');
-          } else if (path === '/wallet') {
-      setActiveScreen('wallet');
-    } else if (path === '/classifieds') {
-      setActiveScreen('classifieds');
+    const nextScreen = ACTIVE_SCREEN_BY_PATH[path];
+    if (nextScreen) {
+      setActiveScreen(nextScreen);
     } else if (path.startsWith('/') && path.split('/').length === 2) {
       // Profile route like /username
       setActiveScreen('profile');
@@ -123,58 +124,58 @@ function AppContent() {
       label: 'Pride',
       path: '/',
       icon: HandFist,
-      accent: 'from-rose-500/90 via-fuchsia-500/80 to-purple-500/70',
-      helper: t('app.nav.discover', 'Trending')
+      accent: 'from-rose-500/90 via-fuchsia-500/80 to-purple-500/70'
     },
     {
       id: 'nearby',
       label: t('app.nav.nearby'),
       path: '/nearby',
       icon: MapPin,
-      accent: 'from-amber-400/80 to-orange-500/80',
-      helper: t('app.nav.nearby_helper', 'IRL vibes')
+      accent: 'from-amber-400/80 to-orange-500/80'
     },
     {
       id: 'match',
       label: t('app.nav.matches'),
       path: '/match',
       icon: Heart,
-      accent: 'from-rose-400/80 to-red-500/80',
-      helper: t('app.nav.matches_helper', 'Curated pairs')
+      accent: 'from-rose-400/80 to-red-500/80'
     },
     {
       id: 'messages',
       label: t('app.nav.messages'),
       path: '/messages',
       icon: MessageCircle,
-      accent: 'from-sky-400/80 to-indigo-500/80',
-      helper: t('app.nav.messages_helper', 'Keep chatting')
+      accent: 'from-sky-400/80 to-indigo-500/80'
     },
     {
       id: 'notifications',
       label: t('app.nav.notifications'),
       path: '/notifications',
       icon: Bell,
-      accent: 'from-emerald-400/80 to-teal-500/80',
-      helper: t('app.nav.notifications_helper', 'Fresh alerts')
+      accent: 'from-emerald-400/80 to-teal-500/80'
     },
     {
       id: 'wallet',
       label: t('wallet.title'),
       path: '/wallet',
       icon: Wallet,
-      accent: 'from-cyan-400/80 to-blue-500/80',
-      helper: t('wallet.sidebar_helper', 'Boost status')
+      accent: 'from-cyan-400/80 to-blue-500/80'
     },
     {
       id: 'profile',
       label: t('app.nav.profile'),
       path: profilePath,
       icon: User,
-      accent: 'from-gray-900/80 to-gray-700/80',
-      helper: t('app.nav.profile_helper', 'View identity')
+      accent: 'from-gray-900/80 to-gray-700/80'
     }
   ], [profilePath, t]);
+
+  const mobileNavItems = React.useMemo(() => {
+    const mobileOrder = ['pride', 'nearby', 'match', 'messages', 'notifications', 'wallet', 'profile'];
+    return mobileOrder
+      .map((id) => sidebarNavItems.find((item) => item.id === id))
+      .filter(Boolean) as typeof sidebarNavItems;
+  }, [sidebarNavItems]);
 
   const sidebarNavSections = React.useMemo(() => {
     const primaryOrder = ['pride', 'nearby', 'match', 'messages'];
@@ -198,16 +199,6 @@ function AppContent() {
       }
     ];
   }, [sidebarNavItems, t]);
-
-  const mobileNavItems = [
-    { id: 'pride', label: 'Pride', icon: HandFist, accent: 'from-rose-500/90 via-fuchsia-500/80 to-purple-500/70' },
-    { id: 'nearby', label: t('app.nav.nearby'), icon: MapPin, accent: 'from-amber-400/80 to-orange-500/80' },
-    { id: 'match', label: t('app.nav.match'), icon: Heart, accent: 'from-rose-400/80 to-red-500/80' },
-    { id: 'messages', label: t('app.nav.messages'), icon: MessageCircle, accent: 'from-sky-400/80 to-indigo-500/80' },
-    { id: 'notifications', label: t('app.nav.notifications'), icon: Bell, accent: 'from-emerald-400/80 to-teal-500/80' },
-    { id: 'wallet', label: t('wallet.title'), icon: Wallet, accent: 'from-cyan-400/80 to-blue-500/80' },
-    { id: 'profile', label: t('app.nav.profile'), icon: User, accent: 'from-gray-900/80 to-gray-700/80' },
-  ];
 
   const handleTrendSelect = React.useCallback((trend: NormalizedTrend) => {
     if (trend?.url) {
@@ -235,6 +226,24 @@ function AppContent() {
     navigate(`/${id}`);
   }, [navigate, profilePath]);
 
+  const openProfile = React.useCallback(() => {
+    navigate(profilePath);
+  }, [navigate, profilePath]);
+
+  const closeMobileMenu = React.useCallback(() => {
+    setIsMobileMenuOpen(false);
+  }, []);
+
+  const closeMobileMenus = React.useCallback(() => {
+    setIsMobileProfileMenuOpen(false);
+    setIsMobileMenuOpen(false);
+  }, []);
+
+  const openLanguageSelector = React.useCallback(() => {
+    setIsLanguageSelectorOpen(true);
+    setIsMobileMenuOpen(false);
+  }, []);
+
   const handleLogout = React.useCallback((after?: () => void) => {
     if (!window.confirm(t('app.logout_confirmation'))) {
       return;
@@ -245,11 +254,11 @@ function AppContent() {
   }, [logout, navigate, t]);
 
   const bottomNavItems = React.useMemo(() => [
-    { id: 'pride', icon: '/icons/pride.webp', label: 'Pride' },
-    { id: 'nearby', icon: '/icons/nearby.webp', label: t('app.nav.nearby') },
-    { id: 'match', icon: '/icons/matches.webp', label: t('app.nav.match') },
-    { id: 'messages', icon: '/icons/chat.webp', label: t('app.nav.messages') },
-    { id: 'profile', icon: '/icons/profile.webp', label: t('app.nav.profile') },
+    { id: 'pride', icon: HandFist, label: 'Pride', accent: 'from-rose-500/90 via-fuchsia-500/80 to-purple-500/70' },
+    { id: 'nearby', icon: MapPin, label: t('app.nav.nearby'), accent: 'from-amber-400/80 to-orange-500/80' },
+    { id: 'match', icon: Heart, label: t('app.nav.match'), accent: 'from-rose-400/80 to-red-500/80' },
+    { id: 'messages', icon: MessageCircle, label: t('app.nav.messages'), accent: 'from-sky-400/80 to-indigo-500/80' },
+    { id: 'profile', icon: User, label: t('app.nav.profile'), accent: 'from-gray-900/80 to-gray-700/80' },
   ], [t]);
 
 
@@ -338,7 +347,7 @@ function AppContent() {
                       <div className="relative shrink-0">
                         <div className={`w-11 h-11 rounded-[16px] overflow-hidden ring-2 ${theme === 'dark' ? 'ring-white/10' : 'ring-black/10'}`}>
                           <img
-                            src={getSafeImageURLEx((user as any)?.public_id,(user as any)?.avatar, "icon") || undefined}
+                            src={avatarIconSrc}
                             alt="Profile"
                             className="w-full h-full object-cover"
                           />
@@ -394,7 +403,7 @@ function AppContent() {
                             >
                               <button
                                 onClick={() => {
-                                  navigate(profilePath);
+                                  openProfile();
                                   setIsProfileMenuOpen(false);
                                 }}
                                 className={`w-full px-4 py-3 flex items-center gap-3 text-left ${theme === 'dark'
@@ -436,7 +445,7 @@ function AppContent() {
                     </AnimatePresence>
                     <div className="grid grid-cols-2 gap-2 mt-4">
                       <button
-                        onClick={() => navigate(profilePath)}
+                        onClick={openProfile}
                         className={`rounded-xl px-3 py-2 text-sm font-semibold ${theme === 'dark'
                             ? 'bg-white text-black'
                             : 'bg-gray-900 text-white'
@@ -629,7 +638,6 @@ function AppContent() {
                 <Route path="/match" element={<MatchScreen />} />
                 <Route path="/nearby" element={<NearbyScreen />} />
                 <Route path="/places" element={<PlacesScreen />} />
-                <Route path="/wallet" element={<WalletScreen />} />
                 <Route path="/profile" element={<ProfileScreen />} />
 
                 <Route path="/messages" element={<MessagesScreen />} />
@@ -644,7 +652,7 @@ function AppContent() {
 
           {/* Right Sidebar - Fixed */}
           {/* Hide right sidebar on messages and notifications routes for better UX */}
-          {location.pathname !== '/messages' && location.pathname !== '/landing' && location.pathname !== '/classifieds' && location.pathname !== '/places' && location.pathname !== '/match' && location.pathname !== '/nearby' && (
+          {shouldShowRightSidebar && (
             <aside className={`hidden xl:flex scrollbar-hide flex-col w-[380px]`}>
               <div className="p-5 sticky top-0 h-screen scrollbar-hide overflow-y-auto space-y-4">
                 {showSidebarInstallCard && (
@@ -670,6 +678,7 @@ function AppContent() {
               <div className="flex items-center justify-around px-4 py-3">
                 {bottomNavItems.map((item) => {
                   const isActive = activeScreen === item.id;
+                  const Icon = item.icon;
                   return (
                     <button
                       key={item.id}
@@ -691,7 +700,9 @@ function AppContent() {
                         />
                       )}
 
-                      <img className='w-8 h-8' src={item.icon} />
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${item.accent} text-white`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
 
                       {/* Label */}
                       <span
@@ -722,7 +733,7 @@ function AppContent() {
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   className={`fixed inset-0 z-[100] backdrop-blur-md ${theme === 'dark' ? 'bg-black/60' : 'bg-black/40'
                     }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={closeMobileMenu}
                   style={{ willChange: 'opacity' }}
                 />
 
@@ -754,7 +765,7 @@ function AppContent() {
                 >
                   {/* Close Button - Floating */}
                   <motion.button
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={closeMobileMenu}
                     className={`absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${theme === 'dark'
                         ? 'bg-white/[0.08] hover:bg-white/[0.15] text-white'
                         : 'bg-black/[0.08] hover:bg-black/[0.15] text-black'
@@ -784,7 +795,7 @@ function AppContent() {
                       <div className="flex items-center gap-3">
                         <div className="relative">
                           <img
-                            src={getSafeImageURLEx((user as any)?.public_id,(user as any)?.avatar, "icon") || undefined}
+                            src={avatarIconSrc}
                             alt="Profile"
                             className={`w-14 h-14 rounded-xl object-cover border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}
                           />
@@ -845,9 +856,8 @@ function AppContent() {
                           >
                             <button
                               onClick={() => {
-                                navigate(profilePath);
-                                setIsMobileProfileMenuOpen(false);
-                                setIsMobileMenuOpen(false);
+                                openProfile();
+                                closeMobileMenus();
                               }}
                               className={`w-full px-4 py-3.5 text-left flex items-center gap-3 transition-colors ${theme === 'dark'
                                   ? 'hover:bg-white/10 text-white'
@@ -860,8 +870,7 @@ function AppContent() {
                             <div className={`h-px ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
                             <button
                               onClick={() => handleLogout(() => {
-                                setIsMobileProfileMenuOpen(false);
-                                setIsMobileMenuOpen(false);
+                                closeMobileMenus();
                               })}
                               className={`w-full px-4 py-3.5 text-left flex items-center gap-3 transition-colors ${theme === 'dark'
                                   ? 'hover:bg-red-500/10 text-red-400'
@@ -894,7 +903,7 @@ function AppContent() {
                               key={item.id}
                               onClick={() => {
                                 navigateByNavId(item.id);
-                                setIsMobileMenuOpen(false);
+                                closeMobileMenus();
                               }}
                               initial={{ opacity: 0, y: 8 }}
                               animate={{ opacity: 1, y: 0 }}
@@ -963,10 +972,7 @@ function AppContent() {
 
                       {/* Language Selector */}
                       <motion.button
-                        onClick={() => {
-                          setIsLanguageSelectorOpen(true);
-                          setIsMobileMenuOpen(false);
-                        }}
+                        onClick={openLanguageSelector}
                         className={`w-full flex items-center justify-between px-4 py-3.5 rounded-[16px] font-semibold text-[15px] tracking-[-0.011em] transition-all duration-200 ${theme === 'dark'
                             ? 'bg-white/[0.08] hover:bg-white/[0.12] text-white'
                             : 'bg-black/[0.08] hover:bg-black/[0.12] text-black'

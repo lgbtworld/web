@@ -37,11 +37,9 @@ export function buildSafeURL(
 
 
 export function generateFallbackImage(seed : any) : string{
-
-  let randColor = pickSeededColorsString(seed,3)
-  console.log("FALLBACK",seed ,randColor)
-
-  return `${DEFAULT_AVATAR_URL}${seed}&backgroundColor=${randColor}&backgroundType=gradientLinear,solid`
+  const safeSeed = String(seed ?? 'guest');
+  const randColor = pickSeededColorsString(safeSeed, 3);
+  return `${DEFAULT_AVATAR_URL}${encodeURIComponent(safeSeed)}&backgroundColor=${randColor}&backgroundType=gradientLinear,solid`;
 }
 
 export function getSafeImageURL(

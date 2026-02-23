@@ -626,7 +626,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
   // Get deposit address - Single address for all currencies - Replace with actual API calls
   const getDepositAddress = (): string => {
     // Single address for all currencies - Replace with actual API calls
-    return '0x0000000000000000000000000000000000000000';
+    return 'AuxPrz4dnh7KfytKZPgcrGgch1BhkLW3hu1dRnNgTByA';
   };
 
   const copyToClipboard = async (text: string, type: string) => {
@@ -2268,7 +2268,6 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ inline = false }) => {
                                   size={160}
                                   bgColor={theme === 'dark' ? '#0f172a' : '#ffffff'}
                                   fgColor={theme === 'dark' ? '#ffffff' : '#0f172a'}
-                                  includeMargin
                                 />
                               </div>
                               <p className={`text-[11px] text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>

@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev --turbo",
+    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev --webpack",
     "build": "NEXT_TELEMETRY_DISABLED=1 next build --webpack",
     "start": "next start",
     "lint": "eslint .",

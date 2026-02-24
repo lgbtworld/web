@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, useLocation } from '../lib/navigation';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Calendar, MapPin, Link, MoreHorizontal, Heart, Baby, Cigarette, Wine, Ruler, PawPrint, Church, GraduationCap, Eye, EyeOff, Lock, Palette, Accessibility, Paintbrush, RulerDimensionLine, Vegan, PersonStanding, Sparkles, Drama, Banana, Save, Camera, Image as ImageIcon, ChevronRight, Check, HeartHandshake, AlertTriangle, FileText, MessageCircle, Panda, Ghost, Rainbow, Transgender, Rabbit, ChevronLeft, ChevronDown, LocateFixed, UserCircle, Clock, Smile, HeartPulse, Bubbles, Leaf, Fingerprint, Wallet } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -29,7 +29,6 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 import { $getRoot, $createParagraphNode, $createTextNode } from 'lexical';
 import { ToolbarContext } from '../contexts/ToolbarContext';
-import { useSSRData } from '../contexts/SSRDataContext';
 import Container from './Container';
 import AuthWizard from './AuthWizard';
 import { getSafeImageURL, getSafeImageURLEx } from '../helpers/helpers';
@@ -1094,16 +1093,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   const { user: authUser, isAuthenticated, updateUser } = useAuth();
   const { data: appData, defaultLanguage } = useApp();
   const { t } = useTranslation('common');
-  const ssrData = useSSRData();
-  const initialSSRUser = React.useMemo(() => {
-    if (!username) return null;
-    const raw = ssrData?.profileByUsername?.[username];
-    return normalizeProfileUser(raw) as ProfileUser | null;
-  }, [ssrData, username]);
-  const [user, setUser] = useState<ProfileUser | null>(initialSSRUser);
+  const [user, setUser] = useState<ProfileUser | null>(null);
   const [posts, setPosts] = useState<ProfilePost[]>([]);
   const [medias, setMedias] = useState<Media[]>([]);
-  const [loading, setLoading] = useState(!initialSSRUser);
+  const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(true);
   const [mediasLoading, setMediasLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -2828,15 +2821,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     }
   }, [username]);
 
-  useEffect(() => {
-    if (!username || !initialSSRUser) {
-      return;
-    }
-    setUser(initialSSRUser);
-    setLoading(false);
-    lastFetchedUsernameRef.current = username;
-  }, [initialSSRUser, username]);
-
   // Update user from authUser when viewing own profile and authUser updates
   useEffect(() => {
     if (!username || !isAuthenticated || !authUser) {
@@ -2871,10 +2855,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   useEffect(() => {
     const fetchUserData = async () => {
       if (!username) {
-        return;
-      }
-
-      if (initialSSRUser) {
         return;
       }
 
@@ -2952,7 +2932,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     if (username) {
       fetchUserData();
     }
-  }, [username, initialSSRUser]);
+  }, [username]);
 
   // Fetch posts based on active tab
   useEffect(() => {
@@ -3072,13 +3052,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   }, [user?.id, username, activeTab]);
 
   const handleBackClick = () => {
-    const params = new URLSearchParams(location.search || '');
-    const returnTo = params.get('returnTo');
-    const returnPostId = params.get('returnPostId');
-    const returnUsername = params.get('returnUsername');
+    // Check if we came from PostDetails (via state or referrer)
+    const state = location.state as { fromPostDetails?: boolean; postId?: string; postUsername?: string } | null;
 
-    if (returnTo === 'post' && returnPostId && returnUsername) {
-      navigate(`/${returnUsername}/status/${returnPostId}`, { replace: true });
+    if (state?.fromPostDetails && state.postId && state.postUsername) {
+      // Navigate back to PostDetails
+      navigate(`/${state.postUsername}/status/${state.postId}`, { replace: true });
     } else {
       // Check if we can go back in history
       if (window.history.length > 1) {
@@ -3129,39 +3108,57 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   };
 
   const handleSendMessage = async (profile: any) => {
-    if (!profile?.id && !profile?.public_id) {
-      console.error('Profile ID is missing');
+    if (!authUser?.id || !profile?.id) {
+      console.error('User or profile ID is missing');
       return;
     }
 
     try {
-      const chatResponse = await api.handleCreatePrivateChat({
-        id: profile.id,
-        public_id: profile.public_id,
+      const chatResponse = await api.call<{
+        chat: {
+          id: string;
+          type: string;
+          participants?: Array<{
+            user_id: string;
+            user?: {
+              id: string;
+              username?: string;
+              displayname?: string;
+            };
+          }>;
+        };
+        success: boolean;
+      }>(Actions.CMD_CHAT_CREATE, {
+        method: "POST",
+        body: {
+          type: 'private',
+          participant_ids: [profile.id],
+        },
       });
 
       const chatId = chatResponse?.chat?.id;
 
       if (chatId) {
-        const params = new URLSearchParams({
-          openChat: chatId,
-          userId: String(profile.id),
-          publicId: String(profile.public_id ?? ''),
-          username: String(profile.username ?? ''),
+        navigate('/messages', {
+          state: {
+            openChat: chatId,
+            userId: profile.id,
+            publicId: profile.public_id,
+            username: profile.username,
+          },
         });
-        navigate(`/messages?${params.toString()}`);
       } else {
         console.error('Chat creation failed - no chat ID returned');
       }
     } catch (error) {
       console.error('Error creating chat:', error);
-      const params = new URLSearchParams({
-        openChat: String(profile.username || profile.id),
-        userId: String(profile.id),
-        publicId: String(profile.public_id ?? ''),
-        username: String(profile.username ?? ''),
+      navigate('/messages', {
+        state: {
+          openChat: profile.username || profile.id,
+          userId: profile.id,
+          publicId: profile.public_id,
+        },
       });
-      navigate(`/messages?${params.toString()}`);
     }
   };
 
@@ -3239,7 +3236,18 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     if (!user) {
       return;
     }
-    navigate(`/${user.username}/${type}`);
+
+    navigate(`/${user.username}/${type}`, {
+      state: {
+        profileSummary: {
+          id: user.id,
+          public_id: user.public_id,
+          username: user.username,
+          displayname: user.displayname,
+          avatar: (user as any)?.avatar ?? null,
+        },
+      },
+    });
   };
 
   const content = (
@@ -4781,7 +4789,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     <button
                       onClick={handleFollowClick}
                       className={`px-3 sm:px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap transition-colors ${isFollowing
-                        ? `border ${theme === 'dark' ? 'border-gray-700 text-white bg-gray-950 hover:bg-gray-900' : 'border-gray-300 text-gray-900 hover:bg-gray-50'}`
+                        ? `border ${theme === 'dark' ? 'border-gray-700 hover:bg-gray-900' : 'border-gray-300 hover:bg-gray-50'}`
                         : theme === 'dark'
                           ? 'bg-white text-black hover:bg-gray-200'
                           : 'bg-black text-white hover:bg-gray-900'

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from '../lib/navigation';
+import { useNavigate } from 'react-router-dom';
 import { Coins, X, Loader2, CheckCircle2, Plus, DollarSign, HandCoins, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';

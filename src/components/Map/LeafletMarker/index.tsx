@@ -12,7 +12,7 @@ import LeafletDivIcon from '../LeafletDivIcon';
 import LeafletPopup from '../LeafletPopup';
 import { decodeGeoHash } from '../lib/helper/geocoder';
 import { getSafeImageURL, getSafeImageURLEx } from '../../../helpers/helpers';
-import { useNavigate } from '../../../lib/navigation';
+import { useNavigate } from 'react-router-dom';
 
 
 

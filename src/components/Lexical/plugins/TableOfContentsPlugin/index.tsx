@@ -10,6 +10,7 @@ import type {HeadingTagType} from '@lexical/rich-text';
 import type {NodeKey} from 'lexical';
 import type {JSX} from 'react';
 
+import './index.css';
 
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {TableOfContentsPlugin as LexicalTableOfContentsPlugin} from '@lexical/react/LexicalTableOfContentsPlugin';

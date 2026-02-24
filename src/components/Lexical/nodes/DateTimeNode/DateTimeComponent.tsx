@@ -8,6 +8,8 @@
 
 import type {JSX} from 'react';
 
+import 'react-day-picker/style.css';
+import './DateTimeNode.css';
 
 import {
   autoUpdate,

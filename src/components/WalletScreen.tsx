@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from '../lib/navigation';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Wallet,

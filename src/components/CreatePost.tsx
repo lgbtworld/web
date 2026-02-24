@@ -31,7 +31,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { ToolbarContext } from '../contexts/ToolbarContext';
 import { api } from '../services/api';
 import { useApp } from '../contexts/AppContext';
-import { useAuth } from '../contexts/AuthContext';
+import L from 'leaflet';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
@@ -152,30 +152,11 @@ const CreatePost: React.FC<CreatePostProps> = ({
   const [isFullScreen, setIsFullScreen] = useState(fullScreen);
   const { theme } = useTheme();
   const { data: appData, defaultLanguage } = useApp();
-  const { isAuthenticated } = useAuth();
   const maxChars = 500;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const [leafletLib, setLeafletLib] = useState<any>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    if (typeof window === 'undefined') return;
-    import('leaflet')
-      .then((mod) => {
-        if (mounted) {
-          setLeafletLib(mod.default ?? mod);
-        }
-      })
-      .catch((error) => {
-        console.error('Failed to load leaflet:', error);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const mapInstanceRef = useRef<L.Map | null>(null);
 
 
 
@@ -240,11 +221,6 @@ const CreatePost: React.FC<CreatePostProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!isAuthenticated) {
-      console.warn('Create post blocked: unauthenticated user');
-      return;
-    }
-
     // Check if there's any content to post
     if (!hasEditorContent && selectedImages.length === 0 && selectedVideos.length === 0) return;
     
@@ -683,7 +659,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
 
   // Initialize Leaflet map when location is set
   useEffect(() => {
-    if (!location || !mapRef.current || !leafletLib) {
+    if (!location || !mapRef.current) {
       return;
     }
 
@@ -719,7 +695,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
         container.style.position = 'relative';
         container.style.zIndex = '1';
 
-        const map = leafletLib.map(container, {
+        const map = L.map(container, {
           center: [location.lat, location.lng],
           zoom: 15,
           zoomControl: false,
@@ -736,14 +712,14 @@ const CreatePost: React.FC<CreatePostProps> = ({
         mapInstanceRef.current = map;
 
         // Add tile layer with better error handling
-        leafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 19,
           errorTileUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgZmlsbD0iI2Y5ZmFmYiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOWNhM2FmIiBmb250LXNpemU9IjE0cHgiPk1hcCBUaWxlPC90ZXh0Pjwvc3ZnPg=='
         }).addTo(map);
 
         // Add custom marker
-        const customIcon = leafletLib.divIcon({
+        const customIcon = L.divIcon({
           html: `
             <div style="
               width: 30px;
@@ -770,7 +746,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
           iconAnchor: [15, 15]
         });
 
-        leafletLib.marker([location.lat, location.lng], { icon: customIcon }).addTo(map);
+        L.marker([location.lat, location.lng], { icon: customIcon }).addTo(map);
 
         // Force map to invalidate size after a short delay
         setTimeout(() => {
@@ -800,7 +776,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
         }
       }
     };
-  }, [location, leafletLib]);
+  }, [location]);
 
   // Close event kind picker when clicking outside
   useEffect(() => {
@@ -2981,7 +2957,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
 
           {/* Compact Post Button */}
           <motion.button
-            disabled={!isAuthenticated || (!hasEditorContent && selectedImages.length === 0 && selectedVideos.length === 0) || isSubmitting || charCount > maxChars}
+            disabled={(!hasEditorContent && selectedImages.length === 0 && selectedVideos.length === 0) || isSubmitting || charCount > maxChars}
             className={`w-full sm:w-auto sm:min-w-[120px] px-4 sm:px-5 py-3 sm:py-2 rounded-xl sm:rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 text-center ${
               hasEditorContent || selectedImages.length > 0 || selectedVideos.length > 0
                 ? theme === 'dark'
@@ -2991,8 +2967,8 @@ const CreatePost: React.FC<CreatePostProps> = ({
                   ? 'bg-gray-900/50 text-gray-500 cursor-not-allowed'
                   : 'bg-gray-200/50 text-gray-400 cursor-not-allowed'
             } ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
-            whileHover={!isAuthenticated || (!hasEditorContent && selectedImages.length === 0 && selectedVideos.length === 0) || isSubmitting ? {} : { scale: 1.02 }}
-            whileTap={!isAuthenticated || (!hasEditorContent && selectedImages.length === 0 && selectedVideos.length === 0) || isSubmitting ? {} : { scale: 0.98 }}
+            whileHover={(!hasEditorContent && selectedImages.length === 0 && selectedVideos.length === 0) || isSubmitting ? {} : { scale: 1.02 }}
+            whileTap={(!hasEditorContent && selectedImages.length === 0 && selectedVideos.length === 0) || isSubmitting ? {} : { scale: 0.98 }}
             onClick={handleSubmit}
           >
             {isSubmitting ? (

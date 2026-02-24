@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from '../lib/navigation';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import Post, { PostProps, ApiPost } from './Post';
@@ -29,12 +29,15 @@ const PostDetails: React.FC<PostDetailsProps> = ({ showChildren = true, ...restP
 
   // Handle profile click - navigate to profile page
   const handleProfileClick = (username: string) => {
-    const params = new URLSearchParams({
-      returnTo: 'post',
-      returnPostId: String(postId || ''),
-      returnUsername: String(post?.author?.username || username),
+    // Pass state to indicate we came from PostDetails
+    // Use postId from params and username from the clicked profile
+    navigate(`/${username}`, { 
+      state: { 
+        fromPostDetails: true, 
+        postId: postId,
+        postUsername: post?.author?.username || username
+      } 
     });
-    navigate(`/${username}?${params.toString()}`);
   };
 
   useEffect(() => {
@@ -150,3 +153,4 @@ const PostDetails: React.FC<PostDetailsProps> = ({ showChildren = true, ...restP
 };
 
 export default PostDetails;
+

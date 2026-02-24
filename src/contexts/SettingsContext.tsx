@@ -65,17 +65,11 @@ export const SettingsContext = ({
 
   const setViewMode = useCallback((mode: ViewMode) => {
     setViewModeState(mode);
-    if (typeof window === 'undefined') {
-      return;
-    }
     localStorage.setItem('viewMode', mode);
   }, []);
 
   // Load viewMode from localStorage on mount
   React.useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
     const savedViewMode = localStorage.getItem('viewMode') as ViewMode | null;
     if (savedViewMode && ['grid', 'list', 'card', 'map'].includes(savedViewMode)) {
       setViewModeState(savedViewMode);
@@ -94,9 +88,6 @@ export const useSettings = (): SettingsContextShape => {
 };
 
 function setURLParam(param: SettingName, value: null | boolean) {
-  if (typeof window === 'undefined') {
-    return;
-  }
   const url = new URL(window.location.href);
   const params = new URLSearchParams(url.search);
   if (value !== DEFAULT_SETTINGS[param]) {

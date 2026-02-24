@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { useNavigate, useLocation } from '../lib/navigation';
+import { useNavigate, useLocation } from 'react-router-dom';
 import AuthWizard from './AuthWizard';
 import ProfileScreen from './ProfileScreen';
 import { api } from '../services/api';
@@ -63,14 +63,11 @@ interface MessageItemProps {
   theme: 'dark' | 'light';
   onDelete: (id: string) => void;
   onContextMenu: (e: React.MouseEvent, id: string) => void;
-  onOpenMedia: (media: { type: 'image' | 'video'; url: string; name?: string }) => void;
 }
 
-const MessageItem: React.FC<MessageItemProps> = ({ msg, theme, onDelete, onContextMenu, onOpenMedia }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ msg, theme, onDelete, onContextMenu }) => {
   const [dragX, setDragX] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [showDeleteAction, setShowDeleteAction] = React.useState(false);
-  const canSwipeToDelete = msg.sender === 'me';
 
   return (
     <div
@@ -78,52 +75,43 @@ const MessageItem: React.FC<MessageItemProps> = ({ msg, theme, onDelete, onConte
       onContextMenu={(e) => onContextMenu(e, msg.id)}
     >
       {/* Delete Action Background */}
-      {(showDeleteAction || dragX < -40) && canSwipeToDelete && (
-        <button
-          type="button"
-          onClick={() => onDelete(msg.id)}
-          className={`absolute right-0 top-0 bottom-0 flex items-center justify-center px-4 ${theme === 'dark' ? 'bg-red-600' : 'bg-red-500'
+      {dragX < -50 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className={`absolute ${msg.sender === 'me' ? 'right-0' : 'left-0'} top-0 bottom-0 flex items-center justify-center px-4 ${theme === 'dark' ? 'bg-red-600' : 'bg-red-500'
             }`}
           style={{
-            width: '84px',
+            width: '80px',
             height: '100%',
-            borderRadius: '0 16px 16px 0',
+            borderRadius: msg.sender === 'me' ? '0 16px 16px 0' : '16px 0 0 16px'
           }}
-          aria-label="Delete message"
         >
           <Trash2 className="w-5 h-5 text-white" />
-        </button>
+        </motion.div>
       )}
 
       {/* Message */}
       <motion.div
-        drag={canSwipeToDelete ? 'x' : false}
-        dragConstraints={{ left: -96, right: 0 }}
+        drag="x"
+        dragConstraints={{ left: -120, right: 0 }}
         dragElastic={0.2}
-        onTap={() => {
-          if (showDeleteAction) {
-            setShowDeleteAction(false);
-          }
-        }}
         onDrag={(_e, info) => {
-          if (!canSwipeToDelete) return;
           setDragX(info.offset.x);
           setIsDragging(true);
         }}
         onDragEnd={(_e, info) => {
-          if (!canSwipeToDelete) return;
           setIsDragging(false);
-          // Swipe only reveals delete action; no destructive action on drag.
-          if (info.offset.x < -56) {
-            setShowDeleteAction(true);
-          } else {
-            setShowDeleteAction(false);
+          // If swiped left enough (more than 80px), delete the message
+          if (info.offset.x < -80) {
+            onDelete(msg.id);
           }
+          // Reset position
           setDragX(0);
         }}
         animate={{
-          x: isDragging ? dragX : showDeleteAction && canSwipeToDelete ? -72 : 0,
-          opacity: 1
+          x: isDragging ? dragX : 0,
+          opacity: Math.abs(dragX) > 80 ? 0.7 : 1
         }}
         transition={{
           type: 'spring',
@@ -152,26 +140,11 @@ const MessageItem: React.FC<MessageItemProps> = ({ msg, theme, onDelete, onConte
             {msg.attachments.map((attachment, idx) => {
               const file = attachment.file;
               const baseUrl = serviceURL[defaultServiceServerId];
-              const rawMime = (file.mime_type || '').toLowerCase();
-              const fileName = (file.name || '').toLowerCase();
-              const fileUrl = (file.url || '').toLowerCase();
-              const hasImageVariant = Boolean(file.variants?.image);
-              const hasVideoVariant = Boolean(file.variants?.video);
-              const isImageFile =
-                rawMime.startsWith('image/') ||
-                hasImageVariant ||
-                /\.(png|jpe?g|webp|gif|bmp|svg|heic|heif|avif)$/i.test(fileName) ||
-                /\.(png|jpe?g|webp|gif|bmp|svg|heic|heif|avif)(\?|$)/i.test(fileUrl);
-              const isVideoFile =
-                rawMime.startsWith('video/') ||
-                hasVideoVariant ||
-                /\.(mp4|webm|mov|m4v|mkv|avi)(\?|$)/i.test(fileUrl) ||
-                /\.(mp4|webm|mov|m4v|mkv|avi)$/i.test(fileName);
 
               const variantOrder = ['original', 'large', 'medium', 'small', 'thumbnail', 'icon'];
 
               let resolvedImageUrl: string | null = null;
-              if (isImageFile) {
+              if (file.mime_type?.startsWith('image/')) {
                 for (const variant of variantOrder) {
                   if (resolvedImageUrl) break;
                   resolvedImageUrl = getSafeImageURL(attachment, variant);
@@ -184,7 +157,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ msg, theme, onDelete, onConte
                 buildSafeURL(baseUrl, file.url) ||
                 buildSafeURL(baseUrl, file.storage_path);
 
-              const videoUrl = isVideoFile
+              const videoUrl = file.mime_type?.startsWith('video/')
                 ? (file.url && file.url.startsWith('blob:') ? file.url : null) ||
                 (file.url && file.url.startsWith('http') ? file.url : null) ||
                 buildSafeURL(baseUrl, file.url) ||
@@ -195,21 +168,19 @@ const MessageItem: React.FC<MessageItemProps> = ({ msg, theme, onDelete, onConte
 
               return (
                 <div key={attachment.id || idx} className="relative rounded-lg overflow-hidden">
-                  {isImageFile && displayImageUrl ? (
+                  {file.mime_type?.startsWith('image/') && displayImageUrl ? (
                     <img
                       src={displayImageUrl}
                       alt={file.name}
-                      className="w-full max-w-xs rounded-lg object-cover cursor-zoom-in"
+                      className="w-full max-w-xs rounded-lg object-cover"
                       style={{ maxHeight: '300px' }}
-                      onClick={() => onOpenMedia({ type: 'image', url: displayImageUrl, name: file.name })}
                     />
-                  ) : isVideoFile && videoUrl ? (
+                  ) : file.mime_type?.startsWith('video/') && videoUrl ? (
                     <video
                       src={videoUrl}
                       controls
-                      className="w-full max-w-xs rounded-lg object-cover cursor-zoom-in"
+                      className="w-full max-w-xs rounded-lg object-cover"
                       style={{ maxHeight: '300px' }}
-                      onClick={() => onOpenMedia({ type: 'video', url: videoUrl, name: file.name })}
                     >
                       Your browser does not support the video tag.
                     </video>
@@ -281,31 +252,7 @@ const MessagesScreen: React.FC = () => {
   const [showChatMenu, setShowChatMenu] = useState(false);
   const [openChatItemMenu, setOpenChatItemMenu] = useState<string | null>(null);
   const [showProfile, setShowProfile] = useState(false);
-  const [mediaViewer, setMediaViewer] = useState<{
-    open: boolean;
-    type: 'image' | 'video' | null;
-    url: string;
-    name?: string;
-  }>({ open: false, type: null, url: '', name: '' });
   const [isRefreshingMessages, setIsRefreshingMessages] = useState(false);
-  const [mediaPreviewUrls, setMediaPreviewUrls] = useState<Record<string, string>>({});
-  const [chatsList, setChatsList] = useState<Array<{
-    id: string;
-    chatId: string | null;
-    name: string;
-    username: string;
-    emojis: string;
-    avatar: string | null;
-    avatarLetter: string | null;
-    lastMessage: string;
-    lastTime: string;
-    unread: number;
-    online: boolean;
-    verified: boolean;
-    encrypted: boolean;
-  }>>([]);
-  const [isLoadingChats, setIsLoadingChats] = useState(false);
-  const pendingOpenChatRef = useRef<string | null>(null);
   const { socket } = useSocket();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -724,31 +671,23 @@ const MessagesScreen: React.FC = () => {
     }
   }, [selectedChat, isMobile]);
 
-  // Handle query params to open chat from profile/match/cards
+  // Handle navigation state to open chat from MatchScreen
   React.useEffect(() => {
-    const params = new URLSearchParams(location.search || '');
-    const openChat = params.get('openChat') || undefined;
-    const userId = params.get('userId') || undefined;
-    const username = params.get('username') || undefined;
-    const publicIdRaw = params.get('publicId');
-    const publicId = publicIdRaw != null && publicIdRaw !== '' ? Number(publicIdRaw) : undefined;
-
-    if (openChat || userId || publicId) {
-      pendingOpenChatRef.current =
-        openChat || userId || (publicId != null ? String(publicId) : null);
+    const state = location.state as { openChat?: string; userId?: string; publicId?: number; username?: string } | null;
+    if (state?.openChat || state?.userId || state?.publicId) {
       // Find chat by chat ID, username, or user ID
       setChatsList(prev => {
         const chatToOpen = prev.find(chat => {
           // First try to find by real chat ID (from newly created chat)
-          if (openChat && (chat.chatId === openChat || chat.id === openChat)) {
+          if (state.openChat && (chat.chatId === state.openChat || chat.id === state.openChat)) {
             return true;
           }
           // Then try username
-          if (username && chat.username === username) {
+          if (state.username && chat.username === state.username) {
             return true;
           }
           // Then try user ID
-          if (userId && chat.id === userId) {
+          if (state.userId && chat.id === state.userId) {
             return true;
           }
           return false;
@@ -757,18 +696,18 @@ const MessagesScreen: React.FC = () => {
         if (chatToOpen) {
           setSelectedChat(chatToOpen.id);
           setShowSidebar(false);
-          pendingOpenChatRef.current = null;
           return prev;
         } else {
           // Chat doesn't exist in list, create a temporary entry
-          if (!openChat) {
+          // state.openChat must be the real chat ID from backend (from MatchScreen)
+          if (!state.openChat) {
             console.error('Cannot create chat entry without chat ID');
             return prev;
           }
 
-          const realChatId = openChat;
-          const displayId = openChat || userId || `temp-${Date.now()}`;
-          const chatName = username || openChat || 'User';
+          const realChatId = state.openChat; // Real chat ID from backend
+          const displayId = state.userId || state.openChat || `temp-${Date.now()}`;
+          const chatName = state.username || state.openChat || 'User';
           const newChat = {
             id: displayId,
             chatId: realChatId, // Real chat ID from backend - required for sending messages
@@ -789,40 +728,16 @@ const MessagesScreen: React.FC = () => {
           if (!prev.find(c => c.id === displayId || c.chatId === realChatId)) {
             setSelectedChat(displayId);
             setShowSidebar(false);
-            pendingOpenChatRef.current = null;
             return [newChat, ...prev];
           }
           return prev;
         }
       });
 
-      // Clear query params after consuming them
-      navigate('/messages', { replace: true });
+      // Clear navigation state
+      navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location.search, navigate]);
-
-  // If chats arrive after navigation state is consumed, resolve pending open chat here.
-  React.useEffect(() => {
-    const pendingKey = pendingOpenChatRef.current;
-    if (!pendingKey || chatsList.length === 0) {
-      return;
-    }
-
-    const chatToOpen = chatsList.find(
-      (chat) =>
-        chat.chatId === pendingKey ||
-        chat.id === pendingKey ||
-        chat.username === pendingKey
-    );
-
-    if (!chatToOpen) {
-      return;
-    }
-
-    setSelectedChat(chatToOpen.id);
-    setShowSidebar(false);
-    pendingOpenChatRef.current = null;
-  }, [chatsList]);
+  }, [location.state, navigate, location.pathname]);
 
   // Fetch chats from backend
   React.useEffect(() => {
@@ -866,37 +781,15 @@ const MessagesScreen: React.FC = () => {
 
         if (response?.chats && Array.isArray(response.chats)) {
           const mappedChats = response.chats.map((chat) => {
-            const currentUserId = String(user.id);
-            const currentUserPublicId = (user as any)?.public_id != null ? String((user as any).public_id) : null;
-            const isCurrentUserParticipant = (participant: any) => {
-              const participantUserId = participant?.user_id != null ? String(participant.user_id) : null;
-              const participantNestedUserId = participant?.user?.id != null ? String(participant.user.id) : null;
-              const participantNestedPublicId =
-                participant?.user?.public_id != null ? String(participant.user.public_id) : null;
-
-              if (participantUserId && (participantUserId === currentUserId || participantUserId === currentUserPublicId)) {
-                return true;
-              }
-              if (
-                participantNestedUserId &&
-                (participantNestedUserId === currentUserId || participantNestedUserId === currentUserPublicId)
-              ) {
-                return true;
-              }
-              if (
-                participantNestedPublicId &&
-                (participantNestedPublicId === currentUserId || participantNestedPublicId === currentUserPublicId)
-              ) {
-                return true;
-              }
-              return false;
-            };
-
             // For private chats, find the other participant (not current user)
-            const otherParticipant = chat.participants?.find((p) => !isCurrentUserParticipant(p));
+            const otherParticipant = chat.participants?.find(
+              (p) => p.user_id !== user.id
+            );
 
             // Find current user's participant to get unread_count
-            const currentUserParticipant = chat.participants?.find((p) => isCurrentUserParticipant(p));
+            const currentUserParticipant = chat.participants?.find(
+              (p) => p.user_id === user.id
+            );
 
             const otherUser = otherParticipant?.user;
             const displayName = otherUser?.displayname || otherUser?.username || 'Unknown';
@@ -942,7 +835,7 @@ const MessagesScreen: React.FC = () => {
             }
 
             return {
-              id: chat.id, // Use real chat ID consistently
+              id: otherUser?.id || chat.id, // Use user ID for display, fallback to chat ID
               chatId: chat.id, // Real chat ID from backend (UUID)
               name: displayName,
               username: username,
@@ -984,6 +877,82 @@ const MessagesScreen: React.FC = () => {
       setShowBottomBar(true);
     };
   }, [selectedChat, setShowBottomBar]);
+
+  // Group chats - will be used in future
+  // const groupChats = [
+  //   {
+  //     id: 'taiwan',
+  //     name: 'Taiwan Pride Community',
+  //     flag: '🇹🇼',
+  //     members: 1247,
+  //     lastMessage: 'Happy Pride everyone! 🏳️‍🌈',
+  //     lastTime: '2m',
+  //     unread: 3,
+  //     online: 89,
+  //     pinned: true
+  //   },
+  //   {
+  //     id: 'thailand',
+  //     name: 'Thailand LGBTQ+ Network',
+  //     flag: '🇹🇭',
+  //     members: 892,
+  //     lastMessage: 'Great event yesterday!',
+  //     lastTime: '15m',
+  //     unread: 0,
+  //     online: 45,
+  //     pinned: false
+  //   },
+  //   {
+  //     id: 'turkey',
+  //     name: 'Türkiye Pride Community',
+  //     flag: '🇹🇷',
+  //     members: 2156,
+  //     lastMessage: 'Supporting each other! 💪',
+  //     lastTime: '1h',
+  //     unread: 7,
+  //     online: 156,
+  //     pinned: true
+  //   },
+  //   {
+  //     id: 'japan',
+  //     name: 'Japan Rainbow Network',
+  //     flag: '🇯🇵',
+  //     members: 678,
+  //     lastMessage: 'Beautiful day for celebration!',
+  //     lastTime: '2h',
+  //     unread: 0,
+  //     online: 34,
+  //     pinned: false
+  //   },
+  //   {
+  //     id: 'china',
+  //     name: 'China Pride Alliance',
+  //     flag: '🇨🇳',
+  //     members: 1890,
+  //     lastMessage: 'Love is love! ❤️',
+  //     lastTime: '3h',
+  //     unread: 12,
+  //     online: 203,
+  //     pinned: false
+  //   }
+  // ];
+
+  const [chatsList, setChatsList] = useState<Array<{
+    id: string;
+    chatId: string | null;
+    name: string;
+    username: string;
+    emojis: string;
+    avatar: string | null;
+    avatarLetter: string | null;
+    lastMessage: string;
+    lastTime: string;
+    unread: number;
+    online: boolean;
+    verified: boolean;
+    encrypted: boolean;
+  }>>([]);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
 
   // Use ref to access current chatsList in socket handler
   const chatsListRef = useRef(chatsList);
@@ -1031,7 +1000,6 @@ const MessagesScreen: React.FC = () => {
     }>;
   }>>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-  const chatHistoryPushedRef = useRef(false);
 
   // Fetch messages function (can be called manually or automatically)
   const fetchMessages = React.useCallback(async (showRefreshing = false) => {
@@ -1404,12 +1372,6 @@ const MessagesScreen: React.FC = () => {
     setMessage('');
     setSelectedImages([]);
     setSelectedVideos([]);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-    if (videoInputRef.current) {
-      videoInputRef.current.value = '';
-    }
     setIsTyping(false);
     setShowEmojiPicker(false);
 
@@ -1507,12 +1469,11 @@ const MessagesScreen: React.FC = () => {
                   value.url
                     ? {
                       ...value,
-                      url: (
-                        buildSafeURL(baseUrl, value.url) ||
-                        (value.url.startsWith('http')
+                      url:
+                        buildSafeURL(baseUrl, value.url) ??
+                          value.url.startsWith('http')
                           ? value.url
-                          : `${baseUrl}/${value.url.replace(/^\/+/, '')}`)
-                      ),
+                          : `${baseUrl}/${value.url.replace(/^\/+/, '')}`,
                     }
                     : value,
                 ])
@@ -1611,8 +1572,7 @@ const MessagesScreen: React.FC = () => {
       setMessages(prev => prev.filter(msg => msg.id !== tempMessageId));
       // Optionally show error message to user
     } finally {
-      // Do not revoke immediately; some successful responses can still rely on blob URLs.
-      // Revoke-on-unmount can be added later with centralized preview URL tracking.
+      createdObjectUrls.forEach((url) => URL.revokeObjectURL(url));
     }
   };
 
@@ -1745,12 +1705,6 @@ const MessagesScreen: React.FC = () => {
 
     setSelectedChat(chatId);
     setShowSidebar(false);
-
-    // On mobile, push an in-page history entry so device/browser back closes chat first.
-    if (typeof window !== 'undefined' && isMobile && !chatHistoryPushedRef.current) {
-      window.history.pushState({ cvChatView: true }, '', window.location.href);
-      chatHistoryPushedRef.current = true;
-    }
     // Reset typing indicator when switching chats
     if (typingIndicatorTimeoutRef.current) {
       clearTimeout(typingIndicatorTimeoutRef.current);
@@ -1758,26 +1712,6 @@ const MessagesScreen: React.FC = () => {
     }
     setOtherUserTyping(false);
   };
-
-  // Mobile back: close active chat first instead of leaving messages screen.
-  useEffect(() => {
-    if (!isMobile || typeof window === 'undefined') {
-      return;
-    }
-
-    const onPopState = () => {
-      if (selectedChat) {
-        setSelectedChat(null);
-        setShowSidebar(true);
-        chatHistoryPushedRef.current = false;
-      }
-    };
-
-    window.addEventListener('popstate', onPopState);
-    return () => {
-      window.removeEventListener('popstate', onPopState);
-    };
-  }, [isMobile, selectedChat]);
 
   const handleEmojiClick = (emoji: string) => {
     setMessage(prev => prev + emoji);
@@ -1788,41 +1722,13 @@ const MessagesScreen: React.FC = () => {
     const files = Array.from(e.target.files || []);
     const imageFiles = files.filter(file => file.type.startsWith('image/'));
     setSelectedImages(prev => [...prev, ...imageFiles]);
-    e.target.value = '';
   };
 
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const videoFiles = files.filter(file => file.type.startsWith('video/'));
     setSelectedVideos(prev => [...prev, ...videoFiles]);
-    e.target.value = '';
   };
-
-  const selectedMediaItems = React.useMemo(
-    () => [
-      ...selectedImages.map((file, idx) => ({ type: 'image' as const, file, index: idx })),
-      ...selectedVideos.map((file, idx) => ({ type: 'video' as const, file, index: idx })),
-    ],
-    [selectedImages, selectedVideos]
-  );
-
-  React.useEffect(() => {
-    const nextUrls: Record<string, string> = {};
-    const created: string[] = [];
-
-    selectedMediaItems.forEach((item) => {
-      const key = `${item.type}-${item.file.name}-${item.file.size}-${item.file.lastModified}-${item.index}`;
-      const url = URL.createObjectURL(item.file);
-      nextUrls[key] = url;
-      created.push(url);
-    });
-
-    setMediaPreviewUrls(nextUrls);
-
-    return () => {
-      created.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [selectedMediaItems]);
 
   const removeImage = (index: number) => {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
@@ -1868,7 +1774,7 @@ const MessagesScreen: React.FC = () => {
           <div className={`absolute lg:relative inset-0 z-40 lg:z-auto w-full lg:w-80 lg:flex-shrink-0 border-r flex flex-col h-full overflow-hidden ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'
             } ${showSidebar ? 'flex' : 'hidden lg:flex'}`}>
             {/* Header */}
-            <div className={`flex-shrink-0 sticky mb-[56px] md:mb-[0px]  top-[56px] lg:top-0 z-5 p-3 sm:p-4 border-b ${theme === 'dark'
+            <div className={`flex-shrink-0 sticky mb-[56px] md:mb-[0px]  top-[56px] lg:top-0 z-50 p-3 sm:p-4 border-b ${theme === 'dark'
                 ? 'border-gray-800 bg-black/95 backdrop-blur-xl'
                 : 'border-gray-200 bg-white/95 backdrop-blur-xl'
               }`}>
@@ -2185,13 +2091,8 @@ const MessagesScreen: React.FC = () => {
                       {/* Mobile back button */}
                       <motion.button
                         onClick={() => {
-                          if (typeof window !== 'undefined' && isMobile && chatHistoryPushedRef.current) {
-                            window.history.back();
-                          } else {
-                            setSelectedChat(null);
-                            setShowSidebar(true);
-                            chatHistoryPushedRef.current = false;
-                          }
+                          setSelectedChat(null);
+                          setShowSidebar(true);
                         }}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -2424,9 +2325,6 @@ const MessagesScreen: React.FC = () => {
                                   theme={theme}
                                   onDelete={handleDeleteMessage}
                                   onContextMenu={handleMessageContextMenu}
-                                  onOpenMedia={({ type, url, name }) =>
-                                    setMediaViewer({ open: true, type, url, name })
-                                  }
                                 />
                               ))
                             )}
@@ -2463,46 +2361,6 @@ const MessagesScreen: React.FC = () => {
                           </motion.div>
                         )}
 
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <AnimatePresence>
-                  {mediaViewer.open && mediaViewer.type && (
-                    <motion.div
-                      className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm p-4 sm:p-6"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      onClick={() => setMediaViewer({ open: false, type: null, url: '', name: '' })}
-                    >
-                      <button
-                        type="button"
-                        className="absolute right-4 top-4 z-[101] inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
-                        onClick={() => setMediaViewer({ open: false, type: null, url: '', name: '' })}
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-
-                      <div
-                        className="flex h-full w-full items-center justify-center"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {mediaViewer.type === 'image' ? (
-                          <img
-                            src={mediaViewer.url}
-                            alt={mediaViewer.name || 'media'}
-                            className="max-h-[88vh] max-w-[96vw] rounded-xl object-contain"
-                          />
-                        ) : (
-                          <video
-                            src={mediaViewer.url}
-                            controls
-                            autoPlay
-                            className="max-h-[88vh] max-w-[96vw] rounded-xl object-contain"
-                          />
-                        )}
                       </div>
                     </motion.div>
                   )}
@@ -2564,52 +2422,210 @@ const MessagesScreen: React.FC = () => {
                       flexDirection: 'column'
                     }}
                   >
-                    {/* Selected Media Preview */}
-                    {selectedMediaItems.length > 0 && (
-                      <div className="mb-2 rounded-xl border p-1.5 border-gray-200/70 bg-gray-50/80 dark:border-gray-800 dark:bg-gray-900/40">
-                        <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                          {selectedMediaItems.length} media selected
-                        </div>
-                        <div className="flex gap-1.5 overflow-x-auto pb-0.5">
-                          {selectedMediaItems.map((media, idx) => {
-                            const key = `${media.type}-${media.file.name}-${media.file.size}-${media.file.lastModified}-${media.index}`;
-                            const previewUrl = mediaPreviewUrls[key];
+                    {/* Selected Media Preview - CreatePost Style */}
+                    {(() => {
+                      const totalMedia = selectedImages.length + selectedVideos.length;
+                      const allMedia = [
+                        ...selectedImages.map((file, idx) => ({ type: 'image', file, index: idx })),
+                        ...selectedVideos.map((file, idx) => ({ type: 'video', file, index: idx }))
+                      ];
 
+                      if (totalMedia === 0) return null;
+
+                      // Single media - Full Width
+                      if (totalMedia === 1) {
+                        const media = allMedia[0];
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.96 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                            className="mb-3 relative group rounded-xl overflow-hidden"
+                          >
+                            {media.type === 'image' ? (
+                              <>
+                                <img
+                                  src={URL.createObjectURL(media.file)}
+                                  alt="Preview"
+                                  className="w-full h-auto max-h-[200px] object-cover rounded-xl"
+                                />
+                                <motion.button
+                                  onClick={() => removeImage(media.index)}
+                                  className="absolute top-2 right-2 w-8 h-8 rounded-lg backdrop-blur-xl bg-black/60 border border-white/20 hover:bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                  whileHover={{ scale: 1.1, rotate: 90 }}
+                                  whileTap={{ scale: 0.9 }}
+                                >
+                                  <X className="w-4 h-4 text-white" />
+                                </motion.button>
+                              </>
+                            ) : (
+                              <>
+                                <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 aspect-video flex items-center justify-center rounded-xl">
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <motion.div
+                                      initial={{ scale: 0.8, opacity: 0 }}
+                                      animate={{ scale: 1, opacity: 1 }}
+                                      className="w-12 h-12 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 flex items-center justify-center"
+                                    >
+                                      <Video className="w-6 h-6 text-white" />
+                                    </motion.div>
+                                  </div>
+                                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/95 via-black/80 to-transparent rounded-b-xl">
+                                    <p className="text-xs font-semibold text-white truncate">{media.file.name}</p>
+                                    <p className="text-[10px] text-white/60 mt-0.5">{(media.file.size / (1024 * 1024)).toFixed(1)} MB</p>
+                                  </div>
+                                  <motion.button
+                                    onClick={() => removeVideo(media.index)}
+                                    className="absolute top-2 right-2 w-8 h-8 rounded-lg backdrop-blur-xl bg-black/60 border border-white/20 hover:bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                    whileHover={{ scale: 1.1, rotate: 90 }}
+                                    whileTap={{ scale: 0.9 }}
+                                  >
+                                    <X className="w-4 h-4 text-white" />
+                                  </motion.button>
+                                </div>
+                              </>
+                            )}
+                          </motion.div>
+                        );
+                      }
+
+                      // Two media - Side by Side
+                      if (totalMedia === 2) {
+                        return (
+                          <div className="mb-3 grid grid-cols-2 gap-2">
+                            {allMedia.map((media, idx) => (
+                              <motion.div
+                                key={`${media.type}-${idx}`}
+                                initial={{ opacity: 0, scale: 0.96 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: idx * 0.1 }}
+                                className="relative group rounded-xl overflow-hidden"
+                              >
+                                {media.type === 'image' ? (
+                                  <>
+                                    <img
+                                      src={URL.createObjectURL(media.file)}
+                                      alt={`Preview ${idx + 1}`}
+                                      className="w-full h-full min-h-[120px] object-cover rounded-xl"
+                                    />
+                                    <motion.button
+                                      onClick={() => removeImage(media.index)}
+                                      className="absolute top-1.5 right-1.5 w-7 h-7 rounded-lg backdrop-blur-xl bg-black/60 border border-white/20 hover:bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                      whileHover={{ scale: 1.1, rotate: 90 }}
+                                      whileTap={{ scale: 0.9 }}
+                                    >
+                                      <X className="w-3.5 h-3.5 text-white" />
+                                    </motion.button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 aspect-square min-h-[120px] flex items-center justify-center rounded-xl">
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <motion.div
+                                          initial={{ scale: 0.8, opacity: 0 }}
+                                          animate={{ scale: 1, opacity: 1 }}
+                                          className="w-10 h-10 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 flex items-center justify-center"
+                                        >
+                                          <Video className="w-5 h-5 text-white" />
+                                        </motion.div>
+                                      </div>
+                                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/95 via-black/80 to-transparent rounded-b-xl">
+                                        <p className="text-[10px] font-semibold text-white truncate">{media.file.name}</p>
+                                        <p className="text-[9px] text-white/60 mt-0.5">{(media.file.size / (1024 * 1024)).toFixed(1)} MB</p>
+                                      </div>
+                                      <motion.button
+                                        onClick={() => removeVideo(media.index)}
+                                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-lg backdrop-blur-xl bg-black/60 border border-white/20 hover:bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                        whileHover={{ scale: 1.1, rotate: 90 }}
+                                        whileTap={{ scale: 0.9 }}
+                                      >
+                                        <X className="w-3.5 h-3.5 text-white" />
+                                      </motion.button>
+                                    </div>
+                                  </>
+                                )}
+                              </motion.div>
+                            ))}
+                          </div>
+                        );
+                      }
+
+                      // Three or more - Grid Layout
+                      return (
+                        <div className="mb-3 grid grid-cols-2 gap-2">
+                          {allMedia.slice(0, 4).map((media, idx) => {
+                            const showOverlay = idx === 3 && totalMedia > 4;
                             return (
                               <motion.div
-                                key={key}
-                                initial={{ opacity: 0, scale: 0.98 }}
+                                key={`${media.type}-${idx}`}
+                                initial={{ opacity: 0, scale: 0.96 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.18, delay: idx * 0.03 }}
-                                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-black/10 bg-black/5 dark:border-white/10 dark:bg-black/30"
+                                transition={{ delay: idx * 0.05 }}
+                                className="relative group rounded-xl overflow-hidden"
                               >
-                                <div className="relative h-full w-full">
-                                  {media.type === 'image' && previewUrl ? (
-                                    <img src={previewUrl} alt={media.file.name} className="h-full w-full object-cover" />
-                                  ) : (
-                                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
-                                      <Video className="h-4 w-4 opacity-90" />
+                                {media.type === 'image' ? (
+                                  <>
+                                    <img
+                                      src={URL.createObjectURL(media.file)}
+                                      alt={`Preview ${idx + 1}`}
+                                      className="w-full h-full min-h-[100px] object-cover rounded-xl"
+                                    />
+                                    {showOverlay && (
+                                      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center rounded-xl">
+                                        <p className="text-lg font-bold text-white">+{totalMedia - 4}</p>
+                                      </div>
+                                    )}
+                                    {!showOverlay && (
+                                      <motion.button
+                                        onClick={() => removeImage(media.index)}
+                                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-lg backdrop-blur-xl bg-black/60 border border-white/20 hover:bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                        whileHover={{ scale: 1.1, rotate: 90 }}
+                                        whileTap={{ scale: 0.9 }}
+                                      >
+                                        <X className="w-3.5 h-3.5 text-white" />
+                                      </motion.button>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 aspect-square min-h-[100px] flex items-center justify-center rounded-xl">
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <motion.div
+                                          initial={{ scale: 0.8, opacity: 0 }}
+                                          animate={{ scale: 1, opacity: 1 }}
+                                          className="w-10 h-10 rounded-xl backdrop-blur-xl bg-white/10 border border-white/20 flex items-center justify-center"
+                                        >
+                                          <Video className="w-5 h-5 text-white" />
+                                        </motion.div>
+                                      </div>
+                                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/95 via-black/80 to-transparent rounded-b-xl">
+                                        <p className="text-[10px] font-semibold text-white truncate">{media.file.name}</p>
+                                        <p className="text-[9px] text-white/60 mt-0.5">{(media.file.size / (1024 * 1024)).toFixed(1)} MB</p>
+                                      </div>
+                                      {showOverlay && (
+                                        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center rounded-xl">
+                                          <p className="text-lg font-bold text-white">+{totalMedia - 4}</p>
+                                        </div>
+                                      )}
+                                      {!showOverlay && (
+                                        <motion.button
+                                          onClick={() => removeVideo(media.index)}
+                                          className="absolute top-1.5 right-1.5 w-7 h-7 rounded-lg backdrop-blur-xl bg-black/60 border border-white/20 hover:bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                          whileHover={{ scale: 1.1, rotate: 90 }}
+                                          whileTap={{ scale: 0.9 }}
+                                        >
+                                          <X className="w-3.5 h-3.5 text-white" />
+                                        </motion.button>
+                                      )}
                                     </div>
-                                  )}
-
-                                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-1">
-                                    <p className="truncate text-[8px] font-medium text-white/90">{formatFileSize(media.file.size)}</p>
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => (media.type === 'image' ? removeImage(media.index) : removeVideo(media.index))}
-                                    className="absolute right-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/25 bg-black/60 text-white transition hover:bg-black/80"
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </button>
-                                </div>
+                                  </>
+                                )}
                               </motion.div>
                             );
                           })}
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
 
                     <div className="flex items-center space-x-2">
                       {/* Hidden File Inputs */}

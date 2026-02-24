@@ -3,7 +3,7 @@ import { useSetAtom } from 'jotai';
 import { globalState } from '../../state/nearby';
 import { calculateAge } from '../../helpers/helpers';
 import { ActionBar } from './ActionBar';
-import { useNavigate } from '../../lib/navigation';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { Actions } from '../../services/actions';
 
@@ -56,33 +56,53 @@ const handleMessage =async (user: any) => {
 
     try {
       // Create chat via API
-      const chatResponse = await api.handleCreatePrivateChat({
-        id: user.id,
-        public_id: user.public_id,
+      const chatResponse = await api.call<{
+        chat: {
+          id: string;
+          type: string;
+          participants?: Array<{
+            user_id: string;
+            user?: {
+              id: string;
+              username?: string;
+              displayname?: string;
+            };
+          }>;
+        };
+        success: boolean;
+      }>(Actions.CMD_CHAT_CREATE, {
+        method: "POST",
+        body: {
+          type: 'private',
+          participant_ids: [user.id],
+        },
       });
 
       const chatId = chatResponse?.chat?.id;
 
       if (chatId) {
-        const params = new URLSearchParams({
-          openChat: chatId,
-          userId: String(user.id),
-          publicId: String(user.public_id ?? ''),
-          username: String(user.username ?? ''),
+        // Navigate to messages screen with chat ID
+        navigate('/messages', {
+          state: {
+            openChat: chatId,
+            userId: user.id,
+            publicId: user.public_id,
+            username: user.username
+          }
         });
-        navigate(`/messages?${params.toString()}`);
       } else {
         console.error('Chat creation failed - no chat ID returned');
       }
     } catch (error) {
       console.error('Error creating chat:', error);
-      const params = new URLSearchParams({
-        openChat: String(user.username || user.id),
-        userId: String(user.id),
-        publicId: String(user.public_id ?? ''),
-        username: String(user.username ?? ''),
+      // Navigate anyway, MessagesScreen will handle creating a temporary chat
+      navigate('/messages', {
+        state: {
+          openChat: user.username || user.id,
+          userId: user.id,
+          publicId: user.public_id
+        }
       });
-      navigate(`/messages?${params.toString()}`);
     }
         
 

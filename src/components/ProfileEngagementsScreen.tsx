@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from '../lib/navigation';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, RefreshCw, Users, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -39,6 +39,7 @@ const ProfileEngagementsScreen: React.FC = () => {
     username: string;
     engagementType: string;
   }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useTheme();
   const { defaultLanguage } = useApp();
@@ -49,9 +50,15 @@ const ProfileEngagementsScreen: React.FC = () => {
     return isEngagementType(lower) ? lower : null;
   }, [engagementType]);
 
-  const [profile, setProfile] = useState<ProfileSummary | null>(null);
+  const navigationState = location.state as
+    | { profileSummary?: ProfileSummary }
+    | undefined;
+
+  const [profile, setProfile] = useState<ProfileSummary | null>(
+    navigationState?.profileSummary ?? null
+  );
   const [loadingProfile, setLoadingProfile] = useState<boolean>(
-    true
+    !navigationState?.profileSummary
   );
   const [engagements, setEngagements] = useState<EngagementUser[]>([]);
   const [loadingEngagements, setLoadingEngagements] = useState<boolean>(false);
@@ -595,3 +602,4 @@ const ProfileEngagementsScreen: React.FC = () => {
 };
 
 export default ProfileEngagementsScreen;
+

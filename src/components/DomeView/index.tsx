@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useGesture } from '@use-gesture/react';
+import './style.css';
 import { useAtom } from 'jotai';
 import { globalState } from '../../state/nearby'; // atomun tanımlı olduğu dosya
 import { getSafeImageURL, getSafeImageURLEx } from '../../helpers/helpers';
@@ -96,7 +97,7 @@ function computeItemBaseRotation(offsetX, offsetY, sizeX, sizeY, segments) {
 export default function DomeView({
   fit = 0.5,
   fitBasis = 'auto',
-  minRadius = typeof window !== 'undefined' ? window.innerWidth : 1024,
+  minRadius = window.innerWidth,
   maxRadius = Infinity,
   padFactor = 0.25,
   overlayBlurColor = 'transparent',

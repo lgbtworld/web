@@ -37,11 +37,10 @@ export function PushNotificationSetupContext() {
       const reg = await navigator.serviceWorker.register("/service-worker.js");
       console.log("SW registered:", reg.scope);
 
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        // Keep SW active for PWA installability even when user is logged out.
-        return;
-      }
+
+
+
+
       let permission = Notification.permission;
       if (permission === "default") permission = await Notification.requestPermission();
 
@@ -72,21 +71,9 @@ export function PushNotificationSetupContext() {
 
       const json = sub?.toJSON ? sub.toJSON() : sub;
 
-      // Backend payload format may differ by environment/version.
-      // Try object payload first, then stringified payload as fallback.
-      try {
-        await api.handleSetVapidSubscriptions({
-          subscriptions: json,
-          subscription: json,
-          endpoint: (json as any)?.endpoint,
-        });
-      } catch (primaryError) {
-        await api.handleSetVapidSubscriptions({
-          subscriptions: JSON.stringify(json),
-          subscription: JSON.stringify(json),
-          endpoint: (json as any)?.endpoint,
-        });
-      }
+      await api.handleSetVapidSubscriptions({
+        subscriptions: JSON.stringify(json),
+      });
 
       console.log("Push subscription stored");
 
@@ -99,7 +86,6 @@ export function PushNotificationSetupContext() {
 
   function enableFallback() {
     if (fallbackInterval.current) return;
-    if (!localStorage.getItem("authToken")) return;
 
     if (!("Notification" in window)) {
       console.warn("This browser does not support desktop notifications");

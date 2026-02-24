@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, PanInfo, useMotionValue } from 'framer-motion';
-import { Heart, X, Star, MapPin, Camera, Shield, Sparkles, MessageCircle, Ghost, RefreshCw, Info, ChevronDown } from 'lucide-react';
+import { Heart, X, Star, MapPin, Camera, Shield, Sparkles, MessageCircle, Ghost, RefreshCw, Info } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from '../lib/navigation';
+import { useNavigate } from 'react-router-dom';
 import Container from './Container';
 import ProfileScreen from './ProfileScreen';
 import { api } from '../services/api';
@@ -233,7 +233,6 @@ const MatchScreen: React.FC = () => {
   const [expandedMatches, setExpandedMatches] = useState(false);
   const [expandedLiked, setExpandedLiked] = useState(false);
   const [expandedPassed, setExpandedPassed] = useState(false);
-  const [showScrollHint, setShowScrollHint] = useState(true);
   const [processedProfiles, setProcessedProfiles] = useState<Set<string>>(new Set()); // Track processed profile IDs
   const cardRef = useRef<HTMLDivElement>(null);
   const processedProfilesRef = useRef<Set<string>>(new Set());
@@ -279,21 +278,6 @@ const MatchScreen: React.FC = () => {
   useEffect(() => {
     isLoadingPassedRef.current = isLoadingPassed;
   }, [isLoadingPassed]);
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (window.scrollY > 48) {
-        setShowScrollHint(false);
-      }
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-    };
-  }, []);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -640,33 +624,53 @@ const MatchScreen: React.FC = () => {
 
     try {
       // Create chat via API
-      const chatResponse = await api.handleCreatePrivateChat({
-        id: profile.id,
-        public_id: profile.public_id,
+      const chatResponse = await api.call<{ 
+        chat: { 
+          id: string;
+          type: string;
+          participants?: Array<{
+            user_id: string;
+            user?: {
+              id: string;
+              username?: string;
+              displayname?: string;
+            };
+          }>;
+        };
+        success: boolean;
+      }>(Actions.CMD_CHAT_CREATE, {
+        method: "POST",
+        body: {
+          type: 'private',
+          participant_ids: [profile.id],
+        },
       });
 
       const chatId = chatResponse?.chat?.id;
       
       if (chatId) {
-        const params = new URLSearchParams({
-          openChat: chatId,
-          userId: String(profile.id),
-          publicId: String(profile.public_id ?? ''),
-          username: String(profile.username ?? ''),
+        // Navigate to messages screen with chat ID
+        navigate('/messages', { 
+          state: { 
+            openChat: chatId,
+            userId: profile.id,
+            publicId: profile.public_id,
+            username: profile.username
+          } 
         });
-        navigate(`/messages?${params.toString()}`);
       } else {
         console.error('Chat creation failed - no chat ID returned');
       }
     } catch (error) {
       console.error('Error creating chat:', error);
-      const params = new URLSearchParams({
-        openChat: String(profile.username || profile.id),
-        userId: String(profile.id),
-        publicId: String(profile.public_id ?? ''),
-        username: String(profile.username ?? ''),
+      // Navigate anyway, MessagesScreen will handle creating a temporary chat
+      navigate('/messages', { 
+        state: { 
+          openChat: profile.username || profile.id,
+          userId: profile.id,
+          publicId: profile.public_id
+        } 
       });
-      navigate(`/messages?${params.toString()}`);
     }
   };
 
@@ -1267,32 +1271,6 @@ const MatchScreen: React.FC = () => {
           </motion.button>
         </motion.div>
 
-        <AnimatePresence>
-          {showScrollHint && (
-            <motion.button
-              type="button"
-              className={`mx-auto mt-5 sm:mt-6 flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-semibold border backdrop-blur-md ${
-                theme === 'dark'
-                  ? 'bg-white/10 border-white/15 text-white/85'
-                  : 'bg-white/90 border-gray-200 text-gray-700 shadow-sm'
-              }`}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.25 }}
-              onClick={() => window.scrollBy({ top: 420, behavior: 'smooth' })}
-            >
-              <span>{t('match.scroll_for_more') || 'Scroll for matches history'}</span>
-              <motion.span
-                animate={{ y: [0, 4, 0] }}
-                transition={{ duration: 1.2, repeat: Infinity }}
-                className="inline-flex"
-              >
-                <ChevronDown className="w-3.5 h-3.5" />
-              </motion.span>
-            </motion.button>
-          )}
-        </AnimatePresence>
 
       </motion.div>
       </>

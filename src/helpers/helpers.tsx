@@ -56,7 +56,9 @@ export function getSafeImageURL(
       let path = attachment?.file?.variants?.image?.[variant]?.url || 
                  attachment?.variants?.image?.[variant]?.url ||
                  attachment?.file?.variants?.video?.[variant]?.url ||
-                 attachment?.variants?.video?.[variant]?.url;
+                 attachment?.variants?.video?.[variant]?.url ||
+                 attachment?.file?.url ||
+                 attachment?.url;
       
       if (!path) return null;
   
@@ -92,7 +94,9 @@ export function getSafeImageURLEx(
       let path = attachment?.file?.variants?.image?.[variant]?.url || 
                  attachment?.variants?.image?.[variant]?.url ||
                  attachment?.file?.variants?.video?.[variant]?.url ||
-                 attachment?.variants?.video?.[variant]?.url;
+                 attachment?.variants?.video?.[variant]?.url ||
+                 attachment?.file?.url ||
+                 attachment?.url;
       
       if (!path) {
         return generateFallbackImage(publicId)
@@ -158,7 +162,18 @@ export function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
 
-  const rawData = window.atob(base64);
+  const decode =
+    typeof atob === 'function'
+      ? atob
+      : (typeof Buffer !== 'undefined'
+          ? (value: string) => Buffer.from(value, 'base64').toString('binary')
+          : null);
+
+  if (!decode) {
+    return new Uint8Array(0);
+  }
+
+  const rawData = decode(base64);
   const outputArray = new Uint8Array(rawData.length);
 
   for (let i = 0; i < rawData.length; ++i) {

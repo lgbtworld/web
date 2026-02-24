@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://coolvibes.lgbt/sitemap.xml

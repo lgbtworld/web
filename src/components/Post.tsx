@@ -12,7 +12,6 @@ import TipButton from './TipButton';
 import { api } from '../services/api';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { CLEAR_HISTORY_COMMAND, createEditor } from 'lexical';
-import L from 'leaflet';
 
 import {HashtagNode} from '@lexical/hashtag';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
@@ -356,14 +355,26 @@ const Post: React.FC<PostProps> = ({
   const [tipCountDisplay, setTipCountDisplay] = useState(0);
   const [tipAmountDisplay, setTipAmountDisplay] = useState(0);
   const { theme } = useTheme();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { data: appData, defaultLanguage } = useApp();
   const [html, setHtml] = useState('');
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
+  const mapInstanceRef = useRef<any>(null);
   const eventMapRef = useRef<HTMLDivElement>(null);
-  const eventMapInstanceRef = useRef<L.Map | null>(null);
+  const eventMapInstanceRef = useRef<any>(null);
+  const [leafletLib, setLeafletLib] = useState<any>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const requireAuthForPostAction = useCallback((e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (isAuthenticated && user?.id) {
+      return true;
+    }
+    console.warn('Post action blocked: unauthenticated user');
+    return false;
+  }, [isAuthenticated, user?.id]);
   
   // Memoize post ID and key engagement data to prevent unnecessary updates
   const postIdRef = useRef<string>(postProp.public_id);
@@ -372,6 +383,23 @@ const Post: React.FC<PostProps> = ({
   const postEngagementsRef = useRef<string>(JSON.stringify(postProp.engagements || {}));
   const childrenRef = useRef<ApiPost[] | undefined>(postProp.children);
   const postPropRef = useRef<ApiPost>(postProp);
+
+  useEffect(() => {
+    let mounted = true;
+    if (typeof window === 'undefined') return;
+    import('leaflet')
+      .then((mod) => {
+        if (mounted) {
+          setLeafletLib(mod.default ?? mod);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load leaflet:', error);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   
   // Helper function to update engagement states from post data
@@ -604,7 +632,7 @@ const Post: React.FC<PostProps> = ({
 
   // Initialize Leaflet map when location is set
   useEffect(() => {
-    if (!post.location || !mapRef.current) {
+    if (!post.location || !mapRef.current || !leafletLib) {
       return;
     }
 
@@ -647,7 +675,7 @@ const Post: React.FC<PostProps> = ({
         container.style.position = 'relative';
         container.style.zIndex = '1';
 
-        const map = L.map(container, {
+        const map = leafletLib.map(container, {
           center: [lat, lng],
           zoom: 17,
           zoomControl: false,
@@ -664,14 +692,14 @@ const Post: React.FC<PostProps> = ({
         mapInstanceRef.current = map;
 
         // Add tile layer with better error handling
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        leafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 19,
           errorTileUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgZmlsbD0iI2Y5ZmFmYiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOWNhM2FmIiBmb250LXNpemU9IjE0cHgiPk1hcCBUaWxlPC90ZXh0Pjwvc3ZnPg=='
         }).addTo(map);
 
         // Add custom marker
-        const customIcon = L.divIcon({
+        const customIcon = leafletLib.divIcon({
           html: `
             <div style="
               width: 30px;
@@ -698,7 +726,7 @@ const Post: React.FC<PostProps> = ({
           iconAnchor: [15, 15]
         });
 
-        L.marker([lat, lng], { icon: customIcon }).addTo(map);
+        leafletLib.marker([lat, lng], { icon: customIcon }).addTo(map);
 
         // Force map to invalidate size after a short delay
         setTimeout(() => {
@@ -728,11 +756,11 @@ const Post: React.FC<PostProps> = ({
         }
       }
     };
-  }, [post.location]);
+  }, [post.location, leafletLib]);
 
   // Initialize Leaflet map for event location
   useEffect(() => {
-    if (!post.event?.location || !eventMapRef.current) {
+    if (!post.event?.location || !eventMapRef.current || !leafletLib) {
       return;
     }
 
@@ -775,7 +803,7 @@ const Post: React.FC<PostProps> = ({
         container.style.position = 'relative';
         container.style.zIndex = '1';
 
-        const map = L.map(container, {
+        const map = leafletLib.map(container, {
           center: [lat, lng],
           zoom: 17,
           zoomControl: false,
@@ -792,14 +820,14 @@ const Post: React.FC<PostProps> = ({
         eventMapInstanceRef.current = map;
 
         // Add tile layer with better error handling
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        leafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 19,
           errorTileUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgZmlsbD0iI2Y5ZmFmYiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOWNhM2FmIiBmb250LXNpemU9IjE0cHgiPk1hcCBUaWxlPC90ZXh0Pjwvc3ZnPg=='
         }).addTo(map);
 
         // Add custom marker
-        const customIcon = L.divIcon({
+        const customIcon = leafletLib.divIcon({
           html: `
             <div style="
               width: 30px;
@@ -826,7 +854,7 @@ const Post: React.FC<PostProps> = ({
           iconAnchor: [15, 15]
         });
 
-        L.marker([lat, lng], { icon: customIcon }).addTo(map);
+        leafletLib.marker([lat, lng], { icon: customIcon }).addTo(map);
 
         // Force map to invalidate size after a short delay
         setTimeout(() => {
@@ -856,7 +884,7 @@ const Post: React.FC<PostProps> = ({
         }
       }
     };
-  }, [post.event?.location]);
+  }, [post.event?.location, leafletLib]);
 
   // Fetch children (replies) when in detail view
   // Only fetch if children are not already included in the post data
@@ -986,8 +1014,7 @@ const Post: React.FC<PostProps> = ({
   };
 
   const handlePollVote = async (pollId: string, choiceId: string, pollKind: 'single' | 'multiple' | 'ranked' | 'weighted', maxSelectable: number, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation(); // Prevent post click
+    if (!requireAuthForPostAction(e)) return;
     
     // Get current state before updating
     const currentChoices = selectedPollChoices[pollId] || [];
@@ -1147,8 +1174,7 @@ const Post: React.FC<PostProps> = ({
 
   // Handle like
   const handleLike = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (!requireAuthForPostAction(e)) return;
     if (isLiking) return;
     
     setIsLiking(true);
@@ -1193,8 +1219,7 @@ const Post: React.FC<PostProps> = ({
 
   // Handle dislike
   const handleDislike = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (!requireAuthForPostAction(e)) return;
     if (isDisliking) return;
     
     setIsDisliking(true);
@@ -1237,8 +1262,7 @@ const Post: React.FC<PostProps> = ({
 
   // Handle banana
   const handleBanana = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (!requireAuthForPostAction(e)) return;
     if (isBananaing) return;
     
     setIsBananaing(true);
@@ -1274,8 +1298,7 @@ const Post: React.FC<PostProps> = ({
 
   // Handle bookmark
   const handleBookmark = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (!requireAuthForPostAction(e)) return;
     if (isBookmarking) return;
     
     setIsBookmarking(true);

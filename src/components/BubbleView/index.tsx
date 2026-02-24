@@ -8,7 +8,7 @@ import { calculateAge, getSafeImageURL } from '../../helpers/helpers';
 import { ActionBar, burstConfig, BurstOverlayState, BurstType, createOverlayConfetti, createOverlayParticles, createOverlayStreaks } from '../UserCard/ActionBar';
 import { api } from '../../services/api';
 import { Actions } from '../../services/actions';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../lib/navigation';
 import { useTheme } from '../../contexts/ThemeContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
@@ -81,54 +81,33 @@ export default function BubbleView() {
         }
 
         try {
-            // Create chat via API
-            const chatResponse = await api.call<{
-                chat: {
-                    id: string;
-                    type: string;
-                    participants?: Array<{
-                        user_id: string;
-                        user?: {
-                            id: string;
-                            username?: string;
-                            displayname?: string;
-                        };
-                    }>;
-                };
-                success: boolean;
-            }>(Actions.CMD_CHAT_CREATE, {
-                method: "POST",
-                body: {
-                    type: 'private',
-                    participant_ids: [profile.id],
-                },
+            const chatResponse = await api.handleCreatePrivateChat({
+                id: profile.id,
+                public_id: profile.public_id,
             });
 
             const chatId = chatResponse?.chat?.id;
 
             if (chatId) {
-                // Navigate to messages screen with chat ID
-                navigate('/messages', {
-                    state: {
-                        openChat: chatId,
-                        userId: profile.id,
-                        publicId: profile.public_id,
-                        username: profile.username
-                    }
+                const params = new URLSearchParams({
+                    openChat: chatId,
+                    userId: String(profile.id),
+                    publicId: String(profile.public_id ?? ''),
+                    username: String(profile.username ?? ''),
                 });
+                navigate(`/messages?${params.toString()}`);
             } else {
                 console.error('Chat creation failed - no chat ID returned');
             }
         } catch (error) {
             console.error('Error creating chat:', error);
-            // Navigate anyway, MessagesScreen will handle creating a temporary chat
-            navigate('/messages', {
-                state: {
-                    openChat: profile.username || profile.id,
-                    userId: profile.id,
-                    publicId: profile.public_id
-                }
+            const params = new URLSearchParams({
+                openChat: String(profile.username || profile.id),
+                userId: String(profile.id),
+                publicId: String(profile.public_id ?? ''),
+                username: String(profile.username ?? ''),
             });
+            navigate(`/messages?${params.toString()}`);
         }
     };
 

@@ -22,17 +22,7 @@ import pl from '../locales/pl/common.json';
 import kp from '../locales/kp/common.json';
 import kr from '../locales/kr/common.json';
 
-
-
-const storedLang = typeof window !== 'undefined' ? localStorage.getItem('lang') : null;
-const browserLang = typeof navigator !== 'undefined' ? (navigator.language || 'en').split('-')[0] : 'en';
 const fallbackLng = 'en';
-
-let lng = storedLang || browserLang || fallbackLng;
-
-// Eğer tarayıcı dili örneğin "zh-tw" ise ve resources "tw" ise, eşleştirme yapabiliriz:
-if (lng === 'zh-tw') lng = 'tw';
-else if (lng === 'zh-hk') lng = 'hk';
 
 
 i18n
@@ -61,7 +51,8 @@ i18n
       kp: { common: kp },
       kr: { common: kr },
     },
-    lng,
+    // Keep initial language deterministic for SSR hydration.
+    lng: fallbackLng,
     fallbackLng,
     ns: ['common'],
     defaultNS: 'common',

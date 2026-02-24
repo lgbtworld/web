@@ -14,7 +14,17 @@ import { useAtom } from 'jotai';
 
 import { globalState } from '../state/nearby'; // atomun tanımlı olduğu dosya
 import Container from './Container';
-import Map from './Map';
+import dynamic from 'next/dynamic';
+const Map = dynamic(() => import('./Map'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full rounded-2xl border border-gray-800/40 bg-gray-900/30 p-4">
+      <div className="h-6 w-36 rounded-md bg-gray-700/50 animate-pulse" />
+      <div className="mt-3 h-4 w-56 rounded-md bg-gray-800/60 animate-pulse" />
+      <div className="mt-4 h-[55vh] w-full rounded-xl bg-gray-800/40 animate-pulse" />
+    </div>
+  ),
+});
 import BubbleView from './BubbleView';
 import DomeView from './DomeView';
 

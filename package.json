@@ -4,10 +4,11 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev --turbo",
+    "build": "NEXT_TELEMETRY_DISABLED=1 next build --webpack",
+    "start": "next start",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "next start"
   },
   "dependencies": {
     "@lexical/code": "^0.38.2",
@@ -20,13 +21,13 @@
     "@lexical/selection": "^0.38.2",
     "@lexical/utils": "^0.38.2",
     "@react-leaflet/core": "^3.0.0",
-    "@tailwindcss/vite": "^4.1.17",
     "@types/ngeohash": "^0.6.8",
     "@types/react-google-recaptcha": "^2.1.9",
     "@use-gesture/react": "^10.3.1",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "emoji-datasource-facebook": "^16.0.0",
+    "eslint-config-next": "^16.1.6",
     "framer-motion": "^12.23.24",
     "gl-matrix": "^3.4.4",
     "gsap": "^3.13.0",
@@ -37,6 +38,7 @@
     "leaflet.markercluster": "^1.5.3",
     "lexical": "^0.38.2",
     "lucide-react": "^0.553.0",
+    "next": "^16.1.6",
     "ngeohash": "^0.6.3",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
@@ -46,7 +48,6 @@
     "react-i18next": "^16.2.4",
     "react-leaflet": "^5.0.0",
     "react-resize-detector": "^12.3.0",
-    "react-router-dom": "^7.9.5",
     "socket.io-client": "^4.8.1",
     "tailwind-scrollbar-hide": "^4.0.0",
     "yjs": "^13.5.22"
@@ -56,16 +57,15 @@
     "@tailwindcss/postcss": "^4.1.17",
     "@types/leaflet": "^1.9.21",
     "@types/leaflet.markercluster": "^1.5.6",
+    "@types/node": "25.3.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
-    "@vitejs/plugin-react": "^5.1.0",
+    "baseline-browser-mapping": "^2.10.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.3",
-    "vite": "^7.2.2"
+    "typescript-eslint": "^8.46.3"
   }
 }

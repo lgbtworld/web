@@ -20,30 +20,18 @@ export const useTheme = () => {
 
 interface ThemeProviderProps {
   children: ReactNode;
+  initialTheme?: Theme;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    // Check localStorage first, then system preference
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    if (savedTheme) {
-      return savedTheme;
-    }
-    
-    // Check system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    
-    return 'light';
-  });
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialTheme = 'dark' }) => {
+  const [theme, setThemeState] = useState<Theme>(initialTheme);
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    localStorage.setItem('theme', newTheme);
-    
-    // Update document class for global styling
-    if (newTheme === 'dark') {
+  const applyDocumentTheme = (nextTheme: Theme) => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    if (nextTheme === 'dark') {
       document.documentElement.classList.add('dark');
       document.documentElement.classList.remove('light');
     } else {
@@ -52,25 +40,23 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     }
   };
 
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+    localStorage.setItem('theme', newTheme);
+    document.cookie = `theme=${newTheme}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    applyDocumentTheme(newTheme);
+  };
+
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
   useEffect(() => {
-    // Apply theme on mount
-    setTheme(theme);
-    
-    // Listen for system theme changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem('theme')) {
-        setTheme(e.matches ? 'dark' : 'light');
-      }
-    };
-    
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
+    applyDocumentTheme(theme);
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>

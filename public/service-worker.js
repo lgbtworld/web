@@ -81,10 +81,6 @@ self.addEventListener('fetch', (event) => {
   return
   if (event.request.method !== 'GET') return;
 
-  // VITE HMR protection
-  const url = new URL(event.request.url);
-  if (url.pathname.startsWith('/@vite') || url.pathname.includes('hmr')) return;
-
   // WebSocket protection
   if (event.request.url.startsWith('ws://') || event.request.url.startsWith('wss://')) return;
 
@@ -100,4 +96,3 @@ self.addEventListener('fetch', (event) => {
     // return new Response("Offline");
   }));
 });
-

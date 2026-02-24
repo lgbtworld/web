@@ -1,6 +1,27 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { serviceURL } from "../appSettings";
 
+const normalizeAuthHeader = (token: string | null): string | null => {
+  if (!token) return null;
+  return token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+};
+
+const readAuthToken = (): string | null => {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return null;
+  }
+  const localToken = localStorage.getItem("authToken");
+  if (localToken) {
+    return localToken;
+  }
+  const cookieToken = document.cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith("authToken="))
+    ?.split("=")[1];
+  return cookieToken ? decodeURIComponent(cookieToken) : null;
+};
+
 class HttpClient {
   private instance: AxiosInstance;
 
@@ -8,15 +29,21 @@ class HttpClient {
     this.instance = axios.create({
       baseURL,
       timeout: 10000000,
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     // Request interceptor (örneğin token ekleme)
     this.instance.interceptors.request.use((config) => {
-      const token = localStorage.getItem("authToken");
-      if (token) config.headers["Authorization"] = `${token}`;
+      const skipAuth = (config.headers as any)?.["X-Skip-Auth"] === "1";
+      if (skipAuth) {
+        if (config.headers) {
+          delete (config.headers as any)["X-Skip-Auth"];
+        }
+        return config;
+      }
+
+      const token = readAuthToken();
+      const authHeader = normalizeAuthHeader(token);
+      if (authHeader) config.headers["Authorization"] = authHeader;
       return config;
     });
 

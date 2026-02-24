@@ -395,7 +395,7 @@ class InfiniteGridMenu {
 
 // --- HOOK ---
 export const useWebGLSphere = (
-    canvasRef: React.RefObject<HTMLCanvasElement>,
+    canvasRef: React.RefObject<HTMLCanvasElement | null>,
     items: any[],
     onActiveItemChange: (index: number) => void,
     onMovementChange: (isMoving: boolean) => void

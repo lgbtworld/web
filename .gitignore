@@ -7,3 +7,5 @@ src/dummy
 ./src/dummy
 ./dist/
 /dist
+.next
+out

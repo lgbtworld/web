@@ -1,36 +1,25 @@
 import React, { useState } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from './lib/navigation';
+import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import Footer from './components/Footer';
-import MatchScreen from './components/MatchScreen';
-import NearbyScreen from './components/NearbyScreen';
-import ProfileScreen from './components/ProfileScreen';
-import ProfileEngagementsScreen from './components/ProfileEngagementsScreen';
-import SearchScreen from './components/SearchScreen';
-import MessagesScreen from './components/MessagesScreen';
-import NotificationsScreen from './components/NotificationsScreen';
-import SplashScreen from './components/SplashScreen';
 import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useSettings } from './contexts/SettingsContext';
-import AuthWizard from './components/AuthWizard';
 import { MapPin, Heart, MessageCircle, User, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Wallet } from 'lucide-react';
-import TrendsPanel, { NormalizedTrend } from './components/TrendsPanel';
-import PopularUsersPanel from './components/PopularUsersPanel';
-import PlacesScreen from './components/PlacesScreen';
-import HomeScreen from './components/HomeScreen';
-import LanguageSelector from './components/LanguageSelector.tsx';
-import ClassifiedsScreen from './components/ClassifiedsScreen';
+import type { NormalizedTrend } from './components/TrendsPanel';
 import './i18n';
 import { useTranslation } from 'react-i18next';
+import i18next from 'i18next';
 import { applicationName } from './appSettings.tsx';
-import LandingPage from './components/LandingPage.tsx';
 import { getSafeImageURLEx } from './helpers/helpers.tsx';
-import TestPage from './components/TestPage.tsx';
 import PwaInstallPrompt, { PwaInstallProvider, usePwaInstall } from './components/PwaInstallPrompt';
-import PremiumScreen from './components/PremiumScreen.tsx';
-import PostDetails from './components/PostDetails.tsx';
-import WalletScreen from './components/WalletScreen.tsx';
+import SplashScreen from './components/SplashScreen';
+import AuthWizard from './components/AuthWizard';
+import TrendsPanel from './components/TrendsPanel';
+import PopularUsersPanel from './components/PopularUsersPanel';
+import LanguageSelector from './components/LanguageSelector.tsx';
+
 
 const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/': 'pride',
@@ -46,13 +35,33 @@ const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
 };
 
 const RIGHT_SIDEBAR_HIDDEN_PATHS = new Set(['/messages', '/landing', '/classifieds', '/places', '/match', '/nearby']);
+const PRIVATE_SINGLE_SEGMENT_PATHS = new Set([
+  'messages',
+  'notifications',
+  'classifieds',
+  'places',
+  'match',
+  'nearby',
+  'wallet',
+  'profile',
+  'premium',
+  'testpage',
+]);
+const PUBLIC_PATH_PATTERNS: RegExp[] = [
+  /^\/$/,
+  /^\/home$/,
+  /^\/pride$/,
+  /^\/landing$/,
+  /^\/search$/,
+  /^\/status\/[^/]+$/,
+  /^\/[^/]+\/status\/[^/]+$/,
+];
 
-function AppContent() {
-  const [activeScreen, setActiveScreen] = useState('pride');
+function AppContent({ pageContent }: { pageContent?: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthWizardOpen, setIsAuthWizardOpen] = useState(false);
   const [isLanguageSelectorOpen, setIsLanguageSelectorOpen] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileProfileMenuOpen, setIsMobileProfileMenuOpen] = useState(false);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -62,7 +71,8 @@ function AppContent() {
   const { showBottomBar, setShowBottomBar } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation('common');
+  const router = useRouter();
+  const { t } = useTranslation('common');
   const { canInstall } = usePwaInstall();
   const previousCanInstallRef = React.useRef(false);
   const showSidebarInstallCard = canInstall && !showInstallBanner;
@@ -70,10 +80,10 @@ function AppContent() {
     setShowInstallBanner(false);
   }, []);
   const languageDisplay = React.useMemo(() => {
-    const lang = i18n?.language || 'en';
+    const lang = i18next.resolvedLanguage || i18next.language || 'en';
     const base = lang.split('-')[0] || lang;
     return base.toUpperCase();
-  }, [i18n?.language]);
+  }, []);
   const profilePath = React.useMemo(() => `/${user?.username || 'profile'}`, [user?.username]);
   const displayName = user?.displayname || user?.username || 'User';
   const username = user?.username || 'username';
@@ -81,18 +91,32 @@ function AppContent() {
   const followerCount = (user as any)?.engagements?.counts?.follower_count ?? 0;
   const avatarIconSrc = getSafeImageURLEx((user as any)?.public_id, (user as any)?.avatar, 'icon') || undefined;
   const shouldShowRightSidebar = !RIGHT_SIDEBAR_HIDDEN_PATHS.has(location.pathname);
-
-  // Update activeScreen based on current URL
   React.useEffect(() => {
-    const path = location.pathname;
-    const nextScreen = ACTIVE_SCREEN_BY_PATH[path];
-    if (nextScreen) {
-      setActiveScreen(nextScreen);
-    } else if (path.startsWith('/') && path.split('/').length === 2) {
-      // Profile route like /username
-      setActiveScreen('profile');
+    const onAuthRequired = () => setIsAuthWizardOpen(true);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('cv:auth-required', onAuthRequired as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('cv:auth-required', onAuthRequired as EventListener);
+      }
+    };
+  }, []);
+  const isPublicPath = React.useMemo(() => {
+    if (PUBLIC_PATH_PATTERNS.some((pattern) => pattern.test(location.pathname))) {
+      return true;
     }
 
+    const segments = location.pathname.split('/').filter(Boolean);
+    if (segments.length === 1) {
+      return !PRIVATE_SINGLE_SEGMENT_PATHS.has(segments[0].toLowerCase());
+    }
+
+    return false;
+  }, [location.pathname]);
+
+  React.useEffect(() => {
+    const path = location.pathname;
     // Hide bottom bar on post detail screen (/:username/status/:postId)
     if (path.includes('/status/')) {
       setShowBottomBar(false);
@@ -106,6 +130,16 @@ function AppContent() {
     // For /messages, MessagesScreen will handle bottom bar visibility internally
   }, [location.pathname, setShowBottomBar]);
 
+  const activeScreen = React.useMemo(() => {
+    const path = location.pathname;
+    const nextScreen = ACTIVE_SCREEN_BY_PATH[path];
+    if (nextScreen) return nextScreen;
+    if (path.startsWith('/') && path.split('/').length === 2) return 'profile';
+    return 'pride';
+  }, [location.pathname]);
+
+  // Splash is disabled to keep first paint deterministic and avoid route-transition jitter.
+
   React.useEffect(() => {
     if (canInstall && !previousCanInstallRef.current) {
       setShowInstallBanner(true);
@@ -117,6 +151,13 @@ function AppContent() {
 
     previousCanInstallRef.current = canInstall;
   }, [canInstall]);
+
+  React.useEffect(() => {
+    const routesToPrefetch = ['/', '/home', '/pride', '/search', '/landing', '/premium'];
+    routesToPrefetch.forEach((path) => {
+      void router.prefetch(path);
+    });
+  }, [router]);
 
   const sidebarNavItems = React.useMemo(() => [
     {
@@ -189,12 +230,12 @@ function AppContent() {
     return [
       {
         id: 'primary',
-        title: t('app.sidebar.primary', 'Discover'),
+        title: t('app.sidebar.primary', { defaultValue: 'Discover' }),
         items: sortByOrder(primaryOrder)
       },
       {
         id: 'secondary',
-        title: t('app.sidebar.secondary', 'Manage'),
+        title: t('app.sidebar.secondary', { defaultValue: 'Manage' }),
         items: sortByOrder(secondaryOrder)
       }
     ];
@@ -260,8 +301,6 @@ function AppContent() {
     { id: 'messages', icon: MessageCircle, label: t('app.nav.messages'), accent: 'from-sky-400/80 to-indigo-500/80' },
     { id: 'profile', icon: User, label: t('app.nav.profile'), accent: 'from-gray-900/80 to-gray-700/80' },
   ], [t]);
-
-
 
   return (
     <div className={`w-screen dark:bg-gray-950 bg-white h-screen select-none`}>
@@ -451,7 +490,7 @@ function AppContent() {
                             : 'bg-gray-900 text-white'
                           }`}
                       >
-                        {t('app.view_profile', 'Profile')}
+                        {t('app.view_profile', { defaultValue: 'Profile' })}
                       </button>
                       <button
                         onClick={() => handleLogout()}
@@ -470,10 +509,10 @@ function AppContent() {
                       : 'bg-white border-black/[0.06]'
                     }`}>
                     <p className="text-xs uppercase tracking-[0.3em] opacity-60">
-                      {t('app.join_title', 'Welcome')}
+                      {t('app.join_title', { defaultValue: 'Welcome' })}
                     </p>
                     <p className="text-lg font-semibold mt-1">
-                      {t('app.join_subtitle', 'Create your profile')}
+                      {t('app.join_subtitle', { defaultValue: 'Create your profile' })}
                     </p>
                     <button
                       onClick={() => setIsAuthWizardOpen(true)}
@@ -556,7 +595,7 @@ function AppContent() {
                         )}
                         <div>
                           <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">
-                            {t('app.theme', 'Theme')}
+                            {t('app.theme', { defaultValue: 'Theme' })}
                           </p>
                           <p className="text-sm font-semibold">
                             {theme === 'dark' ? t('app.light_mode') : t('app.dark_mode')}
@@ -602,7 +641,7 @@ function AppContent() {
 
           {/* Middle Section - Scrollable */}
           <main className={`max-h-[100dvh]  min-h-[100dvh] overflow-y-hidden overflow-x-hidden scrollbar-hide flex-1 min-w-0 lg:border-l lg:border-r  ${theme === 'dark' ? 'lg:border-gray-900/70' : 'lg:border-gray-100'} pt-[56px] lg:pt-0  lg:pb-0`}>
-            {!isAuthenticated ? (
+            {!isAuthenticated && !isPublicPath ? (
               /* Show AuthWizard in inline mode when not authenticated */
               <div className={`h-full w-full flex items-start lg:items-center justify-center overflow-y-auto ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}>
                 <div className="w-full max-w-lg px-0 lg:px-4 py-4 lg:py-0">
@@ -616,37 +655,7 @@ function AppContent() {
                 </div>
               </div>
             ) : (
-              <Routes>
-                {/* Home Routes */}
-                <Route path="/landing" element={<LandingPage />} />
-                <Route path="/" element={<HomeScreen />} />
-                <Route path="/home" element={<HomeScreen />} />
-                <Route path="/pride" element={<HomeScreen />} />
-                <Route path="/testpage" element={<TestPage />} />
-                <Route path="/premium" element={<PremiumScreen />} />
-                <Route path="/wallet" element={<WalletScreen />} />
-
-                <Route
-                  path="/:username/:engagementType"
-                  element={<ProfileEngagementsScreen />}
-                />
-                <Route path="/:username/status/:postId" element={<PostDetails />} />
-                <Route path="/status/:postId" element={<PostDetails />} />
-                <Route path="/:username" element={<ProfileScreen />} />
-                {/* Other Routes */}
-                <Route path="/search" element={<SearchScreen />} />
-                <Route path="/match" element={<MatchScreen />} />
-                <Route path="/nearby" element={<NearbyScreen />} />
-                <Route path="/places" element={<PlacesScreen />} />
-                <Route path="/profile" element={<ProfileScreen />} />
-
-                <Route path="/messages" element={<MessagesScreen />} />
-                <Route path="/notifications" element={<NotificationsScreen />} />
-                <Route path="/classifieds" element={<ClassifiedsScreen />} />
-
-                {/* Fallback */}
-                <Route path="*" element={<HomeScreen />} />
-              </Routes>
+              pageContent ?? null
             )}
           </main>
 
@@ -893,7 +902,7 @@ function AppContent() {
                         : 'border-black/[0.08] bg-white'
                       }`}>
                       <p className={`px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {t('app.sidebar.primary', 'Discover')}
+                        {t('app.sidebar.primary', { defaultValue: 'Discover' })}
                       </p>
                       <div className="space-y-1.5">
                         {mobileNavItems.map((item, index) => {
@@ -1025,10 +1034,10 @@ function AppContent() {
   );
 }
 
-function App() {
+function App({ pageContent }: { pageContent?: React.ReactNode }) {
   return (
     <PwaInstallProvider>
-      <AppContent />
+      <AppContent pageContent={pageContent} />
     </PwaInstallProvider>
   );
 }

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { mat4, quat, vec2, vec3 } from 'gl-matrix';
-import './style.css';
 import { ArrowUpRight, Heart } from 'lucide-react';
 import { useAtom } from 'jotai';
 import { globalState } from '../../state/nearby'; // atomun tanımlı olduğu dosya

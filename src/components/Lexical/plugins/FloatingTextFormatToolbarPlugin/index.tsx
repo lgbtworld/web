@@ -8,7 +8,6 @@
 
 import type {JSX} from 'react';
 
-import './index.css';
 
 import {$isCodeHighlightNode} from '@lexical/code';
 import {$isLinkNode, TOGGLE_LINK_COMMAND} from '@lexical/link';

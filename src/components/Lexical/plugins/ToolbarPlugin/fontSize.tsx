@@ -6,7 +6,6 @@
  *
  */
 
-import './fontSize.css';
 
 import {LexicalEditor} from 'lexical';
 import * as React from 'react';

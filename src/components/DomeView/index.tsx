@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useGesture } from '@use-gesture/react';
-import './style.css';
 import { useAtom } from 'jotai';
 import { globalState } from '../../state/nearby'; // atomun tanımlı olduğu dosya
 import { getSafeImageURL, getSafeImageURLEx } from '../../helpers/helpers';

@@ -157,9 +157,9 @@
     "tattoos": "خالکوبی",
     "mbti_type": "نوع شخصیت",
     "cronotype": "کرونوتایپ",
-    "sense_of_humor": "حس طنز"
-  ,
-  "send_message": "ارسال پیام"},
+    "sense_of_humor": "حس طنز",
+    "send_message": "ارسال پیام"
+  },
   "app": {
     "social": "اجتماعی",
     "join_now": "همین حالا بپیوندید",
@@ -379,5 +379,27 @@
     "finding_people": "در حال یافتن افراد در منطقه شما",
     "try_again": "دوباره تلاش کنید",
     "load_more": "بارگذاری بیشتر"
+  },
+  "places": {
+    "details_title": "Business Profile",
+    "details_not_found": "Place not found",
+    "no_public_id": "No place ID provided.",
+    "call": "Call Now",
+    "directions": "Directions",
+    "website": "Website",
+    "about": "About Business",
+    "no_description": "No detailed information added about this business yet.",
+    "contact": "Contact",
+    "phone": "Phone",
+    "email": "Email",
+    "location": "Location",
+    "address": "Address",
+    "get_directions": "Get Directions",
+    "view_profile": "View Profile",
+    "no_address": "No address info",
+    "retry": "Retry",
+    "added_by": "Added By User",
+    "business_id": "Business ID",
+    "verified_by": "Verified by {{domain}}"
   }
 }

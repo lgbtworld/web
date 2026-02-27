@@ -157,9 +157,9 @@
     "tattoos": "纹身",
     "mbti_type": "性格类型",
     "cronotype": "时间类型",
-    "sense_of_humor": "幽默感"
-  ,
-  "send_message": "发送消息"},
+    "sense_of_humor": "幽默感",
+    "send_message": "发送消息"
+  },
   "app": {
     "social": "社交",
     "join_now": "立即加入",
@@ -379,5 +379,27 @@
     "finding_people": "正在查找您所在区域的人",
     "try_again": "重试",
     "load_more": "加载更多"
+  },
+  "places": {
+    "details_title": "Business Profile",
+    "details_not_found": "Place not found",
+    "no_public_id": "No place ID provided.",
+    "call": "Call Now",
+    "directions": "Directions",
+    "website": "Website",
+    "about": "About Business",
+    "no_description": "No detailed information added about this business yet.",
+    "contact": "Contact",
+    "phone": "Phone",
+    "email": "Email",
+    "location": "Location",
+    "address": "Address",
+    "get_directions": "Get Directions",
+    "view_profile": "View Profile",
+    "no_address": "No address info",
+    "retry": "Retry",
+    "added_by": "Added By User",
+    "business_id": "Business ID",
+    "verified_by": "Verified by {{domain}}"
   }
 }

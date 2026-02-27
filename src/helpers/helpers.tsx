@@ -1,5 +1,5 @@
 import { defaultServiceServerId, serviceURL } from "../appSettings";
-import { DEFAULT_AVATAR_URL } from "../constants/constants";
+import { DEFAULT_AVATAR_URL, PLACE_AVATAR_URL } from "../constants/constants";
 import { pickSeededColorsString } from "./colors";
 
 // helpers/safeUrl.ts
@@ -34,6 +34,12 @@ export function buildSafeURL(
     }
   }
   
+
+export function generatePlaceImage(seed : any) : string{
+  const safeSeed = String(seed ?? 'guest');
+  const randColor = pickSeededColorsString(safeSeed, 3);
+  return `${PLACE_AVATAR_URL}${encodeURIComponent(safeSeed)}&backgroundColor=${randColor}&backgroundType=gradientLinear,solid`;
+}
 
 
 export function generateFallbackImage(seed : any) : string{

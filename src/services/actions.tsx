@@ -100,6 +100,10 @@ export const Actions = {
   CMD_USER_TOGGLE_DISLIKE: "user.dislike.toggle",
 
 
+  CMD_PLACE_FETCH: "place.fetch",
+  CMD_PLACE_CATEGORIES: "place.categories",
+
+
 
   CMD_USER_UPDATE_PREFERENCES: "user.update_preferences"
 

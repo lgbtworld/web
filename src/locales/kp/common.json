@@ -157,9 +157,9 @@
     "tattoos": "문신",
     "mbti_type": "성격 유형",
     "cronotype": "생활 리듬 유형",
-    "sense_of_humor": "유머감각"
-  ,
-  "send_message": "쪽지 보내기"},
+    "sense_of_humor": "유머감각",
+    "send_message": "쪽지 보내기"
+  },
   "app": {
     "social": "사회",
     "join_now": "지금 가입",
@@ -413,5 +413,27 @@
     "days_ago": "{{count}}일 전",
     "mark_all_read": "모두 읽음으로 표시",
     "settings": "설정"
+  },
+  "places": {
+    "details_title": "Business Profile",
+    "details_not_found": "Place not found",
+    "no_public_id": "No place ID provided.",
+    "call": "Call Now",
+    "directions": "Directions",
+    "website": "Website",
+    "about": "About Business",
+    "no_description": "No detailed information added about this business yet.",
+    "contact": "Contact",
+    "phone": "Phone",
+    "email": "Email",
+    "location": "Location",
+    "address": "Address",
+    "get_directions": "Get Directions",
+    "view_profile": "View Profile",
+    "no_address": "No address info",
+    "retry": "Retry",
+    "added_by": "Added By User",
+    "business_id": "Business ID",
+    "verified_by": "Verified by {{domain}}"
   }
 }

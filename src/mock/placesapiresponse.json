@@ -1,0 +1,1888 @@
+{
+  "cursor": {
+    "next": "2026803118628409344",
+    "distance": 8091.70572671
+  },
+  "error": null,
+  "places": [
+    {
+      "public_id": "2026803118628409344",
+      "id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+      "post_kind": "place",
+      "domain": "coolvibes",
+      "content_category": "normal",
+      "contentable_type": "place",
+      "author_id": "8d491dc9-d716-4924-b46e-7fc4eb398cdc",
+      "title": {
+        "tr": "Chianti Bar"
+      },
+      "slug": "chianti-bar",
+      "content": {
+        "tr": "{\n\"root\": {\n\"children\": [\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Chianti Bar\",\n\"type\": \"text\",\n\"version\": 1,\n\"bold\": true\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"heading\",\n\"version\": 1,\n\"textFormat\": 1,\n\"textStyle\": \"\",\n\"tag\": \"h1\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Name: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Chianti Bar\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Description: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Bar for bears, cubs, daddies, chasers, big men and muscle guys. Working hours: 21.00 - 02.00\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Tag: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"gaybar\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Address: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \" Balo str. No:31 floor: 2nd, Beyoglu, istanbul\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Town: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Beyoğlu\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Province: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"İstanbul\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Region: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Marmara Bölgesi\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Postcode: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"34440\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Country: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Türkiye\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"CountryCode: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"tr\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Telephone: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"05556298970\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Email: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"best_ilker@hotmail.com\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"Website: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"istanbulgaybar.com\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n},\n{\n\"children\": [\n{\n\"detail\": 0,\n\"format\": 1,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"URL: \",\n\"type\": \"text\",\n\"version\": 1\n},\n{\n\"detail\": 0,\n\"format\": 0,\n\"mode\": \"normal\",\n\"style\": \"\",\n\"text\": \"istanbulgaybar.com\",\n\"type\": \"text\",\n\"version\": 1\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"paragraph\",\n\"version\": 1,\n\"textFormat\": 0,\n\"textStyle\": \"\"\n}\n],\n\"direction\": null,\n\"format\": \"\",\n\"indent\": 0,\n\"type\": \"root\",\n\"version\": 1,\n\"textFormat\": 1\n}\n}"
+      },
+      "audience": "public",
+      "extras": {
+        "place": {
+          "tag": "gaybar",
+          "name": "Chianti Bar",
+          "town": "Beyoğlu",
+          "urls": [
+            "istanbulgaybar.com"
+          ],
+          "email": "best_ilker@hotmail.com",
+          "image": "",
+          "region": "Marmara Bölgesi",
+          "source": "G",
+          "address": " Balo str. No:31 floor: 2nd, Beyoglu, istanbul",
+          "country": "Türkiye",
+          "website": "istanbulgaybar.com",
+          "latitude": 41.0382864,
+          "postcode": "34440",
+          "province": "İstanbul",
+          "longitude": 28.9703304,
+          "source_id": "446",
+          "telephone": "05556298970",
+          "description": "Bar for bears, cubs, daddies, chasers, big men and muscle guys. Working hours: 21.00 - 02.00",
+          "country_code": "tr"
+        }
+      },
+      "author": {
+        "public_id": "2024811439805435904",
+        "id": "8d491dc9-d716-4924-b46e-7fc4eb398cdc",
+        "domain": "coolvibes",
+        "username": "explorer",
+        "displayname": "explorer",
+        "balance": "0",
+        "is_online": false,
+        "privacy_level": "public",
+        "preferences_flags": "",
+        "user_role": "user",
+        "is_active": false,
+        "created_at": "2026-02-20T14:40:41.084134+03:00",
+        "updated_at": "2026-02-20T14:40:41.084134+03:00",
+        "default_language": "en",
+        "languages": null,
+        "travel": {
+          "visited_countries": null,
+          "travel_frequency": "",
+          "favorite_places": null
+        },
+        "wallet": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "hd_account_id": 0,
+          "hd_address_id": 0,
+          "bitcoin": "",
+          "ethereum": "",
+          "avalanche": "",
+          "tron": "",
+          "solana": "",
+          "chiliz": "",
+          "created_at": "0001-01-01T00:00:00Z",
+          "updated_at": "0001-01-01T00:00:00Z"
+        },
+        "deleted_at": null
+      },
+      "hashtags": [
+        {
+          "id": "176aedec-02ba-44eb-a728-0858b7124076",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtiqa",
+          "slug": "lgbtiqa",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "d7bcd8d9-3cf5-479b-b903-08a78ff75ecd",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtcommunity",
+          "slug": "lgbtcommunity",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "7dac84e7-752f-43a4-948e-17fe9e8c5bbd",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "queer",
+          "slug": "queer",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "50a5449f-9a31-458a-be92-dbcb0c7541ce",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "pride",
+          "slug": "pride",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "2fbd8cde-c991-4e6e-9624-b3c7796a0754",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "loveislove",
+          "slug": "loveislove",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "07bb77ca-7769-42d8-8aa2-f2c76bf364db",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbt",
+          "slug": "lgbt",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "96b2bbff-4bc8-4840-9b27-f8bbe215fa5b",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtlife",
+          "slug": "lgbtlife",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "ebbd962a-ce7b-459f-8f29-ff19af51ea6e",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtfriendly",
+          "slug": "lgbtfriendly",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "f772e2a5-8d04-419b-acef-ddfd84c5b9c0",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtally",
+          "slug": "lgbtally",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "a4cdec96-eb18-4d3e-9cfd-65aeaabd6a25",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtvisibility",
+          "slug": "lgbtvisibility",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "5a7f837e-c2d1-4d31-b4fd-d5db3ace07fb",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "bar",
+          "slug": "bar",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "82e2c882-5f47-45d4-906d-b17ce4a450d1",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "gaybar",
+          "slug": "gaybar",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "df5658bd-ba23-46e9-8f3d-8ea2320c08a9",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtiqa",
+          "slug": "lgbtiqa",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "e13434e8-2f81-4b44-87ec-4085b7d5deb6",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtcommunity",
+          "slug": "lgbtcommunity",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "e5855ea0-4f38-4dd7-9d5a-f3b251d578bf",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "queer",
+          "slug": "queer",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "56ac8f99-ea63-4198-89ad-d0535153ea6b",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "pride",
+          "slug": "pride",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "ef5a1b62-12c9-47b9-823e-f0fb161b088a",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "loveislove",
+          "slug": "loveislove",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "ad42afef-cdb4-47d4-b83f-c1a4fb78118e",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbt",
+          "slug": "lgbt",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "6737ecfd-1f8c-4065-8a91-cd2509e40f2d",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtlife",
+          "slug": "lgbtlife",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "ac24cc32-dde2-4b18-8c80-1cba3e3b8a7f",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtfriendly",
+          "slug": "lgbtfriendly",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "0f5f5dd1-1a2b-48e3-b289-8d2fe44d53ce",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtally",
+          "slug": "lgbtally",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "fc33c02b-7597-42e1-90ad-e5a6bb6c1ba7",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "lgbtvisibility",
+          "slug": "lgbtvisibility",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "783e7629-a1d6-46c3-8e66-062a007abe29",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "bar",
+          "slug": "bar",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        },
+        {
+          "id": "c36f8a33-1ac3-47b6-99e0-ee48795e8543",
+          "domain": "coolvibes",
+          "taggable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "taggable_type": "post",
+          "tag": "gaybar",
+          "slug": "gaybar",
+          "created_at": "2026-02-26T02:34:54.42653+03:00"
+        }
+      ],
+      "poll": [
+        {
+          "id": "10c0202e-954a-40e6-ae3f-75771784c8fd",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "What is the overall rating of the place?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.320354+03:00",
+          "updated_at": "2026-02-26T02:34:54.320354+03:00",
+          "choices": [
+            {
+              "id": "3e402e85-c761-4ae8-bdaa-75811e6a7da6",
+              "poll_id": "10c0202e-954a-40e6-ae3f-75771784c8fd",
+              "display_order": 0,
+              "label": {
+                "tr": "Very bad"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "72b18e3e-d387-440d-8e74-b75807c6f9fe",
+              "poll_id": "10c0202e-954a-40e6-ae3f-75771784c8fd",
+              "display_order": 1,
+              "label": {
+                "tr": "Bad"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "b56c04f8-2fda-4c83-9454-e5e372d7c8ec",
+              "poll_id": "10c0202e-954a-40e6-ae3f-75771784c8fd",
+              "display_order": 2,
+              "label": {
+                "tr": "Average"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "bb08d6e0-0f70-43b8-8c88-ac688b7368dd",
+              "poll_id": "10c0202e-954a-40e6-ae3f-75771784c8fd",
+              "display_order": 3,
+              "label": {
+                "tr": "Good"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "ad248fdc-5006-4931-8b23-9cc62273f1a4",
+              "poll_id": "10c0202e-954a-40e6-ae3f-75771784c8fd",
+              "display_order": 4,
+              "label": {
+                "tr": "Very good"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "c207e545-472e-4904-bf09-7fac99bb815a",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is the place LGBT friendly?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.326588+03:00",
+          "updated_at": "2026-02-26T02:34:54.326588+03:00",
+          "choices": [
+            {
+              "id": "ad4484ea-c468-443a-964f-104f4c4277a2",
+              "poll_id": "c207e545-472e-4904-bf09-7fac99bb815a",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "937e249d-6ca8-470d-b06f-fe334212c755",
+              "poll_id": "c207e545-472e-4904-bf09-7fac99bb815a",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "c162194b-0a9a-49b5-bc36-62b3a8dbdafa",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is the staff respectful and inclusive?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.327844+03:00",
+          "updated_at": "2026-02-26T02:34:54.327844+03:00",
+          "choices": [
+            {
+              "id": "63705759-e8e3-448b-b385-80ef817b802e",
+              "poll_id": "c162194b-0a9a-49b5-bc36-62b3a8dbdafa",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "6145560e-ddab-4c00-a307-3ec45b13fc90",
+              "poll_id": "c162194b-0a9a-49b5-bc36-62b3a8dbdafa",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "904c7c0c-13a7-49ef-8fdb-8f3c9afc93b6",
+              "poll_id": "c162194b-0a9a-49b5-bc36-62b3a8dbdafa",
+              "display_order": 2,
+              "label": {
+                "tr": "Somewhat"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "4a1a2750-a95d-4c3c-a4a2-05fb5923f28d",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is the place safe for LGBT individuals?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.329059+03:00",
+          "updated_at": "2026-02-26T02:34:54.329059+03:00",
+          "choices": [
+            {
+              "id": "cccc3b9b-bdb2-4f30-ba6d-54ab8fcd8e3e",
+              "poll_id": "4a1a2750-a95d-4c3c-a4a2-05fb5923f28d",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "61b16380-667c-4871-8a0f-204bf5190237",
+              "poll_id": "4a1a2750-a95d-4c3c-a4a2-05fb5923f28d",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "13e1056f-ff46-496b-a5f3-0dade64221c8",
+              "poll_id": "4a1a2750-a95d-4c3c-a4a2-05fb5923f28d",
+              "display_order": 2,
+              "label": {
+                "tr": "Not sure"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "def4a68c-6f66-4405-8ca7-2d4abf58ed70",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is the place accessible for disabled people?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.330257+03:00",
+          "updated_at": "2026-02-26T02:34:54.330257+03:00",
+          "choices": [
+            {
+              "id": "b05f33e8-c46e-410d-beca-2cbac2a388e3",
+              "poll_id": "def4a68c-6f66-4405-8ca7-2d4abf58ed70",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "7f9507c4-9bc6-42e6-b109-3ea09d00d1a7",
+              "poll_id": "def4a68c-6f66-4405-8ca7-2d4abf58ed70",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "82544996-0708-4db9-9800-69ceed073fbb",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is the place visually appealing and comfortable?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.33124+03:00",
+          "updated_at": "2026-02-26T02:34:54.33124+03:00",
+          "choices": [
+            {
+              "id": "138efdad-dfea-4d71-816f-e69722ec7751",
+              "poll_id": "82544996-0708-4db9-9800-69ceed073fbb",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "c274264e-c3a7-444d-a675-898f50e46979",
+              "poll_id": "82544996-0708-4db9-9800-69ceed073fbb",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "3b91dc29-19ae-4aab-8f3b-7579fd013d64",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is the place easy to reach by public transportation?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.332303+03:00",
+          "updated_at": "2026-02-26T02:34:54.332304+03:00",
+          "choices": [
+            {
+              "id": "49638e4b-1e74-43ba-bff4-39920b9f394d",
+              "poll_id": "3b91dc29-19ae-4aab-8f3b-7579fd013d64",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "92b393f8-af64-43af-9db7-44f0e47c5b9c",
+              "poll_id": "3b91dc29-19ae-4aab-8f3b-7579fd013d64",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "59821a68-bb7e-4313-96d2-22842db21c96",
+              "poll_id": "3b91dc29-19ae-4aab-8f3b-7579fd013d64",
+              "display_order": 2,
+              "label": {
+                "tr": "Not applicable"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "91e5e964-5030-4ee3-bb8f-a84e62f6804c",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Are the restrooms gender-neutral or inclusive?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.333371+03:00",
+          "updated_at": "2026-02-26T02:34:54.333371+03:00",
+          "choices": [
+            {
+              "id": "922bc4a0-47b9-4ba8-a41a-9a2b9ee8aeb3",
+              "poll_id": "91e5e964-5030-4ee3-bb8f-a84e62f6804c",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "29ec9fb1-1e0c-47f5-befa-8ffba0a60f43",
+              "poll_id": "91e5e964-5030-4ee3-bb8f-a84e62f6804c",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "2e25b4fa-7b71-4748-b573-9be3588ccdc5",
+              "poll_id": "91e5e964-5030-4ee3-bb8f-a84e62f6804c",
+              "display_order": 2,
+              "label": {
+                "tr": "Not sure"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "9635e9d1-e1d7-4a0a-bebd-84616ec8f160",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is the pricing of products/services reasonable?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.345642+03:00",
+          "updated_at": "2026-02-26T02:34:54.345642+03:00",
+          "choices": [
+            {
+              "id": "f01c4753-c0d1-4096-ad4d-047f0f3f8fcd",
+              "poll_id": "9635e9d1-e1d7-4a0a-bebd-84616ec8f160",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "3588fb40-cb6f-4698-9840-125f9cf6a3b1",
+              "poll_id": "9635e9d1-e1d7-4a0a-bebd-84616ec8f160",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "b9941fed-1ab1-49e7-a79f-cea6755a71f3",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "How is the overall crowd and atmosphere?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.347865+03:00",
+          "updated_at": "2026-02-26T02:34:54.347865+03:00",
+          "choices": [
+            {
+              "id": "cd97dcff-61a3-4fbc-afc4-fe45308b7a7b",
+              "poll_id": "b9941fed-1ab1-49e7-a79f-cea6755a71f3",
+              "display_order": 0,
+              "label": {
+                "tr": "Very welcoming"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "baad4ef6-bb64-4db5-b27e-1b86f474fc1a",
+              "poll_id": "b9941fed-1ab1-49e7-a79f-cea6755a71f3",
+              "display_order": 1,
+              "label": {
+                "tr": "Somewhat welcoming"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "2c5d696a-f503-4b34-9b2b-ef10ffe9c59a",
+              "poll_id": "b9941fed-1ab1-49e7-a79f-cea6755a71f3",
+              "display_order": 2,
+              "label": {
+                "tr": "Neutral"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "cd2b921c-dbe9-4d0f-9db5-42a3cd82d26e",
+              "poll_id": "b9941fed-1ab1-49e7-a79f-cea6755a71f3",
+              "display_order": 3,
+              "label": {
+                "tr": "Somewhat unwelcoming"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "783a3d6c-46e2-4fb6-a662-5dcd938522a1",
+              "poll_id": "b9941fed-1ab1-49e7-a79f-cea6755a71f3",
+              "display_order": 4,
+              "label": {
+                "tr": "Unwelcoming"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "90c710a8-2ac9-4e27-84a2-f0f5c3c887b6",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Would you recommend this place to other LGBT individuals?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.349161+03:00",
+          "updated_at": "2026-02-26T02:34:54.349161+03:00",
+          "choices": [
+            {
+              "id": "edcbf3bb-ff2b-4fcc-8858-156c3e0866ea",
+              "poll_id": "90c710a8-2ac9-4e27-84a2-f0f5c3c887b6",
+              "display_order": 0,
+              "label": {
+                "tr": "Definitely"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "9085fda1-8b93-4e66-95b4-e01aae2e363b",
+              "poll_id": "90c710a8-2ac9-4e27-84a2-f0f5c3c887b6",
+              "display_order": 1,
+              "label": {
+                "tr": "Maybe"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "80520bf9-4e4d-4d80-a7e2-644ac27339bb",
+              "poll_id": "90c710a8-2ac9-4e27-84a2-f0f5c3c887b6",
+              "display_order": 2,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "13d17656-4bce-4d8e-8cb7-f4912fb660d9",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Are the staff knowledgeable about LGBT issues?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.350485+03:00",
+          "updated_at": "2026-02-26T02:34:54.350485+03:00",
+          "choices": [
+            {
+              "id": "bb050873-0d8a-4e5b-8ae5-e6242606f0f7",
+              "poll_id": "13d17656-4bce-4d8e-8cb7-f4912fb660d9",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "ec021126-e85d-4cbc-ada3-df4b9b490a1e",
+              "poll_id": "13d17656-4bce-4d8e-8cb7-f4912fb660d9",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "dd437a58-369b-4616-ba9f-87ecef48e99b",
+              "poll_id": "13d17656-4bce-4d8e-8cb7-f4912fb660d9",
+              "display_order": 2,
+              "label": {
+                "tr": "Somewhat"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "504c5e4f-9f66-44a3-8f5a-205e3ae1f7fb",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Does the place openly advertise LGBT-friendly policies or events?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.351402+03:00",
+          "updated_at": "2026-02-26T02:34:54.351402+03:00",
+          "choices": [
+            {
+              "id": "f7109950-ad8d-4150-9124-aaa06d1f79ea",
+              "poll_id": "504c5e4f-9f66-44a3-8f5a-205e3ae1f7fb",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "a9026717-a605-4c03-9b5b-3f4483912013",
+              "poll_id": "504c5e4f-9f66-44a3-8f5a-205e3ae1f7fb",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "412abbce-4b57-4672-9a56-8cb9a8c14cef",
+              "poll_id": "504c5e4f-9f66-44a3-8f5a-205e3ae1f7fb",
+              "display_order": 2,
+              "label": {
+                "tr": "Don't know"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "64aa4a98-2fb6-4b22-84b3-6f17ef4077fa",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Are there events specifically targeted at the LGBT community?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.352462+03:00",
+          "updated_at": "2026-02-26T02:34:54.352462+03:00",
+          "choices": [
+            {
+              "id": "07d19ac8-c7c8-472e-bf1a-1ba4ae48d364",
+              "poll_id": "64aa4a98-2fb6-4b22-84b3-6f17ef4077fa",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "cce5f56a-64a9-4815-aad7-171a7b94ecf3",
+              "poll_id": "64aa4a98-2fb6-4b22-84b3-6f17ef4077fa",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "b523c523-3a97-44ff-9142-ae44dbbfa555",
+              "poll_id": "64aa4a98-2fb6-4b22-84b3-6f17ef4077fa",
+              "display_order": 2,
+              "label": {
+                "tr": "Sometimes"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "ac5f65c5-ba01-4ac6-9852-195086fa1472",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Are facilities and services accommodating for transgender individuals?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.353538+03:00",
+          "updated_at": "2026-02-26T02:34:54.353538+03:00",
+          "choices": [
+            {
+              "id": "044b55cc-a5d1-413e-81a9-4b7b6252c5e8",
+              "poll_id": "ac5f65c5-ba01-4ac6-9852-195086fa1472",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "9308a9d5-b00e-4ca5-86b4-b5645760ce7d",
+              "poll_id": "ac5f65c5-ba01-4ac6-9852-195086fa1472",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "da7c4e3b-38f7-47cf-a5d7-ddc7c4e7cccb",
+              "poll_id": "ac5f65c5-ba01-4ac6-9852-195086fa1472",
+              "display_order": 2,
+              "label": {
+                "tr": "Don't know"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "bd7f158a-3c55-4d9d-89ef-b015091e62b4",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is there a positive environment regarding gender diversity?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.354664+03:00",
+          "updated_at": "2026-02-26T02:34:54.354664+03:00",
+          "choices": [
+            {
+              "id": "b3758a6b-48b8-4f2c-b693-e0b797c6f136",
+              "poll_id": "bd7f158a-3c55-4d9d-89ef-b015091e62b4",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "a307ca21-e0a6-4224-a6e6-7dfa4b37313d",
+              "poll_id": "bd7f158a-3c55-4d9d-89ef-b015091e62b4",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "efcc0cef-8e1a-48cb-afd2-c8fc198a118b",
+              "poll_id": "bd7f158a-3c55-4d9d-89ef-b015091e62b4",
+              "display_order": 2,
+              "label": {
+                "tr": "Somewhat"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "a1e0de14-66fe-4908-87f4-92edcb5f705f",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Have you experienced or witnessed discrimination or negative behavior here?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.35586+03:00",
+          "updated_at": "2026-02-26T02:34:54.35586+03:00",
+          "choices": [
+            {
+              "id": "f7cefb7a-3aa5-40b8-b228-a50f4ba3a33f",
+              "poll_id": "a1e0de14-66fe-4908-87f4-92edcb5f705f",
+              "display_order": 0,
+              "label": {
+                "tr": "Never"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "a3b9d728-0816-4ea2-b786-d4e977408741",
+              "poll_id": "a1e0de14-66fe-4908-87f4-92edcb5f705f",
+              "display_order": 1,
+              "label": {
+                "tr": "Rarely"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "1f431091-4511-4ed8-97b8-fa45e2d2e100",
+              "poll_id": "a1e0de14-66fe-4908-87f4-92edcb5f705f",
+              "display_order": 2,
+              "label": {
+                "tr": "Often"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "8c4816fc-d343-4e56-a2fa-6a9ba8dc31f0",
+              "poll_id": "a1e0de14-66fe-4908-87f4-92edcb5f705f",
+              "display_order": 3,
+              "label": {
+                "tr": "Very often"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "f63caf09-529b-4206-892b-cc654e729f87",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Do you feel comfortable being yourself in this place?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.357165+03:00",
+          "updated_at": "2026-02-26T02:34:54.357165+03:00",
+          "choices": [
+            {
+              "id": "f9a4732a-a85b-4031-8520-cb2d4270a08d",
+              "poll_id": "f63caf09-529b-4206-892b-cc654e729f87",
+              "display_order": 0,
+              "label": {
+                "tr": "Definitely yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "48b804dc-6d96-4ac3-aaa5-cf0ef4039fc7",
+              "poll_id": "f63caf09-529b-4206-892b-cc654e729f87",
+              "display_order": 1,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "91b76cdf-e545-4da5-ab0a-693264a4b580",
+              "poll_id": "f63caf09-529b-4206-892b-cc654e729f87",
+              "display_order": 2,
+              "label": {
+                "tr": "Neutral"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "3748d9d3-3823-466c-9fc1-3a8fcddfd85a",
+              "poll_id": "f63caf09-529b-4206-892b-cc654e729f87",
+              "display_order": 3,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "824c450f-b328-4da2-bc91-106f871f7880",
+              "poll_id": "f63caf09-529b-4206-892b-cc654e729f87",
+              "display_order": 4,
+              "label": {
+                "tr": "Definitely no"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "6b54a433-ee09-407a-bc44-08349c3f7794",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Does the clientele support and respect the LGBT community?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.359732+03:00",
+          "updated_at": "2026-02-26T02:34:54.359732+03:00",
+          "choices": [
+            {
+              "id": "2e920861-482c-4ffe-a71f-d61b46fef6d3",
+              "poll_id": "6b54a433-ee09-407a-bc44-08349c3f7794",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "42a4aed3-88c0-4ded-8878-e2f19e3ba0dd",
+              "poll_id": "6b54a433-ee09-407a-bc44-08349c3f7794",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "87476bac-9bb4-4b10-81bd-883bcf14f9e3",
+              "poll_id": "6b54a433-ee09-407a-bc44-08349c3f7794",
+              "display_order": 2,
+              "label": {
+                "tr": "Somewhat"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "28b75027-38ca-446f-bddc-4d1f13cf42d7",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "How well does the staff respect privacy and confidentiality?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.360628+03:00",
+          "updated_at": "2026-02-26T02:34:54.360628+03:00",
+          "choices": [
+            {
+              "id": "0c5cdc42-c0cf-473f-9c88-91457781ae0f",
+              "poll_id": "28b75027-38ca-446f-bddc-4d1f13cf42d7",
+              "display_order": 0,
+              "label": {
+                "tr": "Excellent"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "17068047-e9e4-49f4-9f1b-4ca233d9a81d",
+              "poll_id": "28b75027-38ca-446f-bddc-4d1f13cf42d7",
+              "display_order": 1,
+              "label": {
+                "tr": "Good"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "45f83e88-9b25-4dfa-9a65-9c075445ba9a",
+              "poll_id": "28b75027-38ca-446f-bddc-4d1f13cf42d7",
+              "display_order": 2,
+              "label": {
+                "tr": "Fair"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "6ac90c53-3c64-4968-a8ca-e3906454b6de",
+              "poll_id": "28b75027-38ca-446f-bddc-4d1f13cf42d7",
+              "display_order": 3,
+              "label": {
+                "tr": "Poor"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "1c5d67c8-63aa-49b8-b8fe-d6a31342e8e7",
+              "poll_id": "28b75027-38ca-446f-bddc-4d1f13cf42d7",
+              "display_order": 4,
+              "label": {
+                "tr": "Very poor"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "7659c345-1cce-480c-af6a-845d7b022142",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is the physical environment (lighting, decor, seating) welcoming to LGBT people?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.361974+03:00",
+          "updated_at": "2026-02-26T02:34:54.361974+03:00",
+          "choices": [
+            {
+              "id": "c442202d-0fd4-44c8-b804-939b4d004fa9",
+              "poll_id": "7659c345-1cce-480c-af6a-845d7b022142",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "6278db4c-9db5-480d-8d92-8be8fa26ab6d",
+              "poll_id": "7659c345-1cce-480c-af6a-845d7b022142",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "ac736eb5-ffe9-43ca-b5a1-31629b14fad6",
+              "poll_id": "7659c345-1cce-480c-af6a-845d7b022142",
+              "display_order": 2,
+              "label": {
+                "tr": "Neutral"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "3bdbb21a-c40a-4af0-9b42-d993087129dc",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "How clean and hygienic is the place?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.363186+03:00",
+          "updated_at": "2026-02-26T02:34:54.363186+03:00",
+          "choices": [
+            {
+              "id": "35f537cd-559d-4b82-9180-050c3bdf4837",
+              "poll_id": "3bdbb21a-c40a-4af0-9b42-d993087129dc",
+              "display_order": 0,
+              "label": {
+                "tr": "Very clean"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "1abce255-478d-4a77-a273-6c0b18ffd9ef",
+              "poll_id": "3bdbb21a-c40a-4af0-9b42-d993087129dc",
+              "display_order": 1,
+              "label": {
+                "tr": "Clean"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "65d49aa8-0d24-4d17-8f04-73dea8597141",
+              "poll_id": "3bdbb21a-c40a-4af0-9b42-d993087129dc",
+              "display_order": 2,
+              "label": {
+                "tr": "Average"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "58b11b18-45a8-4f8a-b57b-082e9203c133",
+              "poll_id": "3bdbb21a-c40a-4af0-9b42-d993087129dc",
+              "display_order": 3,
+              "label": {
+                "tr": "Dirty"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "c24cbcb7-0a1c-4be4-82c3-c711b4a9ff28",
+              "poll_id": "3bdbb21a-c40a-4af0-9b42-d993087129dc",
+              "display_order": 4,
+              "label": {
+                "tr": "Very dirty"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "9efef833-8f49-4ff5-936c-2ce6de419f69",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "How would you rate the music and entertainment quality?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.36468+03:00",
+          "updated_at": "2026-02-26T02:34:54.36468+03:00",
+          "choices": [
+            {
+              "id": "7b7c6b35-4c9d-45e8-af51-a015c203db6f",
+              "poll_id": "9efef833-8f49-4ff5-936c-2ce6de419f69",
+              "display_order": 0,
+              "label": {
+                "tr": "Excellent"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "247c2472-b382-4722-84cb-1b39f2a0a9b7",
+              "poll_id": "9efef833-8f49-4ff5-936c-2ce6de419f69",
+              "display_order": 1,
+              "label": {
+                "tr": "Good"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "7c0f11af-dc0f-4f0b-b699-78cfac0aeebe",
+              "poll_id": "9efef833-8f49-4ff5-936c-2ce6de419f69",
+              "display_order": 2,
+              "label": {
+                "tr": "Average"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "9f66d689-3db8-4365-bea5-aebeabdb079f",
+              "poll_id": "9efef833-8f49-4ff5-936c-2ce6de419f69",
+              "display_order": 3,
+              "label": {
+                "tr": "Poor"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "6436be56-4ae5-4a00-8349-284003780819",
+              "poll_id": "9efef833-8f49-4ff5-936c-2ce6de419f69",
+              "display_order": 4,
+              "label": {
+                "tr": "Very poor"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "fcf636e0-8c45-498c-8c53-42e08ca4b4e0",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Are food and beverage options inclusive and satisfactory?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.367414+03:00",
+          "updated_at": "2026-02-26T02:34:54.367414+03:00",
+          "choices": [
+            {
+              "id": "9ac4b94d-2e50-49e5-941d-4d12211ad216",
+              "poll_id": "fcf636e0-8c45-498c-8c53-42e08ca4b4e0",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "5f0e852e-86cd-4505-b92d-72663d3ab4ab",
+              "poll_id": "fcf636e0-8c45-498c-8c53-42e08ca4b4e0",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "ffce7a5f-f2a7-4ab3-b348-336d6384b50b",
+              "poll_id": "fcf636e0-8c45-498c-8c53-42e08ca4b4e0",
+              "display_order": 2,
+              "label": {
+                "tr": "Not applicable"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "46ff3126-ae3f-4ac1-9c3e-29a42d771350",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Are the place policies (e.g. age restrictions, dress code) clear and fair?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.36877+03:00",
+          "updated_at": "2026-02-26T02:34:54.36877+03:00",
+          "choices": [
+            {
+              "id": "dc8b0799-f8e0-41bf-b453-55e416047cc0",
+              "poll_id": "46ff3126-ae3f-4ac1-9c3e-29a42d771350",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "f80cfea0-7cc1-4fac-8f66-ab49dc567612",
+              "poll_id": "46ff3126-ae3f-4ac1-9c3e-29a42d771350",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "611fd329-f72f-4d8b-9c89-9a8c1878b612",
+              "poll_id": "46ff3126-ae3f-4ac1-9c3e-29a42d771350",
+              "display_order": 2,
+              "label": {
+                "tr": "Not sure"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "1c6330f7-aad2-4e59-9d91-4255737bb426",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Does the place support LGBT community in social responsibility projects?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.369934+03:00",
+          "updated_at": "2026-02-26T02:34:54.369934+03:00",
+          "choices": [
+            {
+              "id": "99ade36a-7dd4-4e21-8375-4beef1802a09",
+              "poll_id": "1c6330f7-aad2-4e59-9d91-4255737bb426",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "0b307647-35c7-4f1b-9056-a3ba4d144bf6",
+              "poll_id": "1c6330f7-aad2-4e59-9d91-4255737bb426",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "0daf7a04-87b3-4420-875f-e470c34d17a9",
+              "poll_id": "1c6330f7-aad2-4e59-9d91-4255737bb426",
+              "display_order": 2,
+              "label": {
+                "tr": "Don't know"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "596ce7ef-8926-40e9-bdfc-5521377477e3",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is the staff communication inclusive and respectful?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.371182+03:00",
+          "updated_at": "2026-02-26T02:34:54.371183+03:00",
+          "choices": [
+            {
+              "id": "b56ca147-1356-4b23-8441-1286dde10cc2",
+              "poll_id": "596ce7ef-8926-40e9-bdfc-5521377477e3",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "43acdd61-813b-4c17-9fa8-c3d715296cc2",
+              "poll_id": "596ce7ef-8926-40e9-bdfc-5521377477e3",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "6ceb4251-7bfb-4bd7-930d-6418e9ed1619",
+              "poll_id": "596ce7ef-8926-40e9-bdfc-5521377477e3",
+              "display_order": 2,
+              "label": {
+                "tr": "Sometimes"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "e2d971a1-bb84-40b3-8db4-2bd1c18f18fb",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Are services (e.g. reservations, private events) suitable for LGBT individuals?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.372296+03:00",
+          "updated_at": "2026-02-26T02:34:54.372296+03:00",
+          "choices": [
+            {
+              "id": "feb80ae0-65a0-41d9-bcc3-b6a8761ed0f0",
+              "poll_id": "e2d971a1-bb84-40b3-8db4-2bd1c18f18fb",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "8373a0cc-5a2c-4adf-b1e0-a613ad0f4dee",
+              "poll_id": "e2d971a1-bb84-40b3-8db4-2bd1c18f18fb",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "71e38e9a-0c4e-42ef-805f-a7a845a44c2e",
+              "poll_id": "e2d971a1-bb84-40b3-8db4-2bd1c18f18fb",
+              "display_order": 2,
+              "label": {
+                "tr": "Partially"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "052966d3-b368-49ab-890d-56941f0bc705",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Does the place have LGBT-themed decorations or symbols?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.373527+03:00",
+          "updated_at": "2026-02-26T02:34:54.373527+03:00",
+          "choices": [
+            {
+              "id": "7e0ccfa9-9d28-4bef-82c5-867fdcb45f66",
+              "poll_id": "052966d3-b368-49ab-890d-56941f0bc705",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "4e2c4848-86d3-495c-812b-4ef62fe3f3d6",
+              "poll_id": "052966d3-b368-49ab-890d-56941f0bc705",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "fa163723-0e6d-4edb-aef9-1c127b115f4d",
+              "poll_id": "052966d3-b368-49ab-890d-56941f0bc705",
+              "display_order": 2,
+              "label": {
+                "tr": "Don't know"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "d3f9caf1-ee12-4c11-ad82-26dc107072af",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is the place suitable for families with children?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.374794+03:00",
+          "updated_at": "2026-02-26T02:34:54.374794+03:00",
+          "choices": [
+            {
+              "id": "fa09bbdb-5ec3-4873-89de-1db7ea549d3a",
+              "poll_id": "d3f9caf1-ee12-4c11-ad82-26dc107072af",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "1b136917-ef2e-4b40-a2da-1fcc1540fb34",
+              "poll_id": "d3f9caf1-ee12-4c11-ad82-26dc107072af",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "3034d792-a3cb-42b9-845e-2e5b5e373560",
+              "poll_id": "d3f9caf1-ee12-4c11-ad82-26dc107072af",
+              "display_order": 2,
+              "label": {
+                "tr": "Don't know"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "cebba807-fda4-4f6b-b851-d2d1799be6c1",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Does the place’s social media share positive content for LGBT individuals?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.375917+03:00",
+          "updated_at": "2026-02-26T02:34:54.375917+03:00",
+          "choices": [
+            {
+              "id": "43347604-2f59-4786-b0e8-64933785b8b0",
+              "poll_id": "cebba807-fda4-4f6b-b851-d2d1799be6c1",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "03148f0a-3f00-4d7e-9d4d-727889980436",
+              "poll_id": "cebba807-fda4-4f6b-b851-d2d1799be6c1",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "4385f33a-9c4e-4e72-a93d-e330518caae0",
+              "poll_id": "cebba807-fda4-4f6b-b851-d2d1799be6c1",
+              "display_order": 2,
+              "label": {
+                "tr": "Don't know"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "fdcaa2aa-14da-474e-821b-3993c605bd4e",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is freedom of gender identity and expression encouraged here?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.376937+03:00",
+          "updated_at": "2026-02-26T02:34:54.376937+03:00",
+          "choices": [
+            {
+              "id": "a3e2a523-3485-4304-addb-b402b8019276",
+              "poll_id": "fdcaa2aa-14da-474e-821b-3993c605bd4e",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "53fbdfdf-58db-497d-8ad9-cdd826c40e4f",
+              "poll_id": "fdcaa2aa-14da-474e-821b-3993c605bd4e",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "dd4f6ec1-b659-4fc1-b99b-f39983cf16ef",
+              "poll_id": "fdcaa2aa-14da-474e-821b-3993c605bd4e",
+              "display_order": 2,
+              "label": {
+                "tr": "Partially"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "9db755a1-9800-464b-b7b4-d7a370b0e9af",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Is the overall atmosphere relaxed and friendly?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.378167+03:00",
+          "updated_at": "2026-02-26T02:34:54.378167+03:00",
+          "choices": [
+            {
+              "id": "2f97b82b-77c4-4584-8e6b-4ec69e23c92e",
+              "poll_id": "9db755a1-9800-464b-b7b4-d7a370b0e9af",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "f5d12215-70dc-461a-b0f9-246251292e0f",
+              "poll_id": "9db755a1-9800-464b-b7b4-d7a370b0e9af",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "062ee50b-e152-4dad-9303-3d6b0835d9ee",
+              "poll_id": "9db755a1-9800-464b-b7b4-d7a370b0e9af",
+              "display_order": 2,
+              "label": {
+                "tr": "Neutral"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "20980e38-b0aa-466c-8dca-bdb2052c4ca1",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Are there clear policies preventing discrimination based on sexual orientation or gender identity?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.379373+03:00",
+          "updated_at": "2026-02-26T02:34:54.379373+03:00",
+          "choices": [
+            {
+              "id": "3b6945b3-2a15-48fa-b3d8-bce0f00c4439",
+              "poll_id": "20980e38-b0aa-466c-8dca-bdb2052c4ca1",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "40a855fb-dce7-4d27-aedb-12856394247e",
+              "poll_id": "20980e38-b0aa-466c-8dca-bdb2052c4ca1",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "ffd16471-5449-4d90-9fd7-9f27831627f7",
+              "poll_id": "20980e38-b0aa-466c-8dca-bdb2052c4ca1",
+              "display_order": 2,
+              "label": {
+                "tr": "Don't know"
+              },
+              "vote_count": 0
+            }
+          ]
+        },
+        {
+          "id": "ba5d0b39-1aae-4612-9fe1-1b616bacd57c",
+          "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+          "contentable_type": "post",
+          "question": {
+            "tr": "Does the place offer support groups or resources for LGBTQ+ individuals?"
+          },
+          "duration": "0",
+          "kind": "single",
+          "max_selectable": 1,
+          "created_at": "2026-02-26T02:34:54.380737+03:00",
+          "updated_at": "2026-02-26T02:34:54.380737+03:00",
+          "choices": [
+            {
+              "id": "882012bc-40f0-4082-8c64-931c70fda9f4",
+              "poll_id": "ba5d0b39-1aae-4612-9fe1-1b616bacd57c",
+              "display_order": 0,
+              "label": {
+                "tr": "Yes"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "7a6d3ca4-7655-4f21-ae8a-e1a15577225d",
+              "poll_id": "ba5d0b39-1aae-4612-9fe1-1b616bacd57c",
+              "display_order": 1,
+              "label": {
+                "tr": "No"
+              },
+              "vote_count": 0
+            },
+            {
+              "id": "bb1735e4-705c-4599-976f-d4401cdd362d",
+              "poll_id": "ba5d0b39-1aae-4612-9fe1-1b616bacd57c",
+              "display_order": 2,
+              "label": {
+                "tr": "Don't know"
+              },
+              "vote_count": 0
+            }
+          ]
+        }
+      ],
+      "location": {
+        "id": "cd0bd92f-1e12-4f7d-b2fa-43c7e2318435",
+        "contentable_id": "b95c3954-1f48-4cb5-85d9-5f96b014fffa",
+        "contentable_type": "post",
+        "country_code": "tr",
+        "address": " Balo str. No:31 floor: 2nd, Beyoglu, istanbul",
+        "city": "",
+        "country": "Türkiye",
+        "region": "Marmara Bölgesi",
+        "postcode": "34440",
+        "zip_code": "",
+        "province": "İstanbul",
+        "town": "Beyoğlu",
+        "display": null,
+        "latitude": 41.038286,
+        "longitude": 28.97033,
+        "location_point": {
+          "lng": 28.97033,
+          "lat": 41.038286
+        },
+        "created_at": "2026-02-26T02:34:54.381683+03:00",
+        "updated_at": "2026-02-26T02:34:54.381706+03:00",
+        "deleted_at": null
+      },
+      "processed": false,
+      "published": true,
+      "created_at": "2026-02-26T02:34:54.319598+03:00",
+      "updated_at": "2026-02-26T02:34:54.489124+03:00",
+      "deleted_at": null
+    }
+  ],
+  "success": true
+}

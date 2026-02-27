@@ -99,6 +99,29 @@ const NearbyScreen: React.FC = () => {
   };
 
 
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const target = observerTarget.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && state.nearByCursor && !loadingMore && !loadingUsers) {
+          setLoadingMore(true);
+          fetchNearbyUsers();
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+
+    observer.observe(target);
+
+    return () => {
+      if (target) observer.unobserve(target);
+    };
+  }, [state.nearByCursor, loadingMore, loadingUsers]);
+
   useEffect(() => {
     if (state.nearbyUsers.length == 0) {
       fetchNearbyUsers()
@@ -148,7 +171,7 @@ const NearbyScreen: React.FC = () => {
               </div>
             </div>
 
-         
+
           </div>
 
           {/* Search, Filter and View Toggle */}
@@ -156,8 +179,8 @@ const NearbyScreen: React.FC = () => {
             <div className="flex gap-2">
               {/* View Mode Toggle */}
               <div className={`flex rounded-xl p-1 ${theme === 'dark' ? 'bg-gray-900 border border-gray-800' : 'bg-gray-100 border border-gray-200'}`}>
-                
-                  <motion.button
+
+                <motion.button
                   onClick={() => setViewMode('bubble')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -170,7 +193,7 @@ const NearbyScreen: React.FC = () => {
                   <Bubbles className="w-5 h-5" />
                 </motion.button>
 
-                 <motion.button
+                <motion.button
                   onClick={() => setViewMode('dome')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -182,7 +205,7 @@ const NearbyScreen: React.FC = () => {
                 >
                   <Earth className="w-5 h-5" />
                 </motion.button>
-              
+
 
                 <motion.button
                   onClick={() => setViewMode('grid')}
@@ -233,57 +256,57 @@ const NearbyScreen: React.FC = () => {
                   <MapIcon className="w-5 h-5" />
                 </motion.button>
               </div>
-   <div className="flex flex-row gap-2 items-center">
-              <motion.button
-                onClick={() => setShowFilters(!showFilters)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`relative px-3 py-2 rounded-xl font-medium text-sm transition-all ${showFilters
-                  ? theme === 'dark'
-                    ? 'bg-white text-black'
-                    : 'bg-gray-900 text-white'
-                  : theme === 'dark'
+              <div className="flex flex-row gap-2 items-center">
+                <motion.button
+                  onClick={() => setShowFilters(!showFilters)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`relative px-3 py-2 rounded-xl font-medium text-sm transition-all ${showFilters
+                    ? theme === 'dark'
+                      ? 'bg-white text-black'
+                      : 'bg-gray-900 text-white'
+                    : theme === 'dark'
+                      ? 'bg-gray-900 border border-gray-800 text-gray-300 hover:bg-gray-800'
+                      : 'bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  <Filter className="w-5 h-5 inline-block" />
+
+                </motion.button>
+
+
+                <motion.button
+                  onClick={handleRefresh}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`p-2 rounded-xl transition-colors ${theme === 'dark'
                     ? 'bg-gray-900 border border-gray-800 text-gray-300 hover:bg-gray-800'
                     : 'bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200'
-                  }`}
-              >
-                <Filter className="w-5 h-5 inline-block" />
-
-              </motion.button>
-
-              
-              <motion.button
-                onClick={handleRefresh}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`p-2 rounded-xl transition-colors ${theme === 'dark'
-                        ? 'bg-gray-900 border border-gray-800 text-gray-300 hover:bg-gray-800'
-                    : 'bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200'
-                  }`}
-                title={t('nearby.refresh')}
-              >
-                <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </motion.button>
-            </div>
+                    }`}
+                  title={t('nearby.refresh')}
+                >
+                  <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </motion.button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
 
-{isMapView ? (
-  <div className="w-full h-[calc(100dvh-205px)] sm:h-[calc(100dvh-60px)]">
-    <Map />
-  </div>
-) : isBubbleView ? (
-  <div className="w-full h-[calc(100dvh-205px)] sm:h-[calc(100dvh-60px)]">
-    <BubbleView />
-  </div>
-) : isDomeView ? (
-  <div className="w-full h-[calc(100dvh-205px)] sm:h-[calc(100dvh-60px)]">
-    <DomeView fit={0.1} maxRadius={1000} />
-  </div>
-): (
+      {isMapView ? (
+        <div className="w-full h-[calc(100dvh-205px)] sm:h-[calc(100dvh-60px)]">
+          <Map />
+        </div>
+      ) : isBubbleView ? (
+        <div className="w-full h-[calc(100dvh-205px)] sm:h-[calc(100dvh-60px)]">
+          <BubbleView />
+        </div>
+      ) : isDomeView ? (
+        <div className="w-full h-[calc(100dvh-205px)] sm:h-[calc(100dvh-60px)]">
+          <DomeView fit={0.1} maxRadius={1000} />
+        </div>
+      ) : (
         <div
           className="w-full mx-auto max-w-7xl relative"
           style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
@@ -355,23 +378,8 @@ const NearbyScreen: React.FC = () => {
                   </div>
                 )}
 
-                <div className='w-full p-2 flex items-center justify-center'>
-                  {state.nearByCursor && !loadingMore && (
-                    <motion.button
-                      onClick={() => {
-                        setLoadingMore(true)
-                        fetchNearbyUsers()
-                      }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`px-6 py-3 rounded-xl font-medium text-sm transition-all ${theme === 'dark'
-                        ? 'bg-white text-black hover:bg-gray-200'
-                        : 'bg-gray-900 text-white hover:bg-gray-800'
-                        }`}
-                    >
-                      {t('nearby.load_more')}
-                    </motion.button>
-                  )}
+                <div ref={observerTarget} className='w-full p-2 flex items-center justify-center min-h-[50px]'>
+                  {/* Sentinel for infinite scroll */}
                 </div>
 
 

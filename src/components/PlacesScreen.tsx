@@ -1,615 +1,332 @@
-import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import {
-  MapPin,
-  Star,
-  Search,
-  Verified,
-  ArrowLeft
-} from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { MapPin, Search, Loader, RefreshCw } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { api } from '../services/api';
+import { Place } from '../types/places';
+import PlaceCard from './PlaceCard';
+import { DEFAULT_LIMIT } from '../constants/constants';
+import { useTranslation } from 'react-i18next';
 import Container from './Container';
+import { useNavigate } from 'react-router-dom';
 
-interface Place {
-  id: number;
-  name: string;
-  image: string;
-  images?: string[];
-  address: string;
-  city: string;
-  country: string;
-  description: string;
-  tags: string[];
-  rating: number;
-  reviewCount: number;
-  priceRange: string;
-  phone?: string;
-  website?: string;
-  hours: {
-    [key: string]: string;
-  };
-  verified: boolean;
-  distance?: string;
-  category: string;
-}
+type CursorType = {
+  next: string | null;
+  distance: number | null;
+} | null;
+
+const PlaceCardSkeleton = () => {
+  const { theme } = useTheme();
+  return (
+    <div className={`rounded-2xl animate-pulse overflow-hidden border ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
+      <div className={`w-full aspect-video ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
+      <div className="p-4 space-y-3">
+        <div className={`h-5 rounded-md ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`} />
+        <div className="flex items-center gap-2 pt-1">
+          <div className={`w-4 h-4 rounded-full ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`} />
+          <div className={`h-3 rounded-md w-1/2 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`} />
+        </div>
+        <div className="space-y-1 pt-1">
+          <div className={`h-3 rounded-md w-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
+          <div className={`h-3 rounded-md w-5/6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const PlacesScreen: React.FC = () => {
+  const { t } = useTranslation('common');
   const { theme } = useTheme();
+  const navigate = useNavigate();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [cursor, setCursor] = useState<CursorType>(null);
+  const [loadingInitial, setLoadingInitial] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
-  const categories = ['all', 'Cafe', 'Bar', 'Restaurant', 'Bookstore', 'Community Center', 'Club', 'Hotel', 'Shop'];
+  const fetchNearbyPlaces = useCallback(
+    async (
+      { center, reset = false }:
+        { center: { latitude: number; longitude: number }; reset?: boolean }
+    ) => {
+      const isAppend = !reset;
 
-  const places: Place[] = [
-    {
-      id: 1,
-      name: 'Rainbow Cafe',
-      image: 'https://images.pexels.com/photos/1707828/pexels-photo-1707828.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2',
-      images: [
-        'https://images.pexels.com/photos/1707828/pexels-photo-1707828.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2',
-        'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2',
-        'https://images.pexels.com/photos/1833586/pexels-photo-1833586.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2'
-      ],
-      address: '123 Pride Street, City Center',
-      city: 'Istanbul',
-      country: 'Turkey',
-      description: 'A cozy, inclusive cafe with rainbow vibes and great coffee. Perfect place for community gatherings and meaningful conversations.',
-      tags: ['LGBTQ+ Friendly', 'Vegan Options', 'Free WiFi', 'Pet Friendly'],
-      rating: 4.8,
-      reviewCount: 127,
-      priceRange: '$$',
-      phone: '+90 212 555 0123',
-      website: 'https://rainbowcafe.com',
-      hours: {
-        'Monday': '8:00 AM - 10:00 PM',
-        'Tuesday': '8:00 AM - 10:00 PM',
-        'Wednesday': '8:00 AM - 10:00 PM',
-        'Thursday': '8:00 AM - 10:00 PM',
-        'Friday': '8:00 AM - 11:00 PM',
-        'Saturday': '9:00 AM - 11:00 PM',
-        'Sunday': '9:00 AM - 9:00 PM'
-      },
-      verified: true,
-      distance: '0.5 km',
-      category: 'Cafe'
+      if (isAppend && loadingMore) return;
+
+      if (isAppend) {
+        setLoadingMore(true);
+      } else {
+        setLoadingInitial(true);
+      }
+      setError(null);
+
+      const cursorToUse = reset ? null : cursor;
+
+      try {
+        const response = await api.fetchNearbyPlaces(
+          center.latitude,
+          center.longitude,
+          cursorToUse?.next || null,
+          cursorToUse?.distance ? String(cursorToUse.distance) : null,
+          DEFAULT_LIMIT
+        );
+
+        if (response && response.places) {
+          setPlaces(prev => (reset ? response.places : [...prev, ...response.places]));
+
+          if (response.cursor && response.cursor.next) {
+            setCursor({
+              next: response.cursor.next,
+              distance: response.cursor.distance || null
+            });
+          } else {
+            setCursor(null);
+          }
+        } else {
+          setCursor(null);
+          throw new Error(response?.error || t('places.no_places'));
+        }
+      } catch (err: any) {
+        console.error('Mekanlar alınırken hata:', err);
+        setError(err.message || t('places.no_places'));
+        setCursor(null);
+      } finally {
+        if (isAppend) {
+          setLoadingMore(false);
+        } else {
+          setLoadingInitial(false);
+        }
+      }
     },
-    {
-      id: 2,
-      name: 'Equality Bar',
-      image: 'https://images.pexels.com/photos/260922/pexels-photo-260922.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2',
-      images: [
-        'https://images.pexels.com/photos/260922/pexels-photo-260922.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2',
-        'https://images.pexels.com/photos/274192/pexels-photo-274192.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2'
-      ],
-      address: '456 Freedom Avenue, Downtown',
-      city: 'Istanbul',
-      country: 'Turkey',
-      description: 'The city\'s most vibrant LGBTQ+ bar with live music, drag shows, and an inclusive atmosphere for everyone.',
-      tags: ['Live Music', 'Drag Shows', 'Cocktails', 'Dance Floor'],
-      rating: 4.7,
-      reviewCount: 89,
-      priceRange: '$$$',
-      phone: '+90 212 555 0456',
-      website: 'https://equalitybar.com',
-      hours: {
-        'Monday': 'Closed',
-        'Tuesday': 'Closed',
-        'Wednesday': '7:00 PM - 2:00 AM',
-        'Thursday': '7:00 PM - 2:00 AM',
-        'Friday': '7:00 PM - 3:00 AM',
-        'Saturday': '7:00 PM - 3:00 AM',
-        'Sunday': '6:00 PM - 1:00 AM'
+    [cursor, loadingInitial, loadingMore, t]
+  );
+
+  const handleInitialFetch = useCallback(() => {
+    setLoadingInitial(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const loc = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        };
+        setLocation(loc);
+        setPlaces([]);
+        setCursor(null);
+        fetchNearbyPlaces({ center: loc, reset: true });
       },
-      verified: true,
-      distance: '1.2 km',
-      category: 'Bar'
-    },
-    {
-      id: 3,
-      name: 'Open Arms Bookstore',
-      image: 'https://images.pexels.com/photos/279222/pexels-photo-279222.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2',
-      images: [
-        'https://images.pexels.com/photos/279222/pexels-photo-279222.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2',
-        'https://images.pexels.com/photos/1370295/pexels-photo-1370295.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2'
-      ],
-      address: '789 Unity Boulevard, Midtown',
-      city: 'Ankara',
-      country: 'Turkey',
-      description: 'A safe space bookstore specializing in queer literature, hosting regular events and book clubs.',
-      tags: ['Queer Literature', 'Book Clubs', 'Events', 'Safe Space'],
-      rating: 4.9,
-      reviewCount: 156,
-      priceRange: '$$',
-      phone: '+90 312 555 0789',
-      website: 'https://openarmsbookstore.com',
-      hours: {
-        'Monday': '10:00 AM - 8:00 PM',
-        'Tuesday': '10:00 AM - 8:00 PM',
-        'Wednesday': '10:00 AM - 8:00 PM',
-        'Thursday': '10:00 AM - 9:00 PM',
-        'Friday': '10:00 AM - 9:00 PM',
-        'Saturday': '10:00 AM - 9:00 PM',
-        'Sunday': '11:00 AM - 7:00 PM'
+      (geoError) => {
+        console.error('Konum hatası:', geoError);
+        setError(t('places.location_permission_error'));
+        setLoadingInitial(false);
+      }
+    );
+  }, [fetchNearbyPlaces, t]);
+
+  useEffect(() => {
+    handleInitialFetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const categories = useMemo(() => {
+    const allHashtags = places.flatMap(p => p.hashtags.map(h => h.tag));
+    const uniqueHashtags = [...new Set(allHashtags)];
+    return ['all', ...uniqueHashtags.slice(0, 10)];
+  }, [places]);
+
+  const filteredPlaces = useMemo(() => {
+    return places.filter(place => {
+      if (selectedCategory !== 'all' && !place.hashtags.some(h => h.tag === selectedCategory)) {
+        return false;
+      }
+      if (searchQuery) {
+        const name = place.extras.place.name.toLowerCase();
+        const description = place.extras.place.description.toLowerCase();
+        const query = searchQuery.toLowerCase();
+        return name.includes(query) || description.includes(query);
+      }
+      return true;
+    });
+  }, [places, selectedCategory, searchQuery]);
+
+  const observerTarget = useRef<HTMLDivElement>(null);
+  const cursorRef = useRef(cursor);
+  const loadingMoreRef = useRef(loadingMore);
+  const locationRef = useRef(location);
+  const isRequestPendingRef = useRef(false);
+
+  useEffect(() => { cursorRef.current = cursor; }, [cursor]);
+  useEffect(() => { loadingMoreRef.current = loadingMore; }, [loadingMore]);
+  useEffect(() => { locationRef.current = location; }, [location]);
+
+  const loadMore = useCallback(async () => {
+    if (isRequestPendingRef.current || !cursorRef.current || !locationRef.current) return;
+
+    isRequestPendingRef.current = true;
+    await fetchNearbyPlaces({ center: locationRef.current });
+
+    // Add a small delay to prevent immediate re-trigger by observer
+    setTimeout(() => {
+      isRequestPendingRef.current = false;
+    }, 500);
+  }, [fetchNearbyPlaces]);
+
+  useEffect(() => {
+    const target = observerTarget.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && cursorRef.current && !loadingMoreRef.current && !isRequestPendingRef.current) {
+          loadMore();
+        }
       },
-      verified: true,
-      distance: '2.1 km',
-      category: 'Bookstore'
-    },
-    {
-      id: 4,
-      name: 'Pride Community Center',
-      image: 'https://images.pexels.com/photos/1266808/pexels-photo-1266808.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2',
-      images: [
-        'https://images.pexels.com/photos/1266808/pexels-photo-1266808.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2'
-      ],
-      address: '321 Community Lane, Uptown',
-      city: 'New York',
-      country: 'USA',
-      description: 'A welcoming community center offering support groups, events, and resources for the LGBTQ+ community.',
-      tags: ['Support Groups', 'Counseling', 'Events', 'Resources'],
-      rating: 4.6,
-      reviewCount: 203,
-      priceRange: 'Free',
-      phone: '+1 212 555 0321',
-      website: 'https://pridecommunitycenter.org',
-      hours: {
-        'Monday': '9:00 AM - 9:00 PM',
-        'Tuesday': '9:00 AM - 9:00 PM',
-        'Wednesday': '9:00 AM - 9:00 PM',
-        'Thursday': '9:00 AM - 9:00 PM',
-        'Friday': '9:00 AM - 6:00 PM',
-        'Saturday': '10:00 AM - 4:00 PM',
-        'Sunday': 'Closed'
-      },
-      verified: true,
-      distance: '3.5 km',
-      category: 'Community Center'
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.unobserve(target);
+    };
+  }, [loadMore]);
+
+  const renderContent = () => {
+    if (loadingInitial && places.length === 0) {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <PlaceCardSkeleton key={i} />
+          ))}
+        </div>
+      );
     }
-  ];
 
+    if (error) {
+      return (
+        <div className={`rounded-2xl p-6 mt-4 border text-center ${theme === 'dark' ? 'bg-red-900/20 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-700'
+          }`}>
+          <p className="text-sm font-medium mb-3">{error}</p>
+          <button type="button" onClick={handleInitialFetch} className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium ${theme === 'dark' ? 'bg-red-900/50 hover:bg-red-900/70' : 'bg-red-100 hover:bg-red-200'
+            }`}>
+            <RefreshCw className="w-4 h-4" />
+            {t('places.retry', 'Tekrar dene')}
+          </button>
+        </div>
+      );
+    }
 
-  const filteredPlaces = places.filter(place => {
-    const matchesSearch = place.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         place.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         place.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesCategory = selectedCategory === 'all' || place.category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
-  });
-
-  const sortedPlaces = [...filteredPlaces].sort((a, b) => b.rating - a.rating);
+    if (filteredPlaces.length === 0) {
+      return (
+        <div className="py-16 text-center">
+          <MapPin className={`mx-auto w-12 h-12 mb-4 ${theme === 'dark' ? 'text-gray-700' : 'text-gray-300'}`} />
+          <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+            {t('places.no_places_found_title', 'No places found')}
+          </h3>
+          <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+            {t('places.no_places_found_subtitle', 'Try adjusting your search or filters.')}
+          </p>
+        </div>
+      );
+    }
 
     return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
-      {/* Header */}
-      <div className={`sticky top-0 z-10 ${theme === 'dark' ? 'bg-black border-b border-black' : 'bg-white border-b border-gray-100'}`}>
-        {selectedPlace ? (
-          // Place Detail Header
-          <div className="px-4 md:px-6 py-4">
-            <div className="flex items-center justify-between">
-          <button
-                onClick={() => setSelectedPlace(null)}
-                className={`p-2 rounded-full transition-all duration-200 ${
-                  theme === 'dark'
-                    ? 'hover:bg-white/10 text-gray-400 hover:text-white'
-                    : 'hover:bg-black/5 text-gray-600 hover:text-black'
+      <div className="space-y-4 pb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {filteredPlaces.map(place => (
+            <PlaceCard
+              key={place.public_id}
+              place={place}
+              selected={false}
+              onClick={p => navigate(`/places/${p.public_id}`, { state: { place: p } })}
+              className={`rounded-2xl border ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'
                 }`}
-              >
-                <ArrowLeft className="w-5 h-5" />
-          </button>
-              <h2 className={`text-lg md:text-xl font-bold truncate px-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                Place Details
-              </h2>
-              <div className="w-12"></div>
-      </div>
-          </div>
-        ) : (
-          // Main Header
-          <div className="px-4 md:px-6 py-4">
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <div className="min-w-0 flex-1">
-                <h1 className={`text-xl md:text-2xl font-bold truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  LGBTIQ+ Places
-                </h1>
-                <p className={`text-xs md:text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Discover safe and welcoming spaces
-                </p>
-              </div>
-              <div className={`flex-shrink-0 px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-semibold ${
-                  theme === 'dark'
-                  ? 'bg-gray-900 border border-gray-800 text-gray-300'
-                  : 'bg-gray-100 border border-gray-200 text-gray-700'
-                }`}>
-                  {sortedPlaces.length} places
-              </div>
+            />
+          ))}
+        </div>
+        <div ref={observerTarget} className="h-10 w-full flex items-center justify-center">
+          {loadingMore && (
+            <div className="flex items-center justify-center gap-2 text-sm p-4">
+              <Loader className="w-5 h-5 animate-spin" />
+              <span>{t('places.loading_more')}</span>
             </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
-              {/* Search Bar */}
+  return (
+    <Container>
+      <div className={`sticky top-0 z-50 border-b ${theme === 'dark' ? 'border-gray-800/50 bg-black/95' : 'border-gray-200/50 bg-white/95'
+        }`}>
+        <div className="w-full flex flex-row items-center justify-between gap-2 p-2 px-2 max-w-7xl mx-auto">
+          <div className="hidden md:flex items-center space-x-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
+              }`}>
+              <MapPin className="w-5 h-5" />
+            </div>
             <div>
-              <div className={`relative ${theme === 'dark' ? 'bg-gray-950 border border-gray-900' : 'bg-gray-50 border border-gray-200'} rounded-xl overflow-hidden`}>
-                <Search className={`absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search places..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`w-full pl-10 md:pl-12 pr-3 md:pr-4 py-2.5 md:py-3 text-sm md:text-base bg-transparent ${theme === 'dark' ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'} focus:outline-none`}
-                />
+              <h1 className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                {t('places.title')}
+              </h1>
+              <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                {t('places.subtitle')}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-1 md:flex-initial flex-col sm:flex-row gap-2 justify-end">
+            <div className={`relative flex-1 min-w-[180px] rounded-xl ${theme === 'dark' ? 'bg-gray-900 border border-gray-800' : 'bg-gray-50 border border-gray-200'
+              }`}>
+              <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
+                <Search className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
               </div>
+              <input
+                type="text"
+                placeholder={t('places.search_placeholder')}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className={`block w-full pl-9 pr-3 py-2.5 text-sm bg-transparent rounded-xl border-0 focus:ring-0 ${theme === 'dark' ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'
+                  }`}
+              />
+            </div>
+            <button type="button" onClick={handleInitialFetch} disabled={loadingInitial} className={`px-3 py-2 rounded-xl text-sm font-medium inline-flex items-center gap-2 ${theme === 'dark' ? 'bg-gray-900 border border-gray-800 text-gray-200 hover:bg-gray-800' : 'bg-gray-100 border border-gray-200 text-gray-800 hover:bg-gray-200'
+              }`}>
+              <RefreshCw className={`w-4 h-4 ${loadingInitial && places.length === 0 ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </div>
+        {categories.length > 1 && (
+          <div className="w-full max-w-7xl mx-auto px-2 pb-2">
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              {categories.map(cat => {
+                const isAll = cat === 'all';
+                const isSelected = selectedCategory === cat;
+                return (
+                  <button key={cat} type="button" onClick={() => setSelectedCategory(cat)} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${theme === 'dark'
+                    ? isSelected
+                      ? 'bg-gray-800 text-white border-gray-700'
+                      : 'bg-gray-900 text-gray-400 border-gray-800 hover:bg-gray-800'
+                    : isSelected
+                      ? 'bg-gray-100 text-gray-800 border-gray-300'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                    }`}>
+                    {isAll ? t('places.all_categories', 'Tümü') : `#${cat}`}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
-              </div>
-
-      {/* Mobile Categories */}
-      {!selectedPlace && (
-        <div className={`md:hidden px-4 py-3 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200'} overflow-x-auto`}>
-          <div className="flex gap-2">
-            {categories.slice(1, 6).map((category) => {
-              const isActive = selectedCategory === category;
-              return (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(selectedCategory === category ? 'all' : category)}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
-                    isActive
-                        ? theme === 'dark'
-                          ? 'bg-white text-black'
-                          : 'bg-black text-white'
-                        : theme === 'dark'
-                        ? 'bg-gray-900 text-gray-400 hover:bg-gray-800 hover:text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-black'
-                    }`}
-                  >
-                    {category}
-                  </button>
-              );
-            })}
-              </div>
-            </div>
-      )}
-
-      {/* List View */}
-      {!selectedPlace && (
-        <div className="flex flex-col md:flex-row">
-          {/* Sidebar - Categories - Hidden on mobile */}
-          <aside className={`hidden md:block w-64 ${theme === 'dark' ? 'border-r border-gray-900' : 'border-r border-gray-200'}`}>
-            <div className="p-6">
-              <h2 className={`font-bold text-lg mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                Categories
-              </h2>
-                      <div className="space-y-2">
-                {categories.map((category) => {
-                  const isActive = selectedCategory === category;
-                  return (
-                            <button
-                      key={category}
-                      onClick={() => setSelectedCategory(category)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                        isActive
-                          ? theme === 'dark'
-                            ? 'bg-white text-black'
-                            : 'bg-black text-white'
-                          : theme === 'dark'
-                            ? 'hover:bg-gray-950 text-gray-400 hover:text-white'
-                            : 'hover:bg-gray-100 text-gray-600 hover:text-black'
-                      }`}
-                    >
-                      <span className="font-semibold">{category === 'all' ? 'All' : category}</span>
-                            </button>
-                  );
-                })}
-                          </div>
-                          </div>
-          </aside>
-
-          {/* Main Content */}
-          <main className="flex-1 p-4 md:p-6">
-          <Container>
-
-        {sortedPlaces.length === 0 ? (
-              <div className="text-center py-16">
-                <p className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-              No places found
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {sortedPlaces.map((place, index) => (
-              <motion.div
-                key={place.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`cursor-pointer rounded-2xl overflow-hidden transition-all duration-200 ${
-                  theme === 'dark'
-                        ? 'bg-gray-950 border border-gray-900 hover:bg-gray-900/50'
-                        : 'bg-white border border-gray-200 hover:bg-gray-50'
-                }`}
-                onClick={() => setSelectedPlace(place)}
-              >
-                <div className="p-6">
-                    {/* Category Badge */}
-                      <div className="flex items-center justify-between mb-3">
-                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                      theme === 'dark'
-                            ? 'bg-gray-900 text-gray-300'
-                            : 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {place.category}
-                    </span>
-                        {place.distance && (
-                          <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                            {place.distance}
-                          </span>
-                        )}
-                  </div>
-
-                      {/* Title */}
-                      <h3 className={`text-lg font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                        {place.name}
-                      </h3>
-
-                  {/* Description */}
-                      <p className={`text-sm mb-4 line-clamp-3 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {place.description}
-                  </p>
-
-                      {/* Location */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <MapPin className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
-                        <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {place.city}, {place.country}
-                      </span>
-                  </div>
-
-                      {/* Rating and Price */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <Star className={`w-4 h-4 ${theme === 'dark' ? 'text-yellow-400' : 'text-yellow-500'} fill-current`} />
-                          <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                            {place.rating}
-                          </span>
-                          <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                            ({place.reviewCount})
-                      </span>
-                    </div>
-                        <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                        {place.priceRange}
-                      </span>
-                    </div>
-
-                      {/* Verified Badge */}
-                      {place.verified && (
-                        <div className="mt-3 pt-3 border-t border-gray-800 dark:border-gray-900">
-                          <div className="flex items-center gap-2">
-                            <Verified className="w-4 h-4 text-blue-500" />
-                            <span className={`text-xs font-semibold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                              Verified Place
-                            </span>
-                  </div>
-                </div>
-                      )}
-                    </div>
-              </motion.div>
-            ))}
-              </div>
-        )}
-        </Container>
-          </main>
       </div>
-   
-      )}
 
-      {/* Place Detail View */}
-        {selectedPlace && (
-        <Container>
-          {/* Hero Image */}
-          <div className="relative h-[50vh] min-h-[400px] max-h-[600px] overflow-hidden">
-                <img
-                  src={selectedPlace.image}
-                  alt={selectedPlace.name}
-                  className="w-full h-full object-cover"
-                />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                  </div>
-
-          {/* Content */}
-          <div className={`max-w-4xl mx-auto px-4 sm:px-6 py-8 border-x ${theme === 'dark' ? 'border-black' : 'border-gray-100'}`}>
-            {/* Header Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="mb-8"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className={`text-4xl sm:text-5xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                    {selectedPlace.name}
-                  </h1>
-                  <div className="flex items-center space-x-2 mb-3">
-                    <MapPin className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
-                    <span className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {selectedPlace.address}
-                    </span>
-                </div>
-                        </div>
-                {selectedPlace.verified && (
-                  <div className={`flex items-center space-x-2 px-4 py-2 rounded-full ${theme === 'dark' ? 'bg-gray-900 border border-gray-800' : 'bg-gray-100 border border-gray-200'}`}>
-                    <Verified className={`w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} />
-                    <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Verified</span>
-                          </div>
-                        )}
-                    </div>
-
-              {/* Meta Info */}
-              <div className="flex items-center space-x-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center space-x-1">
-                  <Star className={`w-5 h-5 ${theme === 'dark' ? 'text-yellow-400' : 'text-yellow-500'} fill-current`} />
-                  <span className={`font-bold text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                    {selectedPlace.rating}
-                  </span>
-                    </div>
-                <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {selectedPlace.reviewCount} reviews
-                </span>
-                <span className={`font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {selectedPlace.priceRange}
-                </span>
-                <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {selectedPlace.category}
-                </span>
-                  </div>
-            </motion.div>
-
-                      {/* About Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="mb-8"
-            >
-              <h2 className={`text-2xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                About
-              </h2>
-              <p className={`text-lg leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                          {selectedPlace.description}
-                        </p>
-            </motion.div>
-
-            {/* Features */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="mb-8"
-            >
-              <h2 className={`text-2xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                          Features & Amenities
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                          {selectedPlace.tags.map(tag => (
-                  <span
-                              key={tag}
-                    className={`px-4 py-2 rounded-full text-sm font-medium ${
-                                theme === 'dark'
-                        ? 'bg-gray-900 border border-gray-800 text-gray-300'
-                        : 'bg-gray-100 border border-gray-200 text-gray-700'
-                              }`}
-                            >
-                    {tag}
-                  </span>
-                          ))}
-                        </div>
-            </motion.div>
-
-                      {/* Operating Hours */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              className="mb-8"
-            >
-              <h2 className={`text-2xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                          Operating Hours
-              </h2>
-              <div className="space-y-2">
-                          {Object.entries(selectedPlace.hours).map(([day, hours]) => {
-                            const isToday = new Date().toLocaleDateString('en-US', { weekday: 'long' }) === day;
-                            const isClosed = hours === 'Closed';
-
-                            return (
-                              <div
-                                key={day}
-                      className={`flex justify-between items-center p-3 rounded-lg ${
-                                  isToday
-                                    ? theme === 'dark'
-                            ? 'bg-gray-900 border border-gray-800'
-                            : 'bg-gray-100 border border-gray-200'
-                          : ''
-                      }`}
-                    >
-                      <span className={`font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {day} {isToday && <span className="text-sm opacity-75">(Today)</span>}
-                                </span>
-                                <span className={`font-medium ${
-                        isClosed ? 'text-red-500' : theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                                }`}>
-                                  {hours}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-            </motion.div>
-
-            {/* Contact */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-              className="mb-8"
-            >
-              <h2 className={`text-2xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                Contact
-              </h2>
-              <div className="space-y-3">
-                          {selectedPlace.phone && (
-                            <a
-                              href={`tel:${selectedPlace.phone}`}
-                    className={`flex items-center space-x-3 p-4 rounded-lg transition-colors ${
-                                theme === 'dark'
-                        ? 'bg-gray-900 border border-gray-800 hover:bg-gray-800'
-                        : 'bg-gray-100 border border-gray-200 hover:bg-gray-200'
-                    }`}
-                  >
-                    <span className="text-2xl">📞</span>
-                    <span className={`font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {selectedPlace.phone}
-                    </span>
-                            </a>
-                          )}
-                          {selectedPlace.website && (
-                            <a
-                              href={selectedPlace.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                    className={`flex items-center space-x-3 p-4 rounded-lg transition-colors ${
-                                theme === 'dark'
-                        ? 'bg-gray-900 border border-gray-800 hover:bg-gray-800'
-                        : 'bg-gray-100 border border-gray-200 hover:bg-gray-200'
-                    }`}
-                  >
-                    <span className="text-2xl">🌐</span>
-                    <span className={`font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Visit Website
-                    </span>
-                            </a>
-                          )}
-              </div>
-            </motion.div>
-
-            {/* Reviews */}
-          <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.5 }}
-            >
-              <h2 className={`text-2xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                Reviews ({selectedPlace.reviewCount})
-              </h2>
-              <p className={`text-center py-12 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                No reviews available yet.
-              </p>
-            </motion.div>
-                </div>
-                </Container>
-      )}
-    </div>
+      <div className="w-full mx-auto max-w-7xl p-2">
+        {renderContent()}
+      </div>
+    </Container>
   );
 };
 

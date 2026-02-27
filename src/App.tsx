@@ -17,7 +17,7 @@ import AuthWizard from './components/AuthWizard';
 import { MapPin, Heart, MessageCircle, User, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Wallet } from 'lucide-react';
 import TrendsPanel, { NormalizedTrend } from './components/TrendsPanel';
 import PopularUsersPanel from './components/PopularUsersPanel';
-import PlacesScreen from './components/PlacesScreen';
+import PlaceDetailsScreen from './components/PlaceDetailsScreen';
 import HomeScreen from './components/HomeScreen';
 import LanguageSelector from './components/LanguageSelector.tsx';
 import ClassifiedsScreen from './components/ClassifiedsScreen';
@@ -31,6 +31,7 @@ import PwaInstallPrompt, { PwaInstallProvider, usePwaInstall } from './component
 import PremiumScreen from './components/PremiumScreen.tsx';
 import PostDetails from './components/PostDetails.tsx';
 import WalletScreen from './components/WalletScreen.tsx';
+import PlacesScreen from './components/PlacesScreen.tsx';
 
 const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/': 'pride',
@@ -141,6 +142,13 @@ function AppContent() {
       accent: 'from-rose-400/80 to-red-500/80'
     },
     {
+      id: 'places',
+      label: t('app.nav.places', 'Places'),
+      path: '/places',
+      icon: MapPin,
+      accent: 'from-green-400/80 to-emerald-500/80'
+    },
+    {
       id: 'messages',
       label: t('app.nav.messages'),
       path: '/messages',
@@ -171,14 +179,14 @@ function AppContent() {
   ], [profilePath, t]);
 
   const mobileNavItems = React.useMemo(() => {
-    const mobileOrder = ['pride', 'nearby', 'match', 'messages', 'notifications', 'wallet', 'profile'];
+    const mobileOrder = ['pride', 'nearby', 'match', 'places', 'messages', 'notifications', 'wallet', 'profile'];
     return mobileOrder
       .map((id) => sidebarNavItems.find((item) => item.id === id))
       .filter(Boolean) as typeof sidebarNavItems;
   }, [sidebarNavItems]);
 
   const sidebarNavSections = React.useMemo(() => {
-    const primaryOrder = ['pride', 'nearby', 'match', 'messages'];
+    const primaryOrder = ['pride', 'nearby', 'match', 'places', 'messages'];
     const secondaryOrder = ['notifications', 'wallet', 'profile'];
 
     const sortByOrder = (ids: string[]) =>
@@ -638,6 +646,7 @@ function AppContent() {
                 <Route path="/match" element={<MatchScreen />} />
                 <Route path="/nearby" element={<NearbyScreen />} />
                 <Route path="/places" element={<PlacesScreen />} />
+                <Route path="/places/:publicId" element={<PlaceDetailsScreen />} />
                 <Route path="/profile" element={<ProfileScreen />} />
 
                 <Route path="/messages" element={<MessagesScreen />} />

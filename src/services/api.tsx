@@ -167,6 +167,29 @@ export class ApiService {
     });
   }
 
+  async fetchPlace(publicId: string) {
+    return this.call(Actions.CMD_PLACE_FETCH, {
+      method: 'POST',
+      body: { public_id: publicId },
+    });
+  }
+
+    async fetchNearbyPlaces(latitude: number | null, longitude: number | null, cursor: string | null = null,distance: string | null = null, limit: number | null = null) {
+    return this.call(Actions.CMD_PLACE_FETCH, {
+      method: 'POST',
+      body: { latitude: latitude, longitude: longitude, cursor: cursor,distance:distance, limit: limit },
+    });
+  }
+
+  async fetchPlacesCategories (cursor: string | null = null, limit: number | null = null) {
+    return this.call(Actions.CMD_PLACE_CATEGORIES, {
+      method: 'POST',
+      body: {limit:limit,cursor:cursor},
+    });
+  }
+
+
+  
   async updateProfile(userData: Record<string, any>) {
     return this.call(Actions.CMD_UPDATE_USER_PROFILE, {
       method: "POST",

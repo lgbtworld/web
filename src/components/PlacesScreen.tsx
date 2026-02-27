@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { MapPin, Search, Loader, RefreshCw, Grid, Map as MapIcon, Plus, Minus, Navigation, X } from 'lucide-react';
+import { MapPin, Search, Loader, RefreshCw, Grid, Map as MapIcon, ZoomIn, ZoomOut, LocateFixed, Shrink, X } from 'lucide-react';
 import { MapContainer, TileLayer, useMapEvents, useMap } from 'react-leaflet';
 import { motion } from 'framer-motion';
 import 'leaflet/dist/leaflet.css';
@@ -35,6 +35,93 @@ const PlaceCardSkeleton = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const MapEventsHandler = ({ onMoveEnd }: { onMoveEnd: (lat: number, lng: number) => void }) => {
+  useMapEvents({
+    moveend: (e) => {
+      const center = e.target.getCenter();
+      onMoveEnd(center.lat, center.lng);
+    },
+  });
+  return null;
+};
+
+const MapControls = ({ initialCenter, initialZoom, theme }: { initialCenter: [number, number], initialZoom: number, theme: string }) => {
+  const map = useMap();
+  const [isTouched, setIsTouched] = useState(false);
+
+  useMapEvents({
+    move() { if (!isTouched) setIsTouched(true); },
+    zoom() { if (!isTouched) setIsTouched(true); },
+  });
+
+  const handleLocate = () => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(position => {
+        map.flyTo([position.coords.latitude, position.coords.longitude], 16);
+      });
+    }
+  };
+
+  const handleCenter = () => {
+    if (!isTouched) return;
+    map.flyTo(initialCenter, initialZoom);
+    map.once('moveend', () => setIsTouched(false));
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      className="absolute bottom-6 right-6 z-[1000] flex flex-col gap-2"
+    >
+      <div className={`flex flex-col rounded-2xl border backdrop-blur-xl shadow-2xl overflow-hidden ${theme === 'dark'
+        ? 'bg-black/40 border-white/10'
+        : 'bg-white/70 border-black/5'
+        }`}>
+        <button
+          onClick={() => map.zoomIn()}
+          className="p-3 transition-all hover:bg-black/5 dark:hover:bg-white/10 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white"
+          title="Zoom In"
+        >
+          <ZoomIn size={20} />
+        </button>
+        <div className={`h-px w-full ${theme === 'dark' ? 'bg-white/5' : 'bg-black/5'}`} />
+        <button
+          onClick={() => map.zoomOut()}
+          className="p-3 transition-all hover:bg-black/5 dark:hover:bg-white/10 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white"
+          title="Zoom Out"
+        >
+          <ZoomOut size={20} />
+        </button>
+      </div>
+
+      <div className={`flex flex-col rounded-2xl border backdrop-blur-xl shadow-2xl overflow-hidden ${theme === 'dark'
+        ? 'bg-black/40 border-white/10'
+        : 'bg-white/70 border-black/5'
+        }`}>
+        <button
+          onClick={handleLocate}
+          className="p-3 transition-all hover:bg-black/5 dark:hover:bg-white/10 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white"
+          title="Locate me"
+        >
+          <LocateFixed size={20} />
+        </button>
+        <div className={`h-px w-full ${theme === 'dark' ? 'bg-white/5' : 'bg-black/5'}`} />
+        <button
+          className={`p-3 transition-all ${isTouched
+            ? 'hover:bg-black/5 dark:hover:bg-white/10 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white'
+            : 'opacity-30 cursor-default text-black/40 dark:text-white/40'
+            }`}
+          onClick={handleCenter}
+          title="Recenter"
+        >
+          <Shrink size={20} />
+        </button>
+      </div>
+    </motion.div>
   );
 };
 
@@ -214,16 +301,6 @@ const PlacesScreen: React.FC = () => {
     };
   }, [loadMore, viewMode]);
 
-  const MapEventsHandler = ({ onMoveEnd }: { onMoveEnd: (lat: number, lng: number) => void }) => {
-    useMapEvents({
-      moveend: (e) => {
-        const center = e.target.getCenter();
-        onMoveEnd(center.lat, center.lng);
-      },
-    });
-    return null;
-  };
-
   const handleMapMove = useCallback((lat: number, lng: number) => {
     const newLoc = { latitude: lat, longitude: lng };
     setLocation(newLoc);
@@ -231,40 +308,6 @@ const PlacesScreen: React.FC = () => {
     // We don't reset the list to allow the user to see all items they've found.
     fetchNearbyPlaces({ center: newLoc });
   }, [fetchNearbyPlaces]);
-
-  const MapControls = () => {
-    const map = useMap();
-
-    const handleLocate = () => {
-      map.locate({ setView: true, maxZoom: 16 });
-    };
-
-    return (
-      <div className="absolute bottom-6 right-6 flex flex-col gap-2 z-[400]">
-        <button
-          onClick={() => map.zoomIn()}
-          className="w-12 h-12 flex items-center justify-center bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-          title="Zoom In"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => map.zoomOut()}
-          className="w-12 h-12 flex items-center justify-center bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-          title="Zoom Out"
-        >
-          <Minus className="w-5 h-5" />
-        </button>
-        <button
-          onClick={handleLocate}
-          className="w-12 h-12 flex items-center justify-center bg-purple-600 text-white rounded-2xl shadow-xl hover:bg-purple-700 transition-all mt-2"
-          title="My Location"
-        >
-          <Navigation className="w-5 h-5" />
-        </button>
-      </div>
-    );
-  };
 
   const renderGrid = () => (
     <div className="space-y-4 pb-8">
@@ -344,7 +387,7 @@ const PlacesScreen: React.FC = () => {
             />
           ))}
 
-          <MapControls />
+          <MapControls initialCenter={defaultCenter} initialZoom={13} theme={theme} />
         </MapContainer>
       </motion.div>
     );

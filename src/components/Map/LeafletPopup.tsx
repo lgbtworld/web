@@ -1,24 +1,12 @@
-import { Bird, ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { Popup, PopupProps } from 'react-leaflet'
-
-import { AppConfig } from './lib/AppConfig'
-import { MarkerCategoriesValues } from '.lib/MarkerCategories'
-import { MapIcon } from './Icon'
-import { MutableRefObject, useEffect, useRef, useState } from 'react'
-import ProfileScreen from '../ProfileScreen'
-
-
-
-
-
+import { Popup, PopupProps } from 'react-leaflet';
+import { decodeGeoHash } from './lib/helper/geocoder';
 
 interface LeafletPopupProps extends PopupProps {
   handlePopupClose: (active?: boolean) => void
   item: any
-  isOpen: boolean // pass this from parent
-  onOpenChange: (open: boolean) => void // pass this from parent
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
 }
-
 
 const LeafletPopup = ({
   handlePopupClose,
@@ -27,36 +15,24 @@ const LeafletPopup = ({
   onOpenChange,
   ...props
 }: LeafletPopupProps) => {
-
- 
-  useEffect(() => {
-    if (isOpen) {
-
- 
-    }
-  }, [isOpen])
-
-
-
-  const loadContributionInfo = async (place: any) => {
-      console.log("Here")
-  }
-
-  const loadData = async (place: any) => {
-    await loadContributionInfo(place)
-  }
-
-
-
-
   return (
-    <div className=' w-full  h-screen bg-white'>
-      coolvibes
+    <Popup
+      {...props}
+      position={decodeGeoHash(item)}
+      eventHandlers={{
+        remove: () => onOpenChange(false)
+      }}
+    >
+      <div className="min-w-[200px] p-0 overflow-hidden rounded-xl">
+        <div className="p-3 bg-white dark:bg-gray-950">
+          <h3 className="font-bold text-gray-900 dark:text-white">
+            {item.displayname || item.username}
+          </h3>
+          <p className="text-xs text-gray-500">@{item.username}</p>
+        </div>
       </div>
+    </Popup>
+  );
+};
 
-   
-  )
-}
-
-export default LeafletPopup
-
+export default LeafletPopup;

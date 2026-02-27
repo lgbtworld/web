@@ -7,8 +7,8 @@ import { api } from '../services/api';
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  token:string | null;
-  login: (token:string, user: User) => void;
+  token: string | null;
+  login: (token: string, user: User) => void;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -27,10 +27,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (savedToken) {
           // Set token first
           setToken(savedToken);
-          
+
           // Fetch user info from API
           const response = await api.getUserInfo();
-          
+
           // If response has user data, set it
           if (response?.user) {
             setUser(response.user);
@@ -51,33 +51,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     autoLogin();
   }, []);
 
-  const login = (token: string, userData: User) => {
+  const login = React.useCallback((token: string, userData: User) => {
     setToken(token);
     setUser(userData);
     localStorage.setItem("authToken", token);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = React.useCallback(() => {
     setUser(null);
     setToken(null);
     localStorage.removeItem("authToken");
-  };
+  }, []);
 
-  const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      setUser({ ...user, ...userData });
-    }
-  };
+  const updateUser = React.useCallback((userData: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...userData } : null);
+  }, []);
+
+  const contextValue = React.useMemo(() => ({
+    user,
+    isAuthenticated: !!token,
+    token,
+    login,
+    logout,
+    updateUser,
+  }), [user, token, login, logout, updateUser]);
 
   return (
-    <AuthContext.Provider value={{
-        user,
-        isAuthenticated: !!token,
-        token,
-        login,
-        logout,
-        updateUser,
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

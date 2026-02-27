@@ -1,55 +1,51 @@
-
-import { LatLngExpression } from 'leaflet'
-import { Shrink } from 'lucide-react'
-import { useCallback, useState } from 'react'
-import { useMapEvents } from 'react-leaflet'
-
-import { AppConfig } from '../lib/AppConfig'
-
-import useMapContext from '../useMapContext'
+import { LatLngExpression } from 'leaflet';
+import { Shrink } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { useMapEvents } from 'react-leaflet';
+import useMapContext from '../useMapContext';
 
 interface CenterButtonProps {
-  center: LatLngExpression
-  zoom: number
+  center: LatLngExpression;
+  zoom: number;
 }
 
 export const CenterButton = ({ center, zoom }: CenterButtonProps) => {
-  const [isTouched, setIsTouched] = useState(false)
-  const { map } = useMapContext()
+  const [isTouched, setIsTouched] = useState(false);
+  const { map } = useMapContext();
 
   const touch = useCallback(() => {
     if (!isTouched && map) {
-      setIsTouched(true)
+      setIsTouched(true);
     }
-  }, [isTouched, map])
+  }, [isTouched, map]);
 
   useMapEvents({
     move() {
-      touch()
+      touch();
     },
     zoom() {
-      touch()
+      touch();
     },
-  })
+  });
 
   const handleClick = useCallback(() => {
-    if (!isTouched || !map) return
+    if (!isTouched || !map) return;
 
-    map.flyTo(center, zoom)
+    map.flyTo(center, zoom);
     map.once('moveend', () => {
-      setIsTouched(false)
-    })
-  }, [map, isTouched, zoom, center])
+      setIsTouched(false);
+    });
+  }, [map, isTouched, zoom, center]);
 
   return (
     <button
-
-    style={{ zIndex: 1 }}
-
-      className={`absolute top-[75px] right-3   p-2`}
-      onClick={() => handleClick()}
+      className={`p-3 rounded-xl transition-all ${isTouched
+        ? 'hover:bg-black/5 dark:hover:bg-white/10 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white'
+        : 'opacity-30 cursor-default text-black/40 dark:text-white/40'
+        }`}
+      onClick={handleClick}
     >
-      <Shrink size={AppConfig.ui.mapIconSize} />
+      <Shrink size={20} />
     </button>
-  )
-}
+  );
+};

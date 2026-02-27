@@ -48,6 +48,26 @@ const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
 
 const RIGHT_SIDEBAR_HIDDEN_PATHS = new Set(['/messages', '/landing', '/classifieds', '/places', '/match', '/nearby']);
 
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  const { theme } = useTheme();
+
+  if (!isAuthenticated) {
+    return (
+      <div className={`h-full w-full flex items-start lg:items-center justify-center overflow-y-auto ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}>
+        <div className="w-full max-w-lg px-0 lg:px-4 py-4 lg:py-0">
+          <AuthWizard
+            isOpen={true}
+            onClose={() => { }}
+            mode="inline"
+          />
+        </div>
+      </div>
+    );
+  }
+  return <>{children}</>;
+};
+
 function AppContent() {
   const [activeScreen, setActiveScreen] = useState('pride');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -271,22 +291,6 @@ function AppContent() {
 
 
 
-  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    if (!isAuthenticated) {
-      return (
-        <div className={`h-full w-full flex items-start lg:items-center justify-center overflow-y-auto ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}>
-          <div className="w-full max-w-lg px-0 lg:px-4 py-4 lg:py-0">
-            <AuthWizard
-              isOpen={true}
-              onClose={() => { }}
-              mode="inline"
-            />
-          </div>
-        </div>
-      );
-    }
-    return <>{children}</>;
-  };
 
   return (
     <div className={`w-screen dark:bg-gray-950 bg-white h-screen select-none`}>

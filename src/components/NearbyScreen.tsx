@@ -1,13 +1,11 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Filter, Search, Users, Grid, List, Square, ChevronDown, RefreshCw, MapPin, Users2, X, Map as MapIcon, Bubbles, Earth } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Filter, Users, Grid, List, Square, RefreshCw, MapPin, X, Map as MapIcon, Bubbles, Earth } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { UserCard } from './UserCard';
-import { AnimatePresence, motion, useSpring, useTransform, useMotionValue, useMotionValueEvent, animate } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { api } from '../services/api';
 import { Actions } from '../services/actions';
-import { useApp } from '../contexts/AppContext';
-import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 import { useAtom } from 'jotai';
@@ -17,34 +15,34 @@ import Container from './Container';
 import Map from './Map';
 import BubbleView from './BubbleView';
 import DomeView from './DomeView';
+import ProfileScreen from './ProfileScreen';
 
 
 const NearbyScreen: React.FC = () => {
   const { theme } = useTheme();
   const { viewMode, setViewMode } = useSettings();
-  const { defaultLanguage } = useApp();
   const { t } = useTranslation('common');
 
-  const { user: authUser } = useAuth(); // For future use if needed to filter own user
   const [showFilters, setShowFilters] = useState(false);
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
+  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const [state, setState] = useAtom(globalState);
 
   // Fetch nearby users from API
-  const fetchNearbyUsers = async (refreshing: boolean = false) => {
+  const fetchNearbyUsers = async (refreshing: boolean = false, lat?: number, lng?: number) => {
     try {
       setLoadingUsers(true);
       // Build filter payload - always include all filters
       const payload: any = {
         limit: 100,
-        cursor: refreshing ? null : state.nearByCursor
+        cursor: (refreshing || (lat !== undefined && lng !== undefined)) ? null : state.nearByCursor,
+        latitude: lat,
+        longitude: lng
       };
 
 
@@ -61,7 +59,7 @@ const NearbyScreen: React.FC = () => {
 
       setState((prevState: any) => {
         // Mevcut nearbyUsers listesindeki user id’lerini alıyoruz
-        const existingIds = new Set(prevState.nearbyUsers.map(user => user.id));
+        const existingIds = new Set(prevState.nearbyUsers.map((user: any) => user.id));
 
         // Sadece yeni kullanıcıları filtreliyoruz
         const filteredNewUsers = response.users.filter(
@@ -136,8 +134,18 @@ const NearbyScreen: React.FC = () => {
       nearbyUsers: [],
       nearByCursor: null,
     }));
+    setIsRefreshing(true);
     fetchNearbyUsers(true);
   };
+
+  const handleMarkerClick = useCallback((user: any) => {
+    setSelectedUser(user);
+  }, []);
+
+  const handleMapMoveEnd = useCallback((lat: number, lng: number) => {
+    console.log("Map move end:", lat, lng);
+    fetchNearbyUsers(false, lat, lng);
+  }, [state.nearByCursor]);
 
   const isMapView = viewMode === 'map';
   const isBubbleView = viewMode === 'bubble'
@@ -296,7 +304,7 @@ const NearbyScreen: React.FC = () => {
 
       {isMapView ? (
         <div className="w-full h-[calc(100dvh-205px)] sm:h-[calc(100dvh-60px)]">
-          <Map />
+          <Map onMarkerClick={handleMarkerClick} onMapMoveEnd={handleMapMoveEnd} />
         </div>
       ) : isBubbleView ? (
         <div className="w-full h-[calc(100dvh-205px)] sm:h-[calc(100dvh-60px)]">
@@ -304,7 +312,7 @@ const NearbyScreen: React.FC = () => {
         </div>
       ) : isDomeView ? (
         <div className="w-full h-[calc(100dvh-205px)] sm:h-[calc(100dvh-60px)]">
-          <DomeView fit={0.1} maxRadius={1000} />
+          <DomeView fit={0.1} maxRadius={1000} onMemberClick={handleMarkerClick} />
         </div>
       ) : (
         <div
@@ -334,7 +342,7 @@ const NearbyScreen: React.FC = () => {
               <div className='w-full flex-col py-2'>
                 {viewMode === 'grid' && (
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                    {state.nearbyUsers.map((user: any, index) => (
+                    {state.nearbyUsers.map((user: any, index: number) => (
                       <motion.div
                         key={`view_grid_item${index}`}
 
@@ -350,7 +358,7 @@ const NearbyScreen: React.FC = () => {
 
                 {viewMode === 'list' && (
                   <div className="space-y-3">
-                    {state.nearbyUsers.map((user: any, index) => (
+                    {state.nearbyUsers.map((user: any, index: number) => (
                       <motion.div
                         key={user.id}
                         initial={{ opacity: 0, x: -20 }}
@@ -365,7 +373,7 @@ const NearbyScreen: React.FC = () => {
 
                 {viewMode === 'card' && (
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-2">
-                    {state.nearbyUsers.map((user: any, index) => (
+                    {state.nearbyUsers.map((user: any, index: number) => (
                       <motion.div
                         key={user.id}
                         initial={{ opacity: 0, scale: 0.95 }}
@@ -384,7 +392,7 @@ const NearbyScreen: React.FC = () => {
 
 
 
-                {loadingMore || loadingUsers && (
+                {(loadingMore || loadingUsers) && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -435,6 +443,70 @@ const NearbyScreen: React.FC = () => {
           </motion.div>
         </div>
       )}
+
+      {/* Profile Bottom Sheet */}
+      <AnimatePresence>
+        {selectedUser && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedUser(null)}
+              className="fixed inset-0 bg-black/60 z-[100] backdrop-blur-sm"
+            />
+
+            {/* Content */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className={`fixed bottom-0 left-0 right-0 z-[101] max-w-4xl mx-auto ${theme === 'dark' ? 'bg-gray-950 border-t border-gray-800' : 'bg-white'
+                } rounded-t-[32px] shadow-2xl flex flex-col overflow-hidden`}
+              style={{ maxHeight: '92vh', height: '92vh' }}
+            >
+              {/* Handle Bar */}
+              <div className="flex justify-center pt-3 pb-2 cursor-pointer shrink-0" onClick={() => setSelectedUser(null)}>
+                <div className={`w-12 h-1.5 rounded-full ${theme === 'dark' ? 'bg-white/20' : 'bg-gray-300'}`} />
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
+                <div className="flex flex-col">
+                  <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                    {selectedUser.displayname || selectedUser.username}
+                  </h2>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                    @{selectedUser.username}
+                  </p>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setSelectedUser(null)}
+                  className={`p-2 rounded-full ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}
+                >
+                  <X className={`w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-black'}`} />
+                </motion.button>
+              </div>
+
+              {/* Profile Screen Embed */}
+              <div
+                className="flex-1 overflow-y-auto pb-32"
+                style={{ WebkitOverflowScrolling: 'touch' }}
+              >
+                <ProfileScreen
+                  inline={true}
+                  isEmbed={true}
+                  username={selectedUser.username}
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </Container>
   );
 };

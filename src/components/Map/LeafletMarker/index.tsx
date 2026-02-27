@@ -1,9 +1,7 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Marker as ReactMarker } from 'react-leaflet';
 
 import { AppConfig } from '../lib/AppConfig';
-import MarkerCategories from '../lib/MarkerCategories';
-import { PlaceValues } from '../lib/Places';
 
 import useMapContext from '../useMapContext';
 import MarkerIconWrapper from './MarkerIconWrapper';
@@ -11,24 +9,22 @@ import MarkerIconWrapper from './MarkerIconWrapper';
 import LeafletDivIcon from '../LeafletDivIcon';
 import LeafletPopup from '../LeafletPopup';
 import { decodeGeoHash } from '../lib/helper/geocoder';
-import { getSafeImageURL, getSafeImageURLEx } from '../../../helpers/helpers';
+import { getSafeImageURLEx } from '../../../helpers/helpers';
 import { useNavigate } from 'react-router-dom';
 
 
 
 export interface CustomMarkerProps {
-  item: any
+  item: any;
+  onClick?: (item: any) => void;
 }
 
-export const CustomMarker = ({ item }: CustomMarkerProps) => {
+export const CustomMarker = React.memo(({ item, onClick }: CustomMarkerProps) => {
   const { map } = useMapContext();
   const navigate = useNavigate()
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const markerCategory = useMemo(() => {
-      return "ersan";
-    }, [item]);
 
   const handlePopupClose = useCallback(() => {
     if (!map) return;
@@ -36,31 +32,35 @@ export const CustomMarker = ({ item }: CustomMarkerProps) => {
   }, [map]);
 
 
- 
+
   const handleMarkerClick = useCallback(() => {
     if (!map) return;
     const clampZoom = map.getZoom();// <  AppConfig.maxZoom ? 14 : 14;
     map.setView(decodeGeoHash(item), clampZoom, { animate: false });
-    //setIsModalOpen(true);
-    navigate(`/${item.username}`, { replace: true });
-  }, [map]);
+
+    if (onClick) {
+      onClick(item);
+    } else {
+      navigate(`/${item.username}`, { replace: true });
+    }
+  }, [map, item, onClick, navigate]);
 
 
 
-   const generateAlphaColorFromIndex = (_index: any): string => {
+  const generateAlphaColorFromIndex = (_index: any): string => {
     // Hash benzeri bir algoritma ile tutarlı bir renk üret
     const getChannel = (seed: bigint): number => {
       const sinValue = Math.sin(Number(seed % BigInt(Number.MAX_SAFE_INTEGER)));
       return (Math.abs(sinValue) * 256) % 256;
     };
-  
-    console.log("generateAlphaColorFromIndex",_index)
+
+    console.log("generateAlphaColorFromIndex", _index)
     var index = _index ? BigInt(_index) : BigInt(0);
     const r = Math.floor(getChannel(index * BigInt(123456)));
     const g = Math.floor(getChannel(index * BigInt(789101)));
     const b = Math.floor(getChannel(index * BigInt(112131)));
     const alpha = Math.floor(0.6 * 255); // 40% transparency
-  
+
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}${alpha.toString(16).padStart(2, '0')}`;
   };
 
@@ -73,11 +73,11 @@ export const CustomMarker = ({ item }: CustomMarkerProps) => {
           <MarkerIconWrapper
             item={{
               group: false,
-              image: getSafeImageURLEx(item.public_id,item?.avatar,"icon"),
-              data:item
-            }}   
-            color= {generateAlphaColorFromIndex(item?.public_id)}  
-            label={item?.username }   
+              image: getSafeImageURLEx(item.public_id, item?.avatar, "icon"),
+              data: item
+            }}
+            color={generateAlphaColorFromIndex(item?.public_id)}
+            label={item?.username}
           />
         ),
         anchor: [
@@ -89,7 +89,7 @@ export const CustomMarker = ({ item }: CustomMarkerProps) => {
       autoPan={true}
       autoPanOnFocus={true}
     >
-    <LeafletPopup
+      <LeafletPopup
         autoPan={true}
         autoClose={true}
         isOpen={isModalOpen}
@@ -100,4 +100,4 @@ export const CustomMarker = ({ item }: CustomMarkerProps) => {
       />
     </ReactMarker>
   );
-};
+});

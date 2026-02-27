@@ -1,7 +1,4 @@
-import { useEffect, useState } from "react"
-import { getSafeImageURL } from "../../../helpers/helpers"
-import { MapIcon } from "../Icon"
-import { motion } from "framer-motion"
+import React from 'react';
 
 
 export interface MarkerIconWrapperProps {
@@ -10,11 +7,11 @@ export interface MarkerIconWrapperProps {
   label?: string
 }
 
-
-const GroupIcon = ({ group, color, label }: { group: any, color: any, label: any }) => {
+const GroupIcon = React.memo(({ color, label }: { color: any, label: any }) => {
   return (
     <div
       className="relative rounded-full max-w-64 max-h-64 m-0 inline-flex p-0 cursor-pointer select-none
+                 transition-all duration-300 hover:scale-110 hover:-translate-y-2
                  active:scale-95 active:shadow-inner active:duration-150 active:ease-in-out"
       style={{ backgroundColor: color }}
     >
@@ -41,13 +38,14 @@ const GroupIcon = ({ group, color, label }: { group: any, color: any, label: any
       <span className={`absolute ${label ? "-inset-2" : "-inset-1"} rounded-full shadow-md`} />
     </div>
   )
-}
+});
 
 
-const UserIcon = ({ user, color, label }: { user: any, color: any, label: any }) => {
+const UserIcon = React.memo(({ user, color, label }: { user: any, color: any, label: any }) => {
   return (
     <div
       className="relative rounded-full max-w-64 max-h-64 m-0 inline-flex p-0 cursor-pointer select-none 
+                 transition-all duration-300 hover:scale-110 hover:-translate-y-2
                  active:scale-95 active:shadow-inner active:duration-150 active:ease-in-out"
       style={{ backgroundColor: color }}
     >
@@ -83,15 +81,16 @@ const UserIcon = ({ user, color, label }: { user: any, color: any, label: any })
       <span className={`absolute ${label ? "-inset-2" : "-inset-1"} rounded-full shadow-md`} />
     </div>
   );
-}
-const MarkerIconWrapper = ({ item, color, label }: MarkerIconWrapperProps) => {
+});
+
+const MarkerIconWrapper = React.memo(({ item, color, label }: MarkerIconWrapperProps) => {
   console.log(item);
 
   return item.group ? (
-    <GroupIcon group={item} color={color} label={label} />
+    <GroupIcon color={color} label={label} />
   ) : (
     <UserIcon user={item} color={color} label={label} />
   );
-};
+});
 
 export default MarkerIconWrapper

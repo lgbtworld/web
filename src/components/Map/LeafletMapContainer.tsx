@@ -3,15 +3,16 @@ import { useEffect } from 'react'
 import { MapContainer, TileLayer } from 'react-leaflet'
 
 import useMapContext from './useMapContext'
-import L from 'leaflet'
 import { AppConfig } from './lib/AppConfig'
+import { useTheme } from '../../contexts/ThemeContext'
 
 interface LeafletMapContainerProps extends MapOptions {
-  children: JSX.Element | JSX.Element[]
+  children: React.ReactNode
 }
 
 export const LeafletMapContainer = ({ children, ...props }: LeafletMapContainerProps) => {
   const { setMap, setLeafletLib } = useMapContext()
+  const { theme } = useTheme()
 
   useEffect(() => {
     if (!setLeafletLib) return
@@ -20,25 +21,29 @@ export const LeafletMapContainer = ({ children, ...props }: LeafletMapContainerP
     })
   }, [setLeafletLib])
 
+  const tileUrl = theme === 'dark'
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+
   return (
     <MapContainer
-    key={"map"}
-      zoomControl={false} zoom={AppConfig.maxZoom} fadeAnimation={false} zoomAnimation={false}  maxBoundsViscosity={1.0} maxBounds={ [[-90, -180], [90, 180]]}
+      key={theme} // Force re-render on theme change to update tiles smoothly
+      zoomControl={false}
+      zoom={AppConfig.maxZoom}
+      fadeAnimation={true}
+      zoomAnimation={true}
+      maxBoundsViscosity={1.0}
+      maxBounds={[[-90, -180], [90, 180]]}
       ref={e => setMap && setMap(e || undefined)}
-      className="h-full w-full z-[0] text-white outline-0"
+      className="h-full w-full z-[0]"
       {...props}
     >
- 
-
-
- <TileLayer
-      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-    />
- 
-    
-
-
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        url={tileUrl}
+        subdomains='abcd'
+        maxZoom={20}
+      />
       {children}
     </MapContainer>
   )

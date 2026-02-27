@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import MarkerCategories, { Category } from './lib/MarkerCategories';
 import { AppConfig } from './lib/AppConfig';
 import LeafleftMapContextProvider from './LeafletMapContextProvider';
 import useMapContext from './useMapContext';
@@ -8,21 +7,32 @@ import useMarkerData from './useMarkerData';
 import { useResizeDetector } from 'react-resize-detector';
 
 import { LeafletMapContainer } from './LeafletMapContainer';
-import { LocateButton } from './ui/LocateButton';
-import { CenterButton } from './ui/CenterButton';
-import { ZoomInButton } from './ui/ZoomInButton';
-import { ZoomOutButton } from './ui/ZoomOutButton';
-import { LeafletCluster } from './LeafletCluster';
+import { MapControls } from './ui/MapControls';
 import { CustomMarker } from './LeafletMarker';
 import { globalState } from '../../state/nearby';
 import { useAtom } from 'jotai';
+import { useAuth } from '../../contexts/AuthContext';
+import { useMapEvents } from 'react-leaflet';
 
 
 
 
-const LeafletMapInner = () => {
+const MapEvents = ({ onMapMoveEnd }: { onMapMoveEnd?: (lat: number, lng: number) => void }) => {
+  useMapEvents({
+    moveend: (e) => {
+      const center = e.target.getCenter();
+      if (onMapMoveEnd) {
+        onMapMoveEnd(center.lat, center.lng);
+      }
+    },
+  });
+  return null;
+};
+
+const LeafletMapInner = ({ onMarkerClick, onMapMoveEnd }: { onMarkerClick?: (item: any) => void, onMapMoveEnd?: (lat: number, lng: number) => void }) => {
   const { map } = useMapContext();
   const [state, setState] = useAtom(globalState);
+  const { user } = useAuth();
 
   const [windowHeight, setWindowHeight] = useState<number | null>(() =>
     typeof window !== 'undefined' ? window.innerHeight : null
@@ -81,7 +91,7 @@ const LeafletMapInner = () => {
 
       <div
         className="rounded-lg h-full w-full transition-opacity">
-        {allMarkersBoundCenter && clustersByCategory &&  clustersByCategory.length > 0 && (
+        {allMarkersBoundCenter && clustersByCategory && clustersByCategory.length > 0 && (
           <LeafletMapContainer
             center={allMarkersBoundCenter.centerPos}
             zoom={allMarkersBoundCenter.minZoom}
@@ -92,26 +102,43 @@ const LeafletMapInner = () => {
           >
             {!isLoading ? (
               <>
-                {/* Diğer bileşenler */}
-                {Object.values(clustersByCategory).map((item, index) => (
-                  item && item.markers && Array.isArray(item.markers) ? (
-                    <LeafletCluster
-                      key={`cluster${item.category}${index}`}
-                      icon={MarkerCategories[item.category as Category]?.icon}
-                      color={MarkerCategories[item.category as Category]?.color}
-                      chunkedLoading={true}
-                    >
-                      {item.markers.map((marker, markerIndex) =>
-                        marker ? (
-                          <CustomMarker
-                            item={marker}
-                            key={`markerItem${markerIndex}${marker.name}${marker.index}`}
-                          />
-                        ) : null
-                      )}
-                    </LeafletCluster>
-                  ) : null
-                ))}
+                {/* Direct marker rendering without clustering */}
+                {Object.values(clustersByCategory).flatMap((item) =>
+                  item && item.markers && Array.isArray(item.markers)
+                    ? item.markers.map((marker) =>
+                      marker ? (
+                        <CustomMarker
+                          item={marker}
+                          key={`markerItem-${marker.id || marker.public_id}`}
+                          onClick={onMarkerClick}
+                        />
+                      ) : null
+                    )
+                    : []
+                )}
+
+                {/* Unified Map Controls Panel */}
+                <MapControls
+                  center={allMarkersBoundCenter.centerPos}
+                  zoom={allMarkersBoundCenter.minZoom}
+                />
+
+                {/* User Location Marker */}
+                {state.currentUserMapPosition && (
+                  <CustomMarker
+                    item={{
+                      ...user,
+                      location: {
+                        latitude: state.currentUserMapPosition[0],
+                        longitude: state.currentUserMapPosition[1]
+                      }
+                    }}
+                    key="currentUserLocation"
+                    onClick={onMarkerClick}
+                  />
+                )}
+
+                <MapEvents onMapMoveEnd={onMapMoveEnd} />
               </>
             ) : (
               <></>
@@ -131,9 +158,9 @@ const LeafletMapInner = () => {
 };
 
 // pass through to get context in <MapInner>
-const Map = () => (
+const Map = ({ onMarkerClick, onMapMoveEnd }: { onMarkerClick?: (item: any) => void, onMapMoveEnd?: (lat: number, lng: number) => void }) => (
   <LeafleftMapContextProvider>
-    <LeafletMapInner />
+    <LeafletMapInner onMarkerClick={onMarkerClick} onMapMoveEnd={onMapMoveEnd} />
   </LeafleftMapContextProvider>
 );
 

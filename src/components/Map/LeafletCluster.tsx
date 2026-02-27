@@ -39,15 +39,16 @@ const CreateMarkerClusterGroup = (
 ) => {
   const markerClusterGroup = new Leaflet.MarkerClusterGroup({
     removeOutsideVisibleBounds: true,
-    spiderfyOnMaxZoom: true,  // Küme en yüksek zoom seviyesinde yayılsın
+    spiderfyOnMaxZoom: true,
     spiderLegPolylineOptions: {
-      className: 'hidden', // Yayılma çizgilerini gizle
+      className: 'hidden',
     },
-    showCoverageOnHover: false,  // Kapsama alanı gösterilsin
-    spiderfyOnEveryZoom: false,  // Yalnızca max zoomda yayılma
-    zoomToBoundsOnClick: true,  // Küme tıklandığında zoom yapılsın
-    spiderfyDistanceMultiplier: 10,  // İşaretçilerin yayılma mesafesi
-    iconCreateFunction: (cluster) => {
+    showCoverageOnHover: false,
+    spiderfyOnEveryZoom: false,
+    zoomToBoundsOnClick: true,
+    unspiderfyOnMapClick: false, // Boş yere tıklayınca grup kapanmasın
+    spiderfyDistanceMultiplier: 10,
+    iconCreateFunction: (cluster: any) => {
       const customIcon = LeafletDivIcon({
         source: (
           <MarkerIconWrapper
@@ -78,7 +79,7 @@ const CreateMarkerClusterGroup = (
       );
     },
     ...props,
-  });
+  } as any);
 
   return createElementObject(
     markerClusterGroup,

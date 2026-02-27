@@ -3,15 +3,15 @@ import { useGesture } from '@use-gesture/react';
 import './style.css';
 import { useAtom } from 'jotai';
 import { globalState } from '../../state/nearby'; // atomun tanımlı olduğu dosya
-import { getSafeImageURL, getSafeImageURLEx } from '../../helpers/helpers';
+import { getSafeImageURLEx } from '../../helpers/helpers';
 
 
 
 const DEFAULTS = {
   maxVerticalRotationDeg: 5,
-  dragSensitivity:15,
+  dragSensitivity: 15,
   enlargeTransitionMs: 300,
-  segments:25
+  segments: 25
 };
 
 const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
@@ -47,43 +47,44 @@ function buildItems(pool, seg) {
   }
 
 
-const normalizedImages = pool.map(user => {
-  let imageURL =   getSafeImageURLEx(user.public_id,user.avatar,"large")
-  let imageUser = user.displayname;
-  return { src: imageURL, alt: imageUser || '' };
-});
+  const normalizedImages = pool.map(user => {
+    let imageURL = getSafeImageURLEx(user.public_id, user.avatar, "large")
+    let imageUser = user.displayname;
+    return { src: imageURL, alt: imageUser || '', userData: user };
+  });
 
-const usedImages = [];
-const n = normalizedImages.length;
+  const usedImages = [];
+  const n = normalizedImages.length;
 
-for (let i = 0; i < totalSlots; i++) {
-  let candidate = normalizedImages[i % n];
+  for (let i = 0; i < totalSlots; i++) {
+    let candidate = normalizedImages[i % n];
 
-  // Eğer önceki ile aynıysa farklı bir resim arıyoruz
-  if (i > 0 && candidate.src === usedImages[i - 1].src) {
-    // Farklı bir resim bulana kadar ilerle
-    let foundDifferent = false;
-    for (let offset = 1; offset < n; offset++) {
-      const nextCandidate = normalizedImages[(i + offset) % n];
-      if (nextCandidate.src !== usedImages[i - 1].src) {
-        candidate = nextCandidate;
-        foundDifferent = true;
-        break;
+    // Eğer önceki ile aynıysa farklı bir resim arıyoruz
+    if (i > 0 && candidate.src === usedImages[i - 1].src) {
+      // Farklı bir resim bulana kadar ilerle
+      let foundDifferent = false;
+      for (let offset = 1; offset < n; offset++) {
+        const nextCandidate = normalizedImages[(i + offset) % n];
+        if (nextCandidate.src !== usedImages[i - 1].src) {
+          candidate = nextCandidate;
+          foundDifferent = true;
+          break;
+        }
+      }
+      // Eğer farklı resim bulunamadıysa (normalde olmamalı) candidate aynen kalır
+      if (!foundDifferent) {
+        candidate = normalizedImages[i % n];
       }
     }
-    // Eğer farklı resim bulunamadıysa (normalde olmamalı) candidate aynen kalır
-    if (!foundDifferent) {
-      candidate = normalizedImages[i % n];
-    }
-  }
 
-  usedImages.push(candidate);
-}
+    usedImages.push(candidate);
+  }
 
   return coords.map((c, i) => ({
     ...c,
     src: usedImages[i].src,
-    alt: usedImages[i].alt
+    alt: usedImages[i].alt,
+    userData: usedImages[i].userData
   }));
 }
 
@@ -110,10 +111,11 @@ export default function DomeView({
   openedImageHeight = '350px',
   imageBorderRadius = '30px',
   openedImageBorderRadius = '30px',
-  grayscale = false
+  grayscale = false,
+  onMemberClick
 }) {
-          const [state, setState] = useAtom(globalState);
-    
+  const [state] = useAtom(globalState);
+
   const rootRef = useRef(null);
   const mainRef = useRef(null);
   const sphereRef = useRef(null);
@@ -551,26 +553,36 @@ export default function DomeView({
   );
 
   const onTileClick = useCallback(
-    e => {
+    (e, item) => {
       if (draggingRef.current) return;
       if (movedRef.current) return;
       if (performance.now() - lastDragEndAt.current < 80) return;
       if (openingRef.current) return;
-      openItemFromElement(e.currentTarget);
+
+      if (onMemberClick && item.userData) {
+        onMemberClick(item.userData);
+      } else {
+        openItemFromElement(e.currentTarget);
+      }
     },
-    [openItemFromElement]
+    [openItemFromElement, onMemberClick]
   );
 
   const onTilePointerUp = useCallback(
-    e => {
+    (e, item) => {
       if (e.pointerType !== 'touch') return;
       if (draggingRef.current) return;
       if (movedRef.current) return;
       if (performance.now() - lastDragEndAt.current < 80) return;
       if (openingRef.current) return;
-      openItemFromElement(e.currentTarget);
+
+      if (onMemberClick && item.userData) {
+        onMemberClick(item.userData);
+      } else {
+        openItemFromElement(e.currentTarget);
+      }
     },
-    [openItemFromElement]
+    [openItemFromElement, onMemberClick]
   );
 
   useEffect(() => {
@@ -617,8 +629,8 @@ export default function DomeView({
                   role="button"
                   tabIndex={0}
                   aria-label={it.alt || 'Open image'}
-                  onClick={onTileClick}
-                  onPointerUp={onTilePointerUp}
+                  onClick={(e) => onTileClick(e, it)}
+                  onPointerUp={(e) => onTilePointerUp(e, it)}
                 >
                   <img src={it.src} draggable={false} alt={it.alt} />
                 </div>

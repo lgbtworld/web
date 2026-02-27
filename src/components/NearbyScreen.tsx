@@ -27,7 +27,9 @@ const NearbyScreen: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const isRequestPendingRef = useRef(false);
 
   const [selectedUser, setSelectedUser] = useState<any>(null);
 
@@ -35,9 +37,20 @@ const NearbyScreen: React.FC = () => {
 
   // Fetch nearby users from API
   const fetchNearbyUsers = async (refreshing: boolean = false, lat?: number, lng?: number) => {
+    if (isRequestPendingRef.current) return;
+
+    const isLoadMore = !refreshing && lat === undefined && lng === undefined;
+
     try {
-      setLoadingUsers(true);
-      // Build filter payload - always include all filters
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoadingUsers(true);
+      }
+      isRequestPendingRef.current = true;
+      setError(null);
+
+      // Build filter payload
       const payload: any = {
         limit: 100,
         cursor: (refreshing || (lat !== undefined && lng !== undefined)) ? null : state.nearByCursor,
@@ -45,54 +58,40 @@ const NearbyScreen: React.FC = () => {
         longitude: lng
       };
 
-
       const response = await api.call(Actions.CMD_USER_FETCH_NEARBY_USERS, {
         method: "POST",
         body: payload,
       });
 
-
-
-
-
-
-
       setState((prevState: any) => {
-        // Mevcut nearbyUsers listesindeki user id’lerini alıyoruz
-        const existingIds = new Set(prevState.nearbyUsers.map((user: any) => user.id));
+        // If refreshing or map moved, we replace the list. Otherwise we append.
+        const shouldReset = refreshing || (lat !== undefined && lng !== undefined);
+        const existingUsers = shouldReset ? [] : prevState.nearbyUsers;
+        const existingIds = new Set(existingUsers.map((user: any) => user.id));
 
-        // Sadece yeni kullanıcıları filtreliyoruz
-        const filteredNewUsers = response.users.filter(
+        // Filter out duplicates
+        const newUsers = (response.users || []).filter(
           (user: any) => !existingIds.has(user.id)
         );
 
-        if (filteredNewUsers.length > 0) {
-          // Gelen kullanıcıları uygun formata çeviriyoruz
-          if (filteredNewUsers.length > 0) {
-            return {
-              ...prevState,
-              nearbyUsers: [...prevState.nearbyUsers, ...filteredNewUsers],
-              nearByCursor: response?.next_cursor || prevState.nearByCursor, // yeni cursor
-            };
-          }
-        }
-
-        return prevState;
+        return {
+          ...prevState,
+          nearbyUsers: shouldReset ? response.users || [] : [...prevState.nearbyUsers, ...newUsers],
+          nearByCursor: response?.next_cursor || null, // CRITICAL: Clear cursor if no more data
+        };
       });
 
-
-
-
-
-
+    } catch (err: any) {
+      console.error("Error fetching nearby users:", err);
+      setError(err?.message || "Could not fetch users");
+    } finally {
       setLoadingUsers(false);
       setLoadingMore(false);
       setIsRefreshing(false);
-
-    } catch (error) {
-      setLoadingUsers(false);
-      setLoadingMore(false);
-      setIsRefreshing(false);
+      // Small delay to prevent immediate re-trigger by observer
+      setTimeout(() => {
+        isRequestPendingRef.current = false;
+      }, 500);
     }
   };
 
@@ -105,8 +104,7 @@ const NearbyScreen: React.FC = () => {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && state.nearByCursor && !loadingMore && !loadingUsers) {
-          setLoadingMore(true);
+        if (entries[0].isIntersecting && state.nearByCursor && !isRequestPendingRef.current) {
           fetchNearbyUsers();
         }
       },

@@ -1,7 +1,6 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { Gift, Heart, HeartCrack, HeartOff, MessageCircleHeart, Shield, ShieldBan } from "lucide-react";
+import { Heart, HeartOff, MessageCircleHeart, ShieldBan } from "lucide-react";
 import { useEffect, useState } from "react";
-import { BlockIcon, ChatIcon, DislikeIcon, LikeIcon } from "./icons";
+import { BlockIcon, DislikeIcon, LikeIcon } from "./icons";
 
 interface ActionBarProps {
   liked: boolean;
@@ -144,8 +143,8 @@ export const createOverlayStreaks = (type: BurstType, key: number): OverlayStrea
 
 
 
- 
-  
+
+
 
 export const ActionBar: React.FC<ActionBarProps> = ({
   liked,
@@ -213,162 +212,52 @@ export const ActionBar: React.FC<ActionBarProps> = ({
     return () => clearTimeout(timeout);
   }, [particles]);
 
-  const iconStyle = "h-8 w-8 min-h-8  min-w-8 max-h-8 max-w-8"
-  const buttonStyle = "p-2 h-12 w-12 max-w-12 min-h-12 flex items-center justify-center"
+  const btnCls = "p-2.5 h-11 w-11 flex items-center justify-center rounded-xl cursor-pointer transition-colors";
+  const iconCls = "w-5 h-5";
   const viewGridStyle = {
-    "compact": "grid grid-cols-2 py-2 ",
-    "card": "grid grid-cols-4",
-    "list": "grid sm:grid-cols-4 grid-cols-2",
-    "bubble": "grid sm:grid-cols-4 grid-cols-4"
-  }
+    "compact": "flex flex-row items-center justify-around",
+    "card": "flex flex-row items-center justify-around",
+    "list": "flex flex-col items-center justify-center h-full",
+    "bubble": "flex flex-row items-center justify-around"
+  };
+
   return (
-    <div className={`relative w-full ${viewGridStyle[viewMode]} justify-center place-items-center gap-2`}>
-      <motion.button
-        whileHover={{ scale: 1.15 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpenQuickMessageSelector();
-        }}
-        className={`cursor-pointer rounded-full transition-all ${buttonStyle}  ${baseButtonStyle}`}
+    <div className={`relative w-full ${viewGridStyle[viewMode]}`}>
+      {/* Message */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onOpenQuickMessageSelector(); }}
+        className={`${btnCls} ${baseButtonStyle}`}
         aria-label="Send Message"
       >
-        <MessageCircleHeart className="w-8 h-8" />
-      </motion.button>
+        <MessageCircleHeart className={iconCls} />
+      </button>
 
-      <motion.button
-        whileHover={{ scale: 1.15 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpenGiftSelector();
-        }}
-        className={`hidden cursor-pointer rounded-full transition-all ${buttonStyle} ${baseButtonStyle}`}
-        aria-label="Send Gift"
+      {/* Like */}
+      <button
+        onClick={(e) => { e.stopPropagation(); triggerAnimation('like'); onLikeToggle(); }}
+        className={`${btnCls} ${liked ? "text-red-500 bg-red-500/10" : baseButtonStyle}`}
+        aria-label="Like"
       >
-        <Gift className={iconStyle} />
-      </motion.button>
+        <Heart className={`${iconCls} ${liked ? 'fill-red-500' : ''}`} />
+      </button>
 
-      <div className="relative overflow-visible">
-        <motion.button
-          whileHover={{ scale: 1.15 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={(e) => {
-            e.stopPropagation();
-            triggerAnimation('like');
-            onLikeToggle();
-          }}
-          className={`cursor-pointer rounded-full transition-all ${buttonStyle} ${liked ? "text-red-500" : baseButtonStyle
-            }`}
-          aria-label="Like"
-        >
-        <Heart className="w-8 h-8" />
+      {/* Dislike */}
+      <button
+        onClick={(e) => { e.stopPropagation(); triggerAnimation('dislike'); onDislikeToggle(); }}
+        className={`${btnCls} ${disliked ? "text-orange-500 bg-orange-500/10" : baseButtonStyle}`}
+        aria-label="Dislike"
+      >
+        <HeartOff className={iconCls} />
+      </button>
 
-        </motion.button>
-        <AnimatePresence>
-          {animation?.type === 'like' && (
-            <motion.div
-              key={`like-${animation.key}`}
-              initial={{ opacity: 0, scale: 0.5, y: 0 }}
-              animate={{ opacity: 0.9, scale: 1.6, y: -20 }}
-              exit={{ opacity: 0, scale: 1.8, y: -30 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="pointer-events-none absolute inset-0 flex items-center justify-center"
-            >
-                      <Heart className="w-8 h-8" />
-
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      <div className="relative overflow-visible">
-        <motion.button
-          whileHover={{ scale: 1.15 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={(e) => {
-            e.stopPropagation();
-            triggerAnimation('dislike');
-            onDislikeToggle();
-          }}
-          className={`cursor-pointer rounded-full transition-all ${buttonStyle} ${disliked ? "text-red-500" : baseButtonStyle
-            }`}
-          aria-label="Dislike"
-        >
-                                <HeartOff className="w-8 h-8" />
-
-        </motion.button>
-        <AnimatePresence>
-          {animation?.type === 'dislike' && (
-            <motion.div
-              key={`dislike-${animation.key}`}
-              initial={{ opacity: 0, scale: 0.5, y: 0 }}
-              animate={{ opacity: 0.9, scale: 1.6, y: -20 }}
-              exit={{ opacity: 0, scale: 1.8, y: -30 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="pointer-events-none absolute inset-0 flex items-center justify-center text-red-500"
-            >
-              <HeartCrack className="h-9 w-9 drop-shadow-lg" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      <div className="relative overflow-visible">
-        <motion.button
-          whileHover={{ scale: 1.15 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={(e) => {
-            e.stopPropagation();
-            triggerAnimation('block');
-            onBlockToggle();
-          }}
-          className={`cursor-pointer rounded-full transition-all ${buttonStyle} ${blocked ? "text-red-500" : baseButtonStyle
-            }`}
-          aria-label="Block">
-          <ShieldBan className="w-8 h-8" />
-
-        </motion.button>
-        <AnimatePresence>
-          {animation?.type === 'block' && (
-            <motion.div
-              key={`block-${animation.key}`}
-              initial={{ opacity: 0, scale: 0.5, y: 0 }}
-              animate={{ opacity: 0.9, scale: 1.6, y: -20 }}
-              exit={{ opacity: 0, scale: 1.8, y: -30 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="pointer-events-none absolute inset-0 flex items-center justify-center text-blue-400"
-            >
-              <Shield className="h-9 w-9 drop-shadow-lg" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-      <AnimatePresence>
-        {!!particles.length && (
-          <motion.div
-            key={`burst-${animation?.key ?? 'particles'}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-visible z-10"
-          >
-            {particles.map(({ id, x, y, rotate, Icon, color }) => (
-              <motion.span
-                key={id}
-                initial={{ opacity: 0, scale: 0, x: 0, y: 0, rotate: 0 }}
-                animate={{ opacity: 1, scale: 1, x, y, rotate }}
-                exit={{ opacity: 0, scale: 0.4, x: x * 1.1, y: y * 1.1, rotate: rotate + 45 }}
-                transition={{ duration: 0.45, ease: 'easeOut' }}
-                className="absolute"
-              >
-                <Icon className={`h-5 w-5 drop-shadow-lg ${color}`} />
-              </motion.span>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Block */}
+      <button
+        onClick={(e) => { e.stopPropagation(); triggerAnimation('block'); onBlockToggle(); }}
+        className={`${btnCls} ${blocked ? "text-blue-500 bg-blue-500/10" : baseButtonStyle}`}
+        aria-label="Block"
+      >
+        <ShieldBan className={iconCls} />
+      </button>
     </div>
   );
 };

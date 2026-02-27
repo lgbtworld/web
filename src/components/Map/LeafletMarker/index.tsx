@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Marker as ReactMarker } from 'react-leaflet';
 
-import { AppConfig } from '../lib/AppConfig';
 
 import useMapContext from '../useMapContext';
 import MarkerIconWrapper from './MarkerIconWrapper';
@@ -9,7 +8,6 @@ import MarkerIconWrapper from './MarkerIconWrapper';
 import LeafletDivIcon from '../LeafletDivIcon';
 import LeafletPopup from '../LeafletPopup';
 import { decodeGeoHash } from '../lib/helper/geocoder';
-import { getSafeImageURLEx } from '../../../helpers/helpers';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -47,21 +45,19 @@ export const CustomMarker = React.memo(({ item, onClick }: CustomMarkerProps) =>
 
 
 
-  const generateAlphaColorFromIndex = (_index: any): string => {
+  const generateSolidColorFromIndex = (_index: any): string => {
     // Hash benzeri bir algoritma ile tutarlı bir renk üret
     const getChannel = (seed: bigint): number => {
       const sinValue = Math.sin(Number(seed % BigInt(Number.MAX_SAFE_INTEGER)));
       return (Math.abs(sinValue) * 256) % 256;
     };
 
-    console.log("generateAlphaColorFromIndex", _index)
     var index = _index ? BigInt(_index) : BigInt(0);
     const r = Math.floor(getChannel(index * BigInt(123456)));
     const g = Math.floor(getChannel(index * BigInt(789101)));
     const b = Math.floor(getChannel(index * BigInt(112131)));
-    const alpha = Math.floor(0.6 * 255); // 40% transparency
 
-    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}${alpha.toString(16).padStart(2, '0')}`;
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   };
 
   return (
@@ -71,19 +67,12 @@ export const CustomMarker = React.memo(({ item, onClick }: CustomMarkerProps) =>
       icon={LeafletDivIcon({
         source: (
           <MarkerIconWrapper
-            item={{
-              group: false,
-              image: getSafeImageURLEx(item.public_id, item?.avatar, "icon"),
-              data: item
-            }}
-            color={generateAlphaColorFromIndex(item?.public_id)}
+            item={item}
+            color={generateSolidColorFromIndex(item?.public_id)}
             label={item?.username}
           />
         ),
-        anchor: [
-          AppConfig.ui.markerIconSize / 2,
-          AppConfig.ui.markerIconSize / 2,
-        ],
+        anchor: [30, 78],
       })}
       eventHandlers={{ click: handleMarkerClick }}
       autoPan={true}

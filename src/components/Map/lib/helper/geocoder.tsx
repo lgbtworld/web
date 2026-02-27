@@ -12,10 +12,19 @@ function hashStringToNumber(input: string): number {
 
 /**
  * Deterministically generates a coordinate offset based on an ID.
+ * Increased to spread markers more widely to prevent overlap at moderate zoom levels.
  */
-function getJitter(id: string | number, multiplier: number = 0.001): number {
+function getJitter(id: string | number, multiplier: number = 0.005): { lat: number, lng: number } {
   const hash = hashStringToNumber(String(id));
-  return ((hash % 1000) / 1000 - 0.5) * multiplier;
+
+  // Use a simple spiral/circular distribution for better spreading than a box
+  const angle = (hash % 1000) * (Math.PI * 2 / 1000);
+  const radius = (0.2 + (hash % 800) / 1000) * multiplier;
+
+  return {
+    lat: Math.sin(angle) * radius,
+    lng: Math.cos(angle) * radius
+  };
 }
 
 export const decodeGeoHash = (item: any): LatLngExpression => {
@@ -34,26 +43,24 @@ export const decodeGeoHash = (item: any): LatLngExpression => {
 
   const id = item?.public_id || item?.id || "default";
 
-  // If both coordinates were missing (or explicitly 0, which we treat as missing for this logic),
-  // we "randomize" them globally (within a safe range) so they don't all stack at [0,0].
+  // If both coordinates were missing, spread them globally but distinctively
   if (!hasRawLat && !hasRawLng) {
-    const globalHashLat = hashStringToNumber(id + "global_lat");
-    const globalHashLng = hashStringToNumber(id + "global_lng");
+    const globalHashLat = hashStringToNumber(id + "global_v2_lat");
+    const globalHashLng = hashStringToNumber(id + "global_v2_lng");
 
-    // Spread across a reasonable world viewing area (-60 to 70 lat, -160 to 160 lng)
-    baseLat = (globalHashLat % 130) - 60;
-    baseLng = (globalHashLng % 320) - 160;
+    // Spread across a reasonable world viewing area (-50 to 60 lat, -140 to 140 lng)
+    baseLat = (globalHashLat % 110) - 50;
+    baseLng = (globalHashLng % 280) - 140;
 
-    console.log("No location info: placing user randomly", { id, baseLat, baseLng });
     return [baseLat, baseLng];
   }
 
-  // For users WITH location, we still apply a tiny jitter (~50m) to prevent exact stacking
-  const jitterLat = getJitter(id + "lat", 0.001);
-  const jitterLng = getJitter(id + "lng", 0.001);
+  // Use a much larger jitter (multiplier: 0.008 is ~800m-1km spread)
+  // This is a trade-off: markers are less precise but CERTAINLY don't overlap at zoom 14-16.
+  const jitter = getJitter(id, 0.008);
 
-  const finalLat = baseLat + jitterLat;
-  const finalLng = baseLng + jitterLng;
+  const finalLat = baseLat + jitter.lat;
+  const finalLng = baseLng + jitter.lng;
 
   return [finalLat, finalLng];
 };

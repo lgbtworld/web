@@ -271,6 +271,23 @@ function AppContent() {
 
 
 
+  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    if (!isAuthenticated) {
+      return (
+        <div className={`h-full w-full flex items-start lg:items-center justify-center overflow-y-auto ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}>
+          <div className="w-full max-w-lg px-0 lg:px-4 py-4 lg:py-0">
+            <AuthWizard
+              isOpen={true}
+              onClose={() => { }}
+              mode="inline"
+            />
+          </div>
+        </div>
+      );
+    }
+    return <>{children}</>;
+  };
+
   return (
     <div className={`w-screen dark:bg-gray-950 bg-white h-screen select-none`}>
       {/* Splash Screen */}
@@ -324,13 +341,13 @@ function AppContent() {
                 <button
                   onClick={() => navigateByNavId('pride')}
                   className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors group ${theme === 'dark'
-                      ? 'hover:bg-white/[0.04]'
-                      : 'hover:bg-black/[0.03]'
+                    ? 'hover:bg-white/[0.04]'
+                    : 'hover:bg-black/[0.03]'
                     }`}
                 >
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${theme === 'dark'
-                      ? 'bg-white/10 text-white'
-                      : 'bg-black text-white'
+                    ? 'bg-white/10 text-white'
+                    : 'bg-black text-white'
                     }`}>
                     <span className="text-sm font-bold">C</span>
                   </div>
@@ -339,7 +356,7 @@ function AppContent() {
                       {applicationName}
                     </h1>
                     <p className={`text-[11px] mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Stories from the Rainbow
+                      Stories from the Rainbow
                     </p>
                   </div>
                 </button>
@@ -348,8 +365,8 @@ function AppContent() {
               <div className="flex flex-col gap-5 flex-1">
                 {isAuthenticated ? (
                   <div className={`relative rounded-2xl border px-4 py-4 ${theme === 'dark'
-                      ? 'border-gray-800/90 bg-gray-900/30'
-                      : 'border-black/[0.08] bg-white'
+                    ? 'border-gray-800/90 bg-gray-900/30'
+                    : 'border-black/[0.08] bg-white'
                     }`}>
                     <div className="flex items-center gap-3">
                       <div className="relative shrink-0">
@@ -391,8 +408,8 @@ function AppContent() {
                             setIsProfileMenuOpen(!isProfileMenuOpen);
                           }}
                           className={`p-2 rounded-xl transition ${theme === 'dark'
-                              ? 'text-white/70 hover:bg-white/10'
-                              : 'text-gray-600 hover:bg-gray-100'
+                            ? 'text-white/70 hover:bg-white/10'
+                            : 'text-gray-600 hover:bg-gray-100'
                             } ${isProfileMenuOpen ? (theme === 'dark' ? 'bg-white/10 text-white' : 'bg-gray-200 text-gray-900') : ''}`}
                         >
                           <MoreHorizontal className="w-4 h-4" />
@@ -405,8 +422,8 @@ function AppContent() {
                               exit={{ opacity: 0, scale: 0.95, y: -6 }}
                               transition={{ duration: 0.18 }}
                               className={`absolute top-full right-0 mt-2 w-52 z-50 rounded-xl overflow-hidden border ${theme === 'dark'
-                                  ? 'bg-gray-900 border-gray-800'
-                                  : 'bg-white border-gray-200 shadow-lg'
+                                ? 'bg-gray-900 border-gray-800'
+                                : 'bg-white border-gray-200 shadow-lg'
                                 }`}
                             >
                               <button
@@ -415,8 +432,8 @@ function AppContent() {
                                   setIsProfileMenuOpen(false);
                                 }}
                                 className={`w-full px-4 py-3 flex items-center gap-3 text-left ${theme === 'dark'
-                                    ? 'text-white hover:bg-white/10'
-                                    : 'text-gray-900 hover:bg-gray-50'
+                                  ? 'text-white hover:bg-white/10'
+                                  : 'text-gray-900 hover:bg-gray-50'
                                   }`}
                               >
                                 <User className="w-4 h-4" />
@@ -426,8 +443,8 @@ function AppContent() {
                               <button
                                 onClick={() => handleLogout(() => setIsProfileMenuOpen(false))}
                                 className={`w-full px-4 py-3 flex items-center gap-3 text-left ${theme === 'dark'
-                                    ? 'text-red-400 hover:bg-red-500/10'
-                                    : 'text-red-600 hover:bg-red-50'
+                                  ? 'text-red-400 hover:bg-red-500/10'
+                                  : 'text-red-600 hover:bg-red-50'
                                   }`}
                               >
                                 <LogOut className="w-4 h-4" />
@@ -455,8 +472,8 @@ function AppContent() {
                       <button
                         onClick={openProfile}
                         className={`rounded-xl px-3 py-2 text-sm font-semibold ${theme === 'dark'
-                            ? 'bg-white text-black'
-                            : 'bg-gray-900 text-white'
+                          ? 'bg-white text-black'
+                          : 'bg-gray-900 text-white'
                           }`}
                       >
                         {t('app.view_profile', 'Profile')}
@@ -464,8 +481,8 @@ function AppContent() {
                       <button
                         onClick={() => handleLogout()}
                         className={`rounded-xl px-3 py-2 text-sm font-semibold ${theme === 'dark'
-                            ? 'bg-white/5 text-white hover:bg-white/10'
-                            : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                          ? 'bg-white/5 text-white hover:bg-white/10'
+                          : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                           }`}
                       >
                         {t('app.logout')}
@@ -474,8 +491,8 @@ function AppContent() {
                   </div>
                 ) : (
                   <div className={`rounded-[24px] border px-4 py-4 ${theme === 'dark'
-                      ? 'bg-gray-900/30 border-gray-800/90'
-                      : 'bg-white border-black/[0.06]'
+                    ? 'bg-gray-900/30 border-gray-800/90'
+                    : 'bg-white border-black/[0.06]'
                     }`}>
                     <p className="text-xs uppercase tracking-[0.3em] opacity-60">
                       {t('app.join_title', 'Welcome')}
@@ -486,8 +503,8 @@ function AppContent() {
                     <button
                       onClick={() => setIsAuthWizardOpen(true)}
                       className={`mt-4 w-full px-4 py-3 rounded-2xl font-semibold transition-all ${theme === 'dark'
-                          ? 'bg-white text-black hover:bg-white/90'
-                          : 'bg-black text-white hover:bg-black/90'
+                        ? 'bg-white text-black hover:bg-white/90'
+                        : 'bg-black text-white hover:bg-black/90'
                         }`}
                     >
                       {t('app.join_now')}
@@ -498,8 +515,8 @@ function AppContent() {
                 {/* Navigation */}
                 <nav className="flex-1">
                   <div className={`rounded-2xl border p-2.5 space-y-3 ${theme === 'dark'
-                      ? 'border-gray-800/90 bg-gray-900/25'
-                      : 'border-black/[0.06] bg-white'
+                    ? 'border-gray-800/90 bg-gray-900/25'
+                    : 'border-black/[0.06] bg-white'
                     }`}>
                     {sidebarNavSections.map((section) => (
                       <div key={section.id}>
@@ -517,8 +534,8 @@ function AppContent() {
                                 whileHover={{ x: 2 }}
                                 whileTap={{ scale: 0.99 }}
                                 className={`w-full relative rounded-xl px-3 py-2.5 border transition-all flex items-center justify-between ${theme === 'dark'
-                                    ? 'border-gray-800/80 bg-transparent hover:bg-gray-800/45'
-                                    : 'border-black/[0.06] bg-transparent hover:bg-black/[0.03]'
+                                  ? 'border-gray-800/80 bg-transparent hover:bg-gray-800/45'
+                                  : 'border-black/[0.06] bg-transparent hover:bg-black/[0.03]'
                                   } ${isActive
                                     ? (theme === 'dark'
                                       ? 'ring-1 ring-gray-600/60 bg-gray-800/55'
@@ -551,8 +568,8 @@ function AppContent() {
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                     className={`rounded-xl border px-3 py-2.5 text-left transition-all ${theme === 'dark'
-                        ? 'border-gray-800/90 bg-gray-900/35 hover:bg-gray-800/60 text-white'
-                        : 'border-black/[0.06] bg-white hover:bg-black/[0.03] text-gray-900'
+                      ? 'border-gray-800/90 bg-gray-900/35 hover:bg-gray-800/60 text-white'
+                      : 'border-black/[0.06] bg-white hover:bg-black/[0.03] text-gray-900'
                       }`}
                   >
                     <div className="flex items-center justify-between">
@@ -575,8 +592,8 @@ function AppContent() {
                         <span
                           aria-hidden="true"
                           className={`block h-4 w-4 rounded-full transition-transform duration-200 ease-out ${theme === 'dark'
-                              ? 'translate-x-[1.25rem] bg-white'
-                              : 'translate-x-0 bg-black'
+                            ? 'translate-x-[1.25rem] bg-white'
+                            : 'translate-x-0 bg-black'
                             }`}
                         />
                       </div>
@@ -588,8 +605,8 @@ function AppContent() {
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                     className={`rounded-xl border px-3 py-2.5 text-left transition-all ${theme === 'dark'
-                        ? 'border-gray-800/90 bg-gray-900/35 hover:bg-gray-800/60 text-white'
-                        : 'border-black/[0.06] bg-white hover:bg-black/[0.03] text-gray-900'
+                      ? 'border-gray-800/90 bg-gray-900/35 hover:bg-gray-800/60 text-white'
+                      : 'border-black/[0.06] bg-white hover:bg-black/[0.03] text-gray-900'
                       }`}
                   >
                     <div className="flex items-center justify-between">
@@ -610,53 +627,40 @@ function AppContent() {
 
           {/* Middle Section - Scrollable */}
           <main className={`max-h-[100dvh]  min-h-[100dvh] overflow-y-hidden overflow-x-hidden scrollbar-hide flex-1 min-w-0 lg:border-l lg:border-r  ${theme === 'dark' ? 'lg:border-gray-900/70' : 'lg:border-gray-100'} pt-[56px] lg:pt-0  lg:pb-0`}>
-            {!isAuthenticated ? (
-              /* Show AuthWizard in inline mode when not authenticated */
-              <div className={`h-full w-full flex items-start lg:items-center justify-center overflow-y-auto ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}>
-                <div className="w-full max-w-lg px-0 lg:px-4 py-4 lg:py-0">
-                  <AuthWizard
-                    isOpen={true}
-                    onClose={() => {
-                      // Prevent closing - user must authenticate
-                    }}
-                    mode="inline"
-                  />
-                </div>
-              </div>
-            ) : (
-              <Routes>
-                {/* Home Routes */}
-                <Route path="/landing" element={<LandingPage />} />
-                <Route path="/" element={<HomeScreen />} />
-                <Route path="/home" element={<HomeScreen />} />
-                <Route path="/pride" element={<HomeScreen />} />
-                <Route path="/testpage" element={<TestPage />} />
-                <Route path="/premium" element={<PremiumScreen />} />
-                <Route path="/wallet" element={<WalletScreen />} />
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/places" element={<PlacesScreen />} />
+              <Route path="/places/:publicId" element={<PlaceDetailsScreen />} />
 
-                <Route
-                  path="/:username/:engagementType"
-                  element={<ProfileEngagementsScreen />}
-                />
-                <Route path="/:username/status/:postId" element={<PostDetails />} />
-                <Route path="/status/:postId" element={<PostDetails />} />
-                <Route path="/:username" element={<ProfileScreen />} />
-                {/* Other Routes */}
-                <Route path="/search" element={<SearchScreen />} />
-                <Route path="/match" element={<MatchScreen />} />
-                <Route path="/nearby" element={<NearbyScreen />} />
-                <Route path="/places" element={<PlacesScreen />} />
-                <Route path="/places/:publicId" element={<PlaceDetailsScreen />} />
-                <Route path="/profile" element={<ProfileScreen />} />
+              {/* Protected Routes */}
+              <Route path="/" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
+              <Route path="/home" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
+              <Route path="/pride" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
+              <Route path="/testpage" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
+              <Route path="/premium" element={<ProtectedRoute><PremiumScreen /></ProtectedRoute>} />
+              <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} />
 
-                <Route path="/messages" element={<MessagesScreen />} />
-                <Route path="/notifications" element={<NotificationsScreen />} />
-                <Route path="/classifieds" element={<ClassifiedsScreen />} />
+              <Route
+                path="/:username/:engagementType"
+                element={<ProtectedRoute><ProfileEngagementsScreen /></ProtectedRoute>}
+              />
+              <Route path="/:username/status/:postId" element={<ProtectedRoute><PostDetails /></ProtectedRoute>} />
+              <Route path="/status/:postId" element={<ProtectedRoute><PostDetails /></ProtectedRoute>} />
+              <Route path="/:username" element={<ProtectedRoute><ProfileScreen /></ProtectedRoute>} />
 
-                {/* Fallback */}
-                <Route path="*" element={<HomeScreen />} />
-              </Routes>
-            )}
+              <Route path="/search" element={<ProtectedRoute><SearchScreen /></ProtectedRoute>} />
+              <Route path="/match" element={<ProtectedRoute><MatchScreen /></ProtectedRoute>} />
+              <Route path="/nearby" element={<ProtectedRoute><NearbyScreen /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><ProfileScreen /></ProtectedRoute>} />
+
+              <Route path="/messages" element={<ProtectedRoute><MessagesScreen /></ProtectedRoute>} />
+              <Route path="/notifications" element={<ProtectedRoute><NotificationsScreen /></ProtectedRoute>} />
+              <Route path="/classifieds" element={<ProtectedRoute><ClassifiedsScreen /></ProtectedRoute>} />
+
+              {/* Fallback */}
+              <Route path="*" element={<HomeScreen />} />
+            </Routes>
           </main>
 
           {/* Right Sidebar - Fixed */}
@@ -667,12 +671,12 @@ function AppContent() {
                 {showSidebarInstallCard && (
                   <PwaInstallPrompt variant="card" />
                 )}
-              
+
 
                 <PopularUsersPanel limit={12} />
 
                 <TrendsPanel limit={20} onTrendSelect={handleTrendSelect} />
- 
+
 
               </div>
             </aside>
@@ -681,8 +685,8 @@ function AppContent() {
           {/* Clean Professional Bottom Bar */}
           {showBottomBar && (
             <nav className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 ${theme === 'dark'
-                ? 'bg-gray-950 border-t border-gray-900'
-                : 'bg-white/95 border-t border-black/[0.08]'
+              ? 'bg-gray-950 border-t border-gray-900'
+              : 'bg-white/95 border-t border-black/[0.08]'
               } backdrop-blur-xl safe-area-inset-bottom`}>
               <div className="flex items-center justify-around px-4 py-3">
                 {bottomNavItems.map((item) => {
@@ -702,8 +706,8 @@ function AppContent() {
                             zIndex: -1,
                           }}
                           className={`absolute inset-0 rounded-2xl ${theme === 'dark'
-                              ? 'bg-gray-50/[0.08]'
-                              : 'bg-gray-950/[0.06]'
+                            ? 'bg-gray-50/[0.08]'
+                            : 'bg-gray-950/[0.06]'
                             }`}
                           transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                         />
@@ -763,8 +767,8 @@ function AppContent() {
                     backfaceVisibility: 'hidden'
                   }}
                   className={`fixed top-0 left-0 bottom-0 w-[320px] max-w-[85vw] z-[101] ${theme === 'dark'
-                      ? 'bg-gradient-to-br from-gray-900/98 to-black/98 backdrop-blur-2xl border-r border-gray-800/80'
-                      : 'bg-gradient-to-br from-white via-gray-50 to-white backdrop-blur-2xl border-r border-black/[0.08]'
+                    ? 'bg-gradient-to-br from-gray-900/98 to-black/98 backdrop-blur-2xl border-r border-gray-800/80'
+                    : 'bg-gradient-to-br from-white via-gray-50 to-white backdrop-blur-2xl border-r border-black/[0.08]'
                     } flex flex-col shadow-2xl`}
                   onAnimationStart={() => {
                     if (isMobileMenuOpen) {
@@ -776,8 +780,8 @@ function AppContent() {
                   <motion.button
                     onClick={closeMobileMenu}
                     className={`absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${theme === 'dark'
-                        ? 'bg-white/[0.08] hover:bg-white/[0.15] text-white'
-                        : 'bg-black/[0.08] hover:bg-black/[0.15] text-black'
+                      ? 'bg-white/[0.08] hover:bg-white/[0.15] text-white'
+                      : 'bg-black/[0.08] hover:bg-black/[0.15] text-black'
                       }`}
                     whileHover={{ scale: 1.05, rotate: 90 }}
                     whileTap={{ scale: 0.95 }}
@@ -794,8 +798,8 @@ function AppContent() {
                     }`}>
                     <motion.div
                       className={`rounded-2xl border p-3.5 ${theme === 'dark'
-                          ? 'border-gray-800/90 bg-gray-900/40'
-                          : 'border-black/[0.08] bg-white'
+                        ? 'border-gray-800/90 bg-gray-900/40'
+                        : 'border-black/[0.08] bg-white'
                         }`}
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -812,7 +816,7 @@ function AppContent() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className={`text-[14px] font-bold truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                          {user?.displayname || user?.username || t('app.guest_user')}
+                            {user?.displayname || user?.username || t('app.guest_user')}
                           </h3>
                           <p className={`text-[12px] truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                             @{username}
@@ -839,8 +843,8 @@ function AppContent() {
                               setIsMobileProfileMenuOpen(!isMobileProfileMenuOpen);
                             }}
                             className={`p-2 rounded-lg transition-all flex-shrink-0 ${theme === 'dark'
-                                ? 'hover:bg-white/10 text-gray-400 hover:text-white'
-                                : 'hover:bg-black/10 text-gray-600 hover:text-black'
+                              ? 'hover:bg-white/10 text-gray-400 hover:text-white'
+                              : 'hover:bg-black/10 text-gray-600 hover:text-black'
                               } ${isMobileProfileMenuOpen ? (theme === 'dark' ? 'bg-white/10 text-white' : 'bg-black/10 text-black') : ''}`}
                           >
                             <MoreHorizontal className="w-5 h-5" />
@@ -859,8 +863,8 @@ function AppContent() {
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.2 }}
                             className={`mt-3 rounded-2xl overflow-hidden ${theme === 'dark'
-                                ? 'bg-gray-900/50 border border-gray-800'
-                                : 'bg-white/50 border border-gray-200'
+                              ? 'bg-gray-900/50 border border-gray-800'
+                              : 'bg-white/50 border border-gray-200'
                               }`}
                           >
                             <button
@@ -869,8 +873,8 @@ function AppContent() {
                                 closeMobileMenus();
                               }}
                               className={`w-full px-4 py-3.5 text-left flex items-center gap-3 transition-colors ${theme === 'dark'
-                                  ? 'hover:bg-white/10 text-white'
-                                  : 'hover:bg-black/5 text-gray-900'
+                                ? 'hover:bg-white/10 text-white'
+                                : 'hover:bg-black/5 text-gray-900'
                                 }`}
                             >
                               <User className="w-5 h-5" />
@@ -882,8 +886,8 @@ function AppContent() {
                                 closeMobileMenus();
                               })}
                               className={`w-full px-4 py-3.5 text-left flex items-center gap-3 transition-colors ${theme === 'dark'
-                                  ? 'hover:bg-red-500/10 text-red-400'
-                                  : 'hover:bg-red-50 text-red-600'
+                                ? 'hover:bg-red-500/10 text-red-400'
+                                : 'hover:bg-red-50 text-red-600'
                                 }`}
                             >
                               <LogOut className="w-5 h-5" />
@@ -898,8 +902,8 @@ function AppContent() {
                   {/* Navigation - Professional List Layout */}
                   <nav className="flex-1 px-4 py-5 overflow-y-auto scrollbar-hide">
                     <div className={`rounded-2xl border p-2.5 ${theme === 'dark'
-                        ? 'border-gray-800/90 bg-gray-900/30'
-                        : 'border-black/[0.08] bg-white'
+                      ? 'border-gray-800/90 bg-gray-900/30'
+                      : 'border-black/[0.08] bg-white'
                       }`}>
                       <p className={`px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                         {t('app.sidebar.primary', 'Discover')}
@@ -919,8 +923,8 @@ function AppContent() {
                               transition={{ delay: 0.1 + index * 0.04, duration: 0.2 }}
                               whileTap={{ scale: 0.99 }}
                               className={`w-full rounded-xl px-3 py-2.5 border transition-all flex items-center justify-between ${theme === 'dark'
-                                  ? 'border-gray-800/80 hover:bg-gray-800/45'
-                                  : 'border-black/[0.08] hover:bg-black/[0.03]'
+                                ? 'border-gray-800/80 hover:bg-gray-800/45'
+                                : 'border-black/[0.08] hover:bg-black/[0.03]'
                                 } ${isActive
                                   ? (theme === 'dark'
                                     ? 'ring-1 ring-gray-600/70 bg-gray-800/55'
@@ -953,8 +957,8 @@ function AppContent() {
                       <motion.button
                         onClick={toggleTheme}
                         className={`w-full flex items-center justify-between px-4 py-3.5 rounded-[16px] font-semibold text-[15px] tracking-[-0.011em] transition-all duration-200 ${theme === 'dark'
-                            ? 'bg-white/[0.08] hover:bg-white/[0.12] text-white'
-                            : 'bg-black/[0.08] hover:bg-black/[0.12] text-black'
+                          ? 'bg-white/[0.08] hover:bg-white/[0.12] text-white'
+                          : 'bg-black/[0.08] hover:bg-black/[0.12] text-black'
                           }`}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -983,8 +987,8 @@ function AppContent() {
                       <motion.button
                         onClick={openLanguageSelector}
                         className={`w-full flex items-center justify-between px-4 py-3.5 rounded-[16px] font-semibold text-[15px] tracking-[-0.011em] transition-all duration-200 ${theme === 'dark'
-                            ? 'bg-white/[0.08] hover:bg-white/[0.12] text-white'
-                            : 'bg-black/[0.08] hover:bg-black/[0.12] text-black'
+                          ? 'bg-white/[0.08] hover:bg-white/[0.12] text-white'
+                          : 'bg-black/[0.08] hover:bg-black/[0.12] text-black'
                           }`}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}

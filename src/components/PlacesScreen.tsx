@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { MapPin, Search, Loader, RefreshCw, Grid, Map as MapIcon, Plus, Minus, Navigation } from 'lucide-react';
+import { MapPin, Search, Loader, RefreshCw, Grid, Map as MapIcon, Plus, Minus, Navigation, X } from 'lucide-react';
 import { MapContainer, TileLayer, useMapEvents, useMap } from 'react-leaflet';
 import { motion } from 'framer-motion';
 import 'leaflet/dist/leaflet.css';
@@ -131,9 +131,18 @@ const PlacesScreen: React.FC = () => {
       },
       (geoError) => {
         console.error('Konum hatası:', geoError);
-        setError(t('places.location_permission_error'));
+        // If permission is denied, use a default location but notify the user
+        if (geoError.code === 1) { // PERMISSION_DENIED
+          const istanbul = { latitude: 41.0082, longitude: 28.9784 };
+          setLocation(istanbul);
+          fetchNearbyPlaces({ center: istanbul, reset: true });
+          setError('LOCATION_DENIED');
+        } else {
+          setError(t('places.location_permission_error'));
+        }
         setLoadingInitial(false);
-      }
+      },
+      { timeout: 10000 }
     );
   }, [fetchNearbyPlaces, t]);
 
@@ -187,7 +196,7 @@ const PlacesScreen: React.FC = () => {
 
   useEffect(() => {
     const target = observerTarget.current;
-    if (!target) return;
+    if (!target || viewMode === 'map') return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -195,7 +204,7 @@ const PlacesScreen: React.FC = () => {
           loadMore();
         }
       },
-      { threshold: 0.1, rootMargin: '100px' }
+      { threshold: 0.1, rootMargin: '200px' }
     );
 
     observer.observe(target);
@@ -203,7 +212,7 @@ const PlacesScreen: React.FC = () => {
     return () => {
       observer.unobserve(target);
     };
-  }, [loadMore]);
+  }, [loadMore, viewMode]);
 
   const MapEventsHandler = ({ onMoveEnd }: { onMoveEnd: (lat: number, lng: number) => void }) => {
     useMapEvents({
@@ -302,6 +311,8 @@ const PlacesScreen: React.FC = () => {
           key={`map-${theme}`}
           center={defaultCenter}
           zoom={13}
+          minZoom={5}
+          maxZoom={19}
           style={{
             width: '100%',
             height: '100%',
@@ -350,39 +361,95 @@ const PlacesScreen: React.FC = () => {
       );
     }
 
-    if (error) {
+    // Show full-page error ONLY for fatal issues (API errors, etc.)
+    if (error && error !== 'LOCATION_DENIED') {
       return (
-        <div className={`rounded-2xl p-6 mt-4 border text-center ${theme === 'dark' ? 'bg-red-900/20 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-700'
+        <div className={`rounded-2xl p-8 mt-8 border text-center max-w-xl mx-auto ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'
           }`}>
-          <p className="text-sm font-medium mb-3">{error}</p>
-          <button type="button" onClick={handleInitialFetch} className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium ${theme === 'dark' ? 'bg-red-900/50 hover:bg-red-900/70' : 'bg-red-100 hover:bg-red-200'
-            }`}>
-            <RefreshCw className="w-4 h-4" />
-            {t('places.retry', 'Tekrar dene')}
-          </button>
+          <div className="relative">
+            <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${theme === 'dark' ? 'bg-gray-800 text-purple-400' : 'bg-purple-50 text-purple-600'
+              }`}>
+              <MapPin className="w-8 h-8" />
+            </div>
+            <h2 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              {(t('places.error_title') || 'Oops! Something went wrong')}
+            </h2>
+            <p className={`text-sm mb-8 leading-relaxed ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+              {error}
+            </p>
+            <button
+              type="button"
+              onClick={handleInitialFetch}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white transition-all active:scale-[0.98]"
+            >
+              <RefreshCw className="w-4 h-4" />
+              {t('places.retry') || 'Tekrar Dene'}
+            </button>
+          </div>
         </div>
       );
     }
 
-    if (filteredPlaces.length === 0) {
-      return (
-        <div className="py-16 text-center">
-          <MapPin className={`mx-auto w-12 h-12 mb-4 ${theme === 'dark' ? 'text-gray-700' : 'text-gray-300'}`} />
-          <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-            {t('places.no_places_found_title', 'No places found')}
-          </h3>
-          <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-            {t('places.no_places_found_subtitle', 'Try adjusting your search or filters.')}
-          </p>
-        </div>
-      );
-    }
+    const showLocationBanner = error === 'LOCATION_DENIED';
 
-    if (viewMode === 'map') {
-      return renderMap;
-    }
+    return (
+      <div className="space-y-4">
+        {showLocationBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 ${theme === 'dark' ? 'bg-gray-900/50 border-gray-800' : 'bg-gray-50 border-gray-200'
+              }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-100 text-purple-600'
+                }`}>
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <p className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  Nearby Discovery
+                </p>
+                <p className={`text-[11px] leading-tight ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Enable location to see places around you. Showing results for Istanbul.
+                  <br />
+                  <span className="opacity-70">(Çevrenizdeki mekanlar için konum izni veriniz.)</span>
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={handleInitialFetch}
+                className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all active:scale-95 whitespace-nowrap"
+              >
+                Access Location
+              </button>
+              <button
+                onClick={() => setError(null)}
+                className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'text-gray-400 hover:bg-white/10' : 'text-gray-400 hover:bg-black/5'
+                  }`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
 
-    return renderGrid();
+        {filteredPlaces.length === 0 && !loadingInitial ? (
+          <div className="py-16 text-center">
+            <MapPin className={`mx-auto w-12 h-12 mb-4 ${theme === 'dark' ? 'text-gray-700' : 'text-gray-300'}`} />
+            <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+              {t('places.no_places_found_title') || 'No places found'}
+            </h3>
+            <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+              {t('places.no_places_found_subtitle') || 'Try adjusting your search or filters.'}
+            </p>
+          </div>
+        ) : (
+          viewMode === 'map' ? renderMap : renderGrid()
+        )}
+      </div>
+    );
   };
 
   return (

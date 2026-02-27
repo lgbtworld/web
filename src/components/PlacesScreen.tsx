@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { MapPin, Search, Loader, RefreshCw } from 'lucide-react';
+import { MapPin, Search, Loader, RefreshCw, Grid, Map as MapIcon, Plus, Minus, Navigation } from 'lucide-react';
+import { MapContainer, TileLayer, useMapEvents, useMap } from 'react-leaflet';
+import { motion } from 'framer-motion';
+import 'leaflet/dist/leaflet.css';
+import PlaceMarker from './Map/PlaceMarker';
 import { useTheme } from '../contexts/ThemeContext';
 import { api } from '../services/api';
 import { Place } from '../types/places';
@@ -41,12 +45,14 @@ const PlacesScreen: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
   const [places, setPlaces] = useState<Place[]>([]);
   const [cursor, setCursor] = useState<CursorType>(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
 
   const fetchNearbyPlaces = useCallback(
     async (
@@ -76,7 +82,12 @@ const PlacesScreen: React.FC = () => {
         );
 
         if (response && response.places) {
-          setPlaces(prev => (reset ? response.places : [...prev, ...response.places]));
+          setPlaces((prev: Place[]) => {
+            if (reset) return response.places;
+            const existingIds = new Set(prev.map(p => p.public_id));
+            const newPlaces = response.places.filter((p: Place) => !existingIds.has(p.public_id));
+            return [...prev, ...newPlaces];
+          });
 
           if (response.cursor && response.cursor.next) {
             setCursor({
@@ -132,14 +143,14 @@ const PlacesScreen: React.FC = () => {
   }, []);
 
   const categories = useMemo(() => {
-    const allHashtags = places.flatMap(p => p.hashtags.map(h => h.tag));
+    const allHashtags = places.flatMap((p: Place) => p.hashtags.map((h: any) => h.tag));
     const uniqueHashtags = [...new Set(allHashtags)];
     return ['all', ...uniqueHashtags.slice(0, 10)];
   }, [places]);
 
   const filteredPlaces = useMemo(() => {
-    return places.filter(place => {
-      if (selectedCategory !== 'all' && !place.hashtags.some(h => h.tag === selectedCategory)) {
+    return places.filter((place: Place) => {
+      if (selectedCategory !== 'all' && !place.hashtags.some((h: any) => h.tag === selectedCategory)) {
         return false;
       }
       if (searchQuery) {
@@ -194,6 +205,135 @@ const PlacesScreen: React.FC = () => {
     };
   }, [loadMore]);
 
+  const MapEventsHandler = ({ onMoveEnd }: { onMoveEnd: (lat: number, lng: number) => void }) => {
+    useMapEvents({
+      moveend: (e) => {
+        const center = e.target.getCenter();
+        onMoveEnd(center.lat, center.lng);
+      },
+    });
+    return null;
+  };
+
+  const handleMapMove = useCallback((lat: number, lng: number) => {
+    const newLoc = { latitude: lat, longitude: lng };
+    setLocation(newLoc);
+    // When moving the map, we treat it as a "load more" or "discovery" in the new area.
+    // We don't reset the list to allow the user to see all items they've found.
+    fetchNearbyPlaces({ center: newLoc });
+  }, [fetchNearbyPlaces]);
+
+  const MapControls = () => {
+    const map = useMap();
+
+    const handleLocate = () => {
+      map.locate({ setView: true, maxZoom: 16 });
+    };
+
+    return (
+      <div className="absolute bottom-6 right-6 flex flex-col gap-2 z-[400]">
+        <button
+          onClick={() => map.zoomIn()}
+          className="w-12 h-12 flex items-center justify-center bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+          title="Zoom In"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => map.zoomOut()}
+          className="w-12 h-12 flex items-center justify-center bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+          title="Zoom Out"
+        >
+          <Minus className="w-5 h-5" />
+        </button>
+        <button
+          onClick={handleLocate}
+          className="w-12 h-12 flex items-center justify-center bg-purple-600 text-white rounded-2xl shadow-xl hover:bg-purple-700 transition-all mt-2"
+          title="My Location"
+        >
+          <Navigation className="w-5 h-5" />
+        </button>
+      </div>
+    );
+  };
+
+  const renderGrid = () => (
+    <div className="space-y-4 pb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {filteredPlaces.map(place => (
+          <PlaceCard
+            key={place.public_id}
+            place={place}
+            selected={false}
+            onClick={p => navigate(`/places/${p.public_id}`, { state: { place: p } })}
+            className={`rounded-2xl border ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'
+              }`}
+          />
+        ))}
+      </div>
+      <div ref={observerTarget} className="h-10 w-full flex items-center justify-center">
+        {loadingMore && (
+          <div className="flex items-center justify-center gap-2 text-sm p-4">
+            <Loader className="w-5 h-5 animate-spin" />
+            <span>{t('places.loading_more')}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // Use a ref for the initial center to prevent the MapContainer from re-rendering/re-mounting
+  // when the user drags and updates the 'location' state.
+  const initialCenter = useRef<[number, number] | null>(null);
+  if (!initialCenter.current && location) {
+    initialCenter.current = [location.latitude, location.longitude];
+  }
+
+  const defaultCenter: [number, number] = initialCenter.current || [41.0082, 28.9784];
+
+  const renderMap = useMemo(() => {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="w-full h-[calc(100dvh-200px)] sm:h-[calc(100dvh-140px)] rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-xl relative z-0 bg-gray-100 dark:bg-gray-900"
+      >
+        <MapContainer
+          key={`map-${theme}`}
+          center={defaultCenter}
+          zoom={13}
+          style={{ width: '100%', height: '100%' }}
+          zoomControl={false}
+          preferCanvas={true}
+        >
+          <TileLayer
+            key={`tile-${theme}`}
+            attribution='&copy; CARTO'
+            url={theme === 'dark'
+              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+              : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'}
+            keepBuffer={2}
+          />
+          <MapEventsHandler onMoveEnd={handleMapMove} />
+
+          {filteredPlaces.map((place: Place) => (
+            <PlaceMarker
+              key={place.public_id}
+              place={place}
+              selected={selectedPlaceId === place.public_id}
+              onClick={(p: Place) => {
+                setSelectedPlaceId(p.public_id);
+                navigate(`/places/${p.public_id}`, { state: { place: p } });
+              }}
+            />
+          ))}
+
+          <MapControls />
+        </MapContainer>
+      </motion.div>
+    );
+  }, [theme, filteredPlaces, selectedPlaceId, handleMapMove, navigate, defaultCenter]);
+
   const renderContent = () => {
     if (loadingInitial && places.length === 0) {
       return (
@@ -233,30 +373,11 @@ const PlacesScreen: React.FC = () => {
       );
     }
 
-    return (
-      <div className="space-y-4 pb-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filteredPlaces.map(place => (
-            <PlaceCard
-              key={place.public_id}
-              place={place}
-              selected={false}
-              onClick={p => navigate(`/places/${p.public_id}`, { state: { place: p } })}
-              className={`rounded-2xl border ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'
-                }`}
-            />
-          ))}
-        </div>
-        <div ref={observerTarget} className="h-10 w-full flex items-center justify-center">
-          {loadingMore && (
-            <div className="flex items-center justify-center gap-2 text-sm p-4">
-              <Loader className="w-5 h-5 animate-spin" />
-              <span>{t('places.loading_more')}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    );
+    if (viewMode === 'map') {
+      return renderMap;
+    }
+
+    return renderGrid();
   };
 
   return (
@@ -293,6 +414,28 @@ const PlacesScreen: React.FC = () => {
                   }`}
               />
             </div>
+            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-900 p-1 rounded-xl border border-gray-200 dark:border-gray-800">
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'grid'
+                  ? theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+              >
+                <Grid className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('map')}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'map'
+                  ? theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+              >
+                <MapIcon className="w-4 h-4" />
+              </button>
+            </div>
             <button type="button" onClick={handleInitialFetch} disabled={loadingInitial} className={`px-3 py-2 rounded-xl text-sm font-medium inline-flex items-center gap-2 ${theme === 'dark' ? 'bg-gray-900 border border-gray-800 text-gray-200 hover:bg-gray-800' : 'bg-gray-100 border border-gray-200 text-gray-800 hover:bg-gray-200'
               }`}>
               <RefreshCw className={`w-4 h-4 ${loadingInitial && places.length === 0 ? 'animate-spin' : ''}`} />
@@ -302,7 +445,7 @@ const PlacesScreen: React.FC = () => {
         {categories.length > 1 && (
           <div className="w-full max-w-7xl mx-auto px-2 pb-2">
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {categories.map(cat => {
+              {categories.map((cat: any) => {
                 const isAll = cat === 'all';
                 const isSelected = selectedCategory === cat;
                 return (

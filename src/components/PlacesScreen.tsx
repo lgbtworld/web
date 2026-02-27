@@ -73,9 +73,9 @@ const MapControls = ({ initialCenter, initialZoom, theme }: { initialCenter: [nu
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      className="absolute bottom-6 right-6 z-[1000] flex flex-col gap-2"
+      initial={{ opacity: 0, x: 20, scale: 0.95 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      className="absolute top-1/2 right-4 lg:right-6 -translate-y-1/2 z-[1000] flex flex-col gap-3"
     >
       <div className={`flex flex-col rounded-2xl border backdrop-blur-xl shadow-2xl overflow-hidden ${theme === 'dark'
         ? 'bg-black/40 border-white/10'
@@ -348,7 +348,7 @@ const PlacesScreen: React.FC = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="w-full h-[calc(100dvh-200px)] sm:h-[calc(100dvh-140px)] rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-xl relative z-0 bg-gray-100 dark:bg-gray-900"
+        className="absolute inset-0 z-0 bg-gray-100 dark:bg-gray-900"
       >
         <MapContainer
           key={`map-${theme}`}
@@ -407,7 +407,7 @@ const PlacesScreen: React.FC = () => {
     // Show full-page error ONLY for fatal issues (API errors, etc.)
     if (error && error !== 'LOCATION_DENIED') {
       return (
-        <div className={`rounded-2xl p-8 mt-8 border text-center max-w-xl mx-auto ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'
+        <div className={`rounded-2xl p-8 mt-8 border text-center max-w-xl mx-auto relative z-10 ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'
           }`}>
           <div className="relative">
             <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${theme === 'dark' ? 'bg-gray-800 text-purple-400' : 'bg-purple-50 text-purple-600'
@@ -441,7 +441,7 @@ const PlacesScreen: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 ${theme === 'dark' ? 'bg-gray-900/50 border-gray-800' : 'bg-gray-50 border-gray-200'
+            className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 relative z-20 pointer-events-auto ${theme === 'dark' ? 'bg-gray-900/50 border-gray-800 backdrop-blur-md' : 'bg-gray-50/80 border-gray-200 backdrop-blur-md'
               }`}
           >
             <div className="flex items-center gap-3">
@@ -469,7 +469,7 @@ const PlacesScreen: React.FC = () => {
               </button>
               <button
                 onClick={() => setError(null)}
-                className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'text-gray-400 hover:bg-white/10' : 'text-gray-400 hover:bg-black/5'
+                className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
                 <X className="w-4 h-4" />
@@ -479,7 +479,7 @@ const PlacesScreen: React.FC = () => {
         )}
 
         {filteredPlaces.length === 0 && !loadingInitial ? (
-          <div className="py-16 text-center">
+          <div className="py-16 text-center relative z-10">
             <MapPin className={`mx-auto w-12 h-12 mb-4 ${theme === 'dark' ? 'text-gray-700' : 'text-gray-300'}`} />
             <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
               {t('places.no_places_found_title') || 'No places found'}
@@ -489,100 +489,118 @@ const PlacesScreen: React.FC = () => {
             </p>
           </div>
         ) : (
-          viewMode === 'map' ? renderMap : renderGrid()
+          viewMode === 'grid' && renderGrid()
         )}
       </div>
     );
   };
 
   return (
-    <Container>
-      <div className={`sticky top-0 z-50 border-b ${theme === 'dark' ? 'border-gray-800/50 bg-black/95' : 'border-gray-200/50 bg-white/95'
-        }`}>
-        <div className="w-full flex flex-row items-center justify-between gap-2 p-2 px-2 max-w-7xl mx-auto">
-          <div className="hidden md:flex items-center space-x-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
-              }`}>
-              <MapPin className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                {t('places.title')}
-              </h1>
-              <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                {t('places.subtitle')}
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-1 md:flex-initial flex-col sm:flex-row gap-2 justify-end">
-            <div className={`relative flex-1 min-w-[180px] rounded-xl ${theme === 'dark' ? 'bg-gray-900 border border-gray-800' : 'bg-gray-50 border border-gray-200'
-              }`}>
-              <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
-                <Search className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-              </div>
-              <input
-                type="text"
-                placeholder={t('places.search_placeholder')}
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className={`block w-full pl-9 pr-3 py-2.5 text-sm bg-transparent rounded-xl border-0 focus:ring-0 ${theme === 'dark' ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'
-                  }`}
-              />
-            </div>
-            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-900 p-1 rounded-xl border border-gray-200 dark:border-gray-800">
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'grid'
-                  ? theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
-                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                  }`}
-              >
-                <Grid className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('map')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'map'
-                  ? theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
-                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                  }`}
-              >
-                <MapIcon className="w-4 h-4" />
-              </button>
-            </div>
-            <button type="button" onClick={handleInitialFetch} disabled={loadingInitial} className={`px-3 py-2 rounded-xl text-sm font-medium inline-flex items-center gap-2 ${theme === 'dark' ? 'bg-gray-900 border border-gray-800 text-gray-200 hover:bg-gray-800' : 'bg-gray-100 border border-gray-200 text-gray-800 hover:bg-gray-200'
-              }`}>
-              <RefreshCw className={`w-4 h-4 ${loadingInitial && places.length === 0 ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
-        {categories.length > 1 && (
-          <div className="w-full max-w-7xl mx-auto px-2 pb-2">
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {categories.map((cat: any) => {
-                const isAll = cat === 'all';
-                const isSelected = selectedCategory === cat;
-                return (
-                  <button key={cat} type="button" onClick={() => setSelectedCategory(cat)} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${theme === 'dark'
-                    ? isSelected
-                      ? 'bg-gray-800 text-white border-gray-700'
-                      : 'bg-gray-900 text-gray-400 border-gray-800 hover:bg-gray-800'
-                    : isSelected
-                      ? 'bg-gray-100 text-gray-800 border-gray-300'
-                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-                    }`}>
-                    {isAll ? t('places.all_categories', 'Tümü') : `#${cat}`}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
+    <Container className={viewMode === 'map' ? 'overflow-hidden relative' : 'relative'}>
+      {/* Map is only rendered in map view mode */}
+      {viewMode === 'map' && renderMap}
 
-      <div className="w-full mx-auto max-w-7xl p-2">
-        {renderContent()}
+      {/* UI Overlay - Using pointer-events-none to let map interactions pass through */}
+      <div className={`relative z-10 flex flex-col ${viewMode === 'map' ? 'h-full pointer-events-none' : ''}`}>
+
+        {/* Sticky Header - Restoring pointer-events-auto for use */}
+        <div className={`sticky top-0 z-50 border-b transition-all duration-500 pointer-events-auto ${theme === 'dark'
+          ? viewMode === 'map' ? 'border-white/5 bg-black/40 backdrop-blur-xl' : 'border-gray-800/50 bg-black/95'
+          : viewMode === 'map' ? 'border-black/5 bg-white/40 backdrop-blur-xl' : 'border-gray-200/50 bg-white/95'
+          }`}>
+          <div className="w-full flex flex-row items-center justify-between gap-2 p-2 px-2 max-w-7xl mx-auto">
+            <div className="hidden md:flex items-center space-x-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
+                }`}>
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <h1 className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  {t('places.title')}
+                </h1>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                  {t('places.subtitle')}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-1 md:flex-initial flex-col sm:flex-row gap-2 justify-end">
+              <div className={`relative flex-1 min-w-[180px] rounded-xl transition-all ${theme === 'dark'
+                ? viewMode === 'map' ? 'bg-black/20 border-white/10' : 'bg-gray-900 border-gray-800'
+                : viewMode === 'map' ? 'bg-white/20 border-black/10' : 'bg-gray-50 border-gray-200'
+                } backdrop-blur-md border`}>
+                <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
+                  <Search className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+                </div>
+                <input
+                  type="text"
+                  placeholder={t('places.search_placeholder')}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className={`block w-full pl-9 pr-3 py-2.5 text-sm bg-transparent rounded-xl border-0 focus:ring-0 ${theme === 'dark' ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'
+                    }`}
+                />
+              </div>
+              <div className={`flex items-center gap-1 p-1 rounded-xl border transition-all ${theme === 'dark'
+                ? viewMode === 'map' ? 'bg-black/20 border-white/10' : 'bg-gray-900 border-gray-800'
+                : viewMode === 'map' ? 'bg-white/20 border-black/10' : 'bg-gray-100 border-gray-200'
+                } backdrop-blur-md`}>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'grid'
+                    ? theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
+                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                >
+                  <Grid className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('map')}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'map'
+                    ? theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
+                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                >
+                  <MapIcon className="w-4 h-4" />
+                </button>
+              </div>
+              <button type="button" onClick={handleInitialFetch} disabled={loadingInitial} className={`px-3 py-2 rounded-xl text-sm font-medium inline-flex items-center gap-2 backdrop-blur-md transition-all ${theme === 'dark'
+                ? viewMode === 'map' ? 'bg-black/20 border-white/10 text-gray-200' : 'bg-gray-900 border border-gray-800 text-gray-200 hover:bg-gray-800'
+                : viewMode === 'map' ? 'bg-white/20 border-black/10 text-gray-800' : 'bg-gray-100 border border-gray-200 text-gray-800 hover:bg-gray-200'
+                }`}>
+                <RefreshCw className={`w-4 h-4 ${loadingInitial && places.length === 0 ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+          </div>
+          {categories.length > 1 && (
+            <div className="w-full max-w-7xl mx-auto px-2 pb-2">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {categories.map((cat: any) => {
+                  const isAll = cat === 'all';
+                  const isSelected = selectedCategory === cat;
+                  return (
+                    <button key={cat} type="button" onClick={() => setSelectedCategory(cat)} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium border transition-all backdrop-blur-md ${theme === 'dark'
+                      ? isSelected
+                        ? 'bg-gray-800 text-white border-gray-700'
+                        : viewMode === 'map' ? 'bg-black/20 border-white/5 text-gray-400 hover:bg-white/5' : 'bg-gray-900 text-gray-400 border-gray-800 hover:bg-gray-800'
+                      : isSelected
+                        ? 'bg-gray-100 text-gray-800 border-gray-300'
+                        : viewMode === 'map' ? 'bg-white/20 border-black/5 text-gray-600 hover:bg-black/5' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                      }`}>
+                      {isAll ? t('places.all_categories', 'Tümü') : `#${cat}`}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Content Area - Transparent to pointer events in map mode to allow map interaction */}
+        <div className={`${viewMode === 'map' ? 'flex-1 pointer-events-none' : 'pointer-events-auto w-full mx-auto max-w-7xl p-2'}`}>
+          {renderContent()}
+        </div>
       </div>
     </Container>
   );

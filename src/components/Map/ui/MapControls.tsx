@@ -16,14 +16,14 @@ export const MapControls = ({ center, zoom }: MapControlsProps) => {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="absolute bottom-6 right-6 z-[1000] flex flex-col gap-2"
+            initial={{ opacity: 0, x: 20, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            className="absolute top-1/2 right-6 -translate-y-1/2 z-[1000] flex flex-col gap-2"
         >
             {/* Zoom Controls Panel */}
             <div className={`flex flex-col rounded-2xl border backdrop-blur-xl shadow-2xl overflow-hidden ${theme === 'dark'
-                    ? 'bg-black/40 border-white/10'
-                    : 'bg-white/70 border-black/5'
+                ? 'bg-black/40 border-white/10'
+                : 'bg-white/70 border-black/5'
                 }`}>
                 <ZoomInButton />
                 <div className={`h-px w-full ${theme === 'dark' ? 'bg-white/5' : 'bg-black/5'}`} />
@@ -32,8 +32,8 @@ export const MapControls = ({ center, zoom }: MapControlsProps) => {
 
             {/* Utility Controls Panel */}
             <div className={`flex flex-col rounded-2xl border backdrop-blur-xl shadow-2xl overflow-hidden ${theme === 'dark'
-                    ? 'bg-black/40 border-white/10'
-                    : 'bg-white/70 border-black/5'
+                ? 'bg-black/40 border-white/10'
+                : 'bg-white/70 border-black/5'
                 }`}>
                 <LocateButton />
                 <div className={`h-px w-full ${theme === 'dark' ? 'bg-white/5' : 'bg-black/5'}`} />

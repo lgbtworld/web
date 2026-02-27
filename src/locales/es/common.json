@@ -400,6 +400,11 @@
     "retry": "Reintentar",
     "added_by": "Añadido por usuario",
     "business_id": "ID de negocio",
-    "verified_by": "Verificado por {{domain}}"
+    "verified_by": "Verificado por {{domain}}",
+    "error_title": "Oops! Something went wrong",
+    "no_places_found_title": "No places found",
+    "no_places_found_subtitle": "Try adjusting your search or filters.",
+    "location_permission_error": "Please grant location permission to see nearby places.",
+    "all_categories": "All"
   }
 }

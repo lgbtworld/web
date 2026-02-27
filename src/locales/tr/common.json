@@ -442,6 +442,11 @@
     "view_profile": "Profili Gör",
     "no_address": "Adres bilgisi yok",
     "retry": "Tekrar dene",
+    "error_title": "Bir şeyler yanlış gitti",
+    "no_places_found_title": "Mekan bulunamadı",
+    "no_places_found_subtitle": "Aramanızı veya filtrelerinizi değiştirmeyi deneyin.",
+    "location_permission_error": "Yakındaki mekanları görmek için lütfen konum izni verin.",
+    "all_categories": "Tümü",
     "added_by": "Ekleyen Kullanıcı",
     "business_id": "İşletme ID",
     "verified_by": "{{domain}} tarafından doğrulanmıştır."

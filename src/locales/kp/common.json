@@ -434,6 +434,11 @@
     "retry": "Retry",
     "added_by": "Added By User",
     "business_id": "Business ID",
-    "verified_by": "Verified by {{domain}}"
+    "verified_by": "Verified by {{domain}}",
+    "error_title": "Oops! Something went wrong",
+    "no_places_found_title": "No places found",
+    "no_places_found_subtitle": "Try adjusting your search or filters.",
+    "location_permission_error": "Please grant location permission to see nearby places.",
+    "all_categories": "All"
   }
 }

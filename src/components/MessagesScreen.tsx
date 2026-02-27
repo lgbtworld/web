@@ -61,86 +61,64 @@ interface MessageItemProps {
     }>;
   };
   theme: 'dark' | 'light';
-  onDelete: (id: string) => void;
   onContextMenu: (e: React.MouseEvent, id: string) => void;
 }
 
-const MessageItem: React.FC<MessageItemProps> = ({ msg, theme, onDelete, onContextMenu }) => {
-  const [dragX, setDragX] = React.useState(0);
-  const [isDragging, setIsDragging] = React.useState(false);
+const MessageItem: React.FC<MessageItemProps> = ({ msg, theme, onContextMenu }) => {
+  const [isPressed, setIsPressed] = React.useState(false);
+  const longPressTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMe = msg.sender === 'me';
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsPressed(true);
+    const touch = e.touches[0];
+    const clientX = touch.clientX;
+    const clientY = touch.clientY;
+    longPressTimer.current = setTimeout(() => {
+      setIsPressed(false);
+      onContextMenu({ preventDefault: () => { }, clientX, clientY } as any, msg.id);
+    }, 400); // 400ms for slightly snappier opening
+  };
+
+  const cancelLongPress = () => {
+    setIsPressed(false);
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+  };
+
+  const { serviceURL: svcURL, defaultServiceServerId: defSrv } = { serviceURL, defaultServiceServerId };
 
   return (
     <div
-      className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'} group relative overflow-visible`}
-      onContextMenu={(e) => onContextMenu(e, msg.id)}
+      className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative`}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={cancelLongPress}
+      onTouchMove={cancelLongPress}
+      onContextMenu={(e) => { e.preventDefault(); onContextMenu(e, msg.id); }}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseLeave={() => setIsPressed(false)}
     >
-      {/* Delete Action Background */}
-      {dragX < -50 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className={`absolute ${msg.sender === 'me' ? 'right-0' : 'left-0'} top-0 bottom-0 flex items-center justify-center px-4 ${theme === 'dark' ? 'bg-red-600' : 'bg-red-500'
-            }`}
-          style={{
-            width: '80px',
-            height: '100%',
-            borderRadius: msg.sender === 'me' ? '0 16px 16px 0' : '16px 0 0 16px'
-          }}
-        >
-          <Trash2 className="w-5 h-5 text-white" />
-        </motion.div>
-      )}
-
-      {/* Message */}
+      {/* Message Bubble */}
       <motion.div
-        drag="x"
-        dragConstraints={{ left: -120, right: 0 }}
-        dragElastic={0.2}
-        onDrag={(_e, info) => {
-          setDragX(info.offset.x);
-          setIsDragging(true);
-        }}
-        onDragEnd={(_e, info) => {
-          setIsDragging(false);
-          // If swiped left enough (more than 80px), delete the message
-          if (info.offset.x < -80) {
-            onDelete(msg.id);
-          }
-          // Reset position
-          setDragX(0);
-        }}
-        animate={{
-          x: isDragging ? dragX : 0,
-          opacity: Math.abs(dragX) > 80 ? 0.7 : 1
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 300,
-          damping: 30,
-          restDelta: 0.01
-        }}
-        className={`max-w-[75%] sm:max-w-xs md:max-w-sm px-4 py-2.5 rounded-2xl shadow-sm cursor-pointer relative z-10 ${theme === 'dark'
-            ? msg.sender === 'me'
-              ? 'bg-gray-800 text-white'
-              : 'bg-gray-800 text-white'
-            : msg.sender === 'me'
-              ? 'bg-black text-white'
-              : 'bg-white text-gray-900 border border-gray-200'
-          }`}
+        animate={{ scale: isPressed ? 0.96 : 1, opacity: isPressed ? 0.9 : 1 }}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
         style={{
-          borderBottomLeftRadius: msg.sender === 'me' ? '16px' : '4px',
-          borderTopLeftRadius: '16px',
-          borderTopRightRadius: '16px',
-          borderBottomRightRadius: msg.sender === 'me' ? '4px' : '16px'
+          transformOrigin: isMe ? 'right center' : 'left center',
+          borderRadius: isMe
+            ? '18px 18px 4px 18px'
+            : '18px 18px 18px 4px',
         }}
+        className={`max-w-[75%] sm:max-w-xs md:max-w-sm px-4 py-2.5 shadow-sm relative ${theme === 'dark'
+          ? isMe ? 'bg-gray-700 text-white' : 'bg-gray-800 text-white'
+          : isMe ? 'bg-black text-white' : 'bg-white text-gray-900 border border-gray-100'
+          }`}
       >
-        {/* Media Files - Backend Format: attachments */}
+        {/* Media Files */}
         {msg.attachments && msg.attachments.length > 0 && (
           <div className="mb-2 space-y-2">
             {msg.attachments.map((attachment, idx) => {
               const file = attachment.file;
-              const baseUrl = serviceURL[defaultServiceServerId];
-
+              const baseUrl = svcURL[defSrv];
               const variantOrder = ['original', 'large', 'medium', 'small', 'thumbnail', 'icon'];
 
               let resolvedImageUrl: string | null = null;
@@ -169,29 +147,16 @@ const MessageItem: React.FC<MessageItemProps> = ({ msg, theme, onDelete, onConte
               return (
                 <div key={attachment.id || idx} className="relative rounded-lg overflow-hidden">
                   {file.mime_type?.startsWith('image/') && displayImageUrl ? (
-                    <img
-                      src={displayImageUrl}
-                      alt={file.name}
-                      className="w-full max-w-xs rounded-lg object-cover"
-                      style={{ maxHeight: '300px' }}
-                    />
+                    <img src={displayImageUrl} alt={file.name} className="w-full max-w-xs rounded-lg object-cover" style={{ maxHeight: '300px' }} />
                   ) : file.mime_type?.startsWith('video/') && videoUrl ? (
-                    <video
-                      src={videoUrl}
-                      controls
-                      className="w-full max-w-xs rounded-lg object-cover"
-                      style={{ maxHeight: '300px' }}
-                    >
+                    <video src={videoUrl} controls className="w-full max-w-xs rounded-lg object-cover" style={{ maxHeight: '300px' }}>
                       Your browser does not support the video tag.
                     </video>
                   ) : (
-                    <div className={`p-4 rounded-lg flex items-center space-x-3 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
-                      }`}>
-                      <Paperclip className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-                        }`} />
+                    <div className={`p-4 rounded-lg flex items-center space-x-3 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                      <Paperclip className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'
-                          }`}>{file.name}</p>
+                        <p className={`text-sm font-medium truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{file.name}</p>
                       </div>
                     </div>
                   )}
@@ -209,20 +174,18 @@ const MessageItem: React.FC<MessageItemProps> = ({ msg, theme, onDelete, onConte
         )}
 
         {/* Time and Status */}
-        <div className={`flex items-center ${msg.sender === 'me' ? 'justify-end' : ''} mt-1.5 gap-1.5`}>
-          <span className={`text-[11px] ${theme === 'dark'
-              ? msg.sender === 'me' ? 'text-gray-400' : 'text-gray-400'
-              : msg.sender === 'me' ? 'text-gray-300' : 'text-gray-500'
+        <div className={`flex items-center ${isMe ? 'justify-end' : ''} mt-1 gap-1`}>
+          <span className={`text-[10px] ${theme === 'dark'
+            ? 'text-gray-400'
+            : isMe ? 'text-gray-300' : 'text-gray-500'
             }`}>{msg.time}</span>
-          {msg.sender === 'me' && (
-            <CheckCheck className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-300'
-              }`} />
-          )}
+          {isMe && <CheckCheck className={`w-3 h-3 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-300'}`} />}
         </div>
       </motion.div>
     </div>
   );
 };
+
 
 const MessagesScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -526,15 +489,15 @@ const MessagesScreen: React.FC = () => {
       if (user?.public_id) {
         console.log("Baglandi ve init mesaji gitti")
         const savedToken = localStorage.getItem("authToken")
-      if(savedToken){
-        socket.emit('auth', savedToken);
-      }
+        if (savedToken) {
+          socket.emit('auth', savedToken);
+        }
       }
     };
 
     onConnect()
 
-   
+
     socket.on('connect', onConnect);
     // Listen for socket messages
     socket.on('message', handleSocketMessage);
@@ -794,7 +757,7 @@ const MessagesScreen: React.FC = () => {
             const otherUser = otherParticipant?.user;
             const displayName = otherUser?.displayname || otherUser?.username || 'Unknown';
             const username = otherUser?.username || '';
-            const avatar = getSafeImageURLEx(otherUser?.public_id,otherUser?.avatar,"thumbnail");
+            const avatar = getSafeImageURLEx(otherUser?.public_id, otherUser?.avatar, "thumbnail");
             const avatarLetter = displayName.charAt(0).toUpperCase();
 
             // Format last message time
@@ -1137,7 +1100,7 @@ const MessagesScreen: React.FC = () => {
       setIsLoadingMessages(false);
       setIsRefreshingMessages(false);
     }
-  }, [selectedChat, chatsList, user?.id]);
+  }, [selectedChat, user?.id]); // chatsList removed from deps — avoids refetch whenever chat list updates
 
   // Join chat room when chat is selected
   React.useEffect(() => {
@@ -1172,22 +1135,26 @@ const MessagesScreen: React.FC = () => {
     if (currentChatRoomRef.current && currentChatRoomRef.current !== realChatId) {
       console.log('Leaving previous chat room:', currentChatRoomRef.current);
       let leaveMessage = { chat_id: currentChatRoomRef.current }
-      socket.emit('leave',JSON.stringify(leaveMessage));
+      socket.emit('leave', JSON.stringify(leaveMessage));
     }
 
     // Join new chat room
     if (currentChatRoomRef.current !== realChatId) {
       console.log('Joining chat room:', realChatId);
       let joinMessage = { chat_id: realChatId }
-      socket.emit('join', JSON.stringify(joinMessage) );
+      socket.emit('join', JSON.stringify(joinMessage));
       currentChatRoomRef.current = realChatId;
     }
   }, [socket, selectedChat, chatsList, user?.id]);
 
-  // Fetch messages when chat is selected
+  // Fetch messages only when the selected chat or user changes, NOT when fetchMessages ref changes.
+  // Previously depended on [fetchMessages] which re-ran every time chatsList changed (e.g. on send).
   React.useEffect(() => {
-    fetchMessages();
-  }, [fetchMessages]);
+    if (selectedChat && user?.id) {
+      fetchMessages();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedChat, user?.id]);
 
   // Auto-scroll to bottom when new messages are added or chat is selected
   useEffect(() => {
@@ -1220,6 +1187,42 @@ const MessagesScreen: React.FC = () => {
     setMessageMenuPosition(null);
   };
 
+  // Handle message context menu (long press / right click)
+  const handleMessageContextMenu = (e: React.MouseEvent, messageId: string) => {
+    e.preventDefault();
+    setSelectedMessageId(messageId);
+    // Determine if message is from me or other to offset the menu slightly
+    const message = messages.find(m => m.id === messageId);
+
+    // Fallbacks just in case coords are missing
+    const x = e.clientX || window.innerWidth / 2;
+    const y = e.clientY || window.innerHeight / 2;
+
+    setMessageMenuPosition({ x, y });
+  };
+
+  // Close message menu on scroll or outside tap
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.message-context-menu') && selectedMessageId) {
+        setSelectedMessageId(null);
+        setMessageMenuPosition(null);
+      }
+    };
+
+    if (selectedMessageId) {
+      setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+      }, 0);
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+      };
+    }
+  }, [selectedMessageId]);
+
   // Handle chat deletion
   const handleDeleteChat = (chatId: string) => {
     if (selectedChat === chatId) {
@@ -1234,30 +1237,6 @@ const MessagesScreen: React.FC = () => {
       setMessages([]);
     }
   };
-
-  // Handle message context menu
-  const handleMessageContextMenu = (e: React.MouseEvent, messageId: string) => {
-    e.preventDefault();
-    setSelectedMessageId(messageId);
-    setMessageMenuPosition({ x: e.clientX, y: e.clientY });
-  };
-
-  // Close message menu on outside click
-  React.useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('.message-context-menu') && selectedMessageId && selectedMessageId !== 'menu') {
-        setSelectedMessageId(null);
-        setMessageMenuPosition(null);
-      }
-    };
-    if (selectedMessageId && selectedMessageId !== 'menu') {
-      setTimeout(() => {
-        document.addEventListener('click', handleClickOutside);
-      }, 0);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [selectedMessageId]);
 
   // Close chat menu on outside click
   React.useEffect(() => {
@@ -1775,8 +1754,8 @@ const MessagesScreen: React.FC = () => {
             } ${showSidebar ? 'flex' : 'hidden lg:flex'}`}>
             {/* Header */}
             <div className={`flex-shrink-0 sticky mb-[56px] md:mb-[0px]  top-[56px] lg:top-0 z-50 p-3 sm:p-4 border-b ${theme === 'dark'
-                ? 'border-gray-800 bg-black/95 backdrop-blur-xl'
-                : 'border-gray-200 bg-white/95 backdrop-blur-xl'
+              ? 'border-gray-800 bg-black/95 backdrop-blur-xl'
+              : 'border-gray-200 bg-white/95 backdrop-blur-xl'
               }`}>
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h1 className={`text-lg sm:text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'
@@ -1821,8 +1800,8 @@ const MessagesScreen: React.FC = () => {
                   type="text"
                   placeholder={t('messages.search')}
                   className={`relative w-full pl-10 pr-4 py-2 sm:py-3 rounded-full border-0 text-sm z-10 ${theme === 'dark'
-                      ? 'bg-gray-800 text-white placeholder-gray-400'
-                      : 'bg-gray-100 text-gray-900 placeholder-gray-500'
+                    ? 'bg-gray-800 text-white placeholder-gray-400'
+                    : 'bg-gray-100 text-gray-900 placeholder-gray-500'
                     }`}
                 />
               </div>
@@ -1834,12 +1813,12 @@ const MessagesScreen: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${activeFilter === 'all'
-                      ? theme === 'dark'
-                        ? 'bg-white text-black'
-                        : 'bg-black text-white'
-                      : theme === 'dark'
-                        ? 'bg-gray-800 text-gray-400'
-                        : 'bg-gray-200 text-gray-700'
+                    ? theme === 'dark'
+                      ? 'bg-white text-black'
+                      : 'bg-black text-white'
+                    : theme === 'dark'
+                      ? 'bg-gray-800 text-gray-400'
+                      : 'bg-gray-200 text-gray-700'
                     }`}
                 >
                   {t('messages.all')}
@@ -1849,12 +1828,12 @@ const MessagesScreen: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${activeFilter === 'unread'
-                      ? theme === 'dark'
-                        ? 'bg-white text-black'
-                        : 'bg-black text-white'
-                      : theme === 'dark'
-                        ? 'bg-gray-800 text-gray-400'
-                        : 'bg-gray-200 text-gray-700'
+                    ? theme === 'dark'
+                      ? 'bg-white text-black'
+                      : 'bg-black text-white'
+                    : theme === 'dark'
+                      ? 'bg-gray-800 text-gray-400'
+                      : 'bg-gray-200 text-gray-700'
                     }`}
                 >
                   {t('messages.unread')}
@@ -1864,12 +1843,12 @@ const MessagesScreen: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${activeFilter === 'groups'
-                      ? theme === 'dark'
-                        ? 'bg-white text-black'
-                        : 'bg-black text-white'
-                      : theme === 'dark'
-                        ? 'bg-gray-800 text-gray-400'
-                        : 'bg-gray-200 text-gray-700'
+                    ? theme === 'dark'
+                      ? 'bg-white text-black'
+                      : 'bg-black text-white'
+                    : theme === 'dark'
+                      ? 'bg-gray-800 text-gray-400'
+                      : 'bg-gray-200 text-gray-700'
                     }`}
                 >
                   {t('messages.groups')}
@@ -1879,12 +1858,12 @@ const MessagesScreen: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${activeFilter === 'unencrypted'
-                      ? theme === 'dark'
-                        ? 'bg-white text-black'
-                        : 'bg-black text-white'
-                      : theme === 'dark'
-                        ? 'bg-gray-800 text-gray-400'
-                        : 'bg-gray-200 text-gray-700'
+                    ? theme === 'dark'
+                      ? 'bg-white text-black'
+                      : 'bg-black text-white'
+                    : theme === 'dark'
+                      ? 'bg-gray-800 text-gray-400'
+                      : 'bg-gray-200 text-gray-700'
                     }`}
                 >
                   {t('messages.unencrypted')}
@@ -2007,8 +1986,8 @@ const MessagesScreen: React.FC = () => {
                         setOpenChatItemMenu(openChatItemMenu === chat.id ? null : chat.id);
                       }}
                       className={`p-1.5 rounded-full transition-colors ${theme === 'dark'
-                          ? 'hover:bg-gray-700 text-gray-400'
-                          : 'hover:bg-gray-200 text-gray-500'
+                        ? 'hover:bg-gray-700 text-gray-400'
+                        : 'hover:bg-gray-200 text-gray-500'
                         }`}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
@@ -2023,8 +2002,8 @@ const MessagesScreen: React.FC = () => {
                           exit={{ opacity: 0, scale: 0.95, y: -5 }}
                           transition={{ duration: 0.15 }}
                           className={`absolute right-0 top-full mt-1 rounded-lg shadow-lg border z-50 ${theme === 'dark'
-                              ? 'bg-gray-800 border-gray-700'
-                              : 'bg-white border-gray-200'
+                            ? 'bg-gray-800 border-gray-700'
+                            : 'bg-white border-gray-200'
                             }`}
                           style={{ minWidth: '140px' }}
                           onClick={(e) => e.stopPropagation()}
@@ -2035,8 +2014,8 @@ const MessagesScreen: React.FC = () => {
                               setOpenChatItemMenu(null);
                             }}
                             className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-opacity-50 transition-colors rounded-lg ${theme === 'dark'
-                                ? 'text-red-400 hover:bg-red-500/20'
-                                : 'text-red-600 hover:bg-red-50'
+                              ? 'text-red-400 hover:bg-red-500/20'
+                              : 'text-red-600 hover:bg-red-50'
                               }`}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -2052,15 +2031,15 @@ const MessagesScreen: React.FC = () => {
           </div>
 
           {/* Chat Area */}
-          <AnimatePresence mode={isMobile ? "sync" : "wait"}>
+          <AnimatePresence mode="wait">
             {selectedChat ? (
               <motion.div
-                key="chat-view"
-                initial={isMobile ? undefined : { opacity: 0 }}
-                animate={isMobile ? undefined : { opacity: 1 }}
-                exit={isMobile ? undefined : { opacity: 0 }}
-                transition={isMobile ? undefined : {
-                  duration: 0.15,
+                key={`chat-view-${selectedChat}`}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{
+                  duration: 0.2,
                   ease: 'easeOut'
                 }}
                 className="flex-1 flex flex-col min-h-0 min-w-0 relative z-10 h-full"
@@ -2077,8 +2056,8 @@ const MessagesScreen: React.FC = () => {
                 <div
                   ref={headerRef}
                   className={`flex-shrink-0 sticky top-0 z-50 p-3 sm:p-4 border-b ${theme === 'dark'
-                      ? 'border-gray-800 bg-black/95 backdrop-blur-xl'
-                      : 'border-gray-200 bg-white/95 backdrop-blur-xl'
+                    ? 'border-gray-800 bg-black/95 backdrop-blur-xl'
+                    : 'border-gray-200 bg-white/95 backdrop-blur-xl'
                     }`}
                   style={{
                     flexGrow: 0,
@@ -2179,8 +2158,8 @@ const MessagesScreen: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                         disabled={isRefreshingMessages || isLoadingMessages}
                         className={`p-2 rounded-lg transition-colors ${theme === 'dark'
-                            ? 'hover:bg-white/10 text-gray-400'
-                            : 'hover:bg-black/10 text-gray-500'
+                          ? 'hover:bg-white/10 text-gray-400'
+                          : 'hover:bg-black/10 text-gray-500'
                           } disabled:opacity-50`}
                       >
                         <RefreshCw
@@ -2206,8 +2185,8 @@ const MessagesScreen: React.FC = () => {
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.95 }}
                           className={`absolute right-0 top-full mt-2 rounded-lg shadow-lg border z-50 ${theme === 'dark'
-                              ? 'bg-gray-800 border-gray-700'
-                              : 'bg-white border-gray-200'
+                            ? 'bg-gray-800 border-gray-700'
+                            : 'bg-white border-gray-200'
                             }`}
                           style={{ minWidth: '180px' }}
                           onClick={(e) => e.stopPropagation()}
@@ -2218,8 +2197,8 @@ const MessagesScreen: React.FC = () => {
                               setShowChatMenu(false);
                             }}
                             className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-opacity-50 transition-colors ${theme === 'dark'
-                                ? 'text-red-400 hover:bg-red-500/20'
-                                : 'text-red-600 hover:bg-red-50'
+                              ? 'text-red-400 hover:bg-red-500/20'
+                              : 'text-red-600 hover:bg-red-50'
                               }`}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -2267,8 +2246,8 @@ const MessagesScreen: React.FC = () => {
                       }}
                       ref={messagesContainerRef}
                       className={`flex-1 overflow-y-auto p-3 sm:p-4 scrollbar-hide min-h-0 ${theme === 'dark'
-                          ? 'bg-black'
-                          : 'bg-white'
+                        ? 'bg-black'
+                        : 'bg-white'
                         }`}
                       style={{
                         flexGrow: 1,
@@ -2284,14 +2263,32 @@ const MessagesScreen: React.FC = () => {
                     >
                       <div className="space-y-3 max-w-4xl mx-auto">
                         {isLoadingMessages ? (
-                          <div className="flex items-center justify-center py-12">
-                            <div className="text-center">
-                              <div className={`animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-2 ${theme === 'dark' ? 'border-white' : 'border-gray-900'
-                                }`}></div>
-                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                                {t('messages.loading_messages')}
-                              </p>
-                            </div>
+                          <div className="flex flex-col gap-4 px-2 py-4 max-w-4xl mx-auto">
+                            {/* Skeleton bubbles — alternating sides like a real conversation */}
+                            {[
+                              { side: 'other', widths: ['w-48', 'w-32'] },
+                              { side: 'me', widths: ['w-56'] },
+                              { side: 'other', widths: ['w-40', 'w-52'] },
+                              { side: 'me', widths: ['w-36', 'w-44'] },
+                              { side: 'other', widths: ['w-44'] },
+                              { side: 'me', widths: ['w-52', 'w-28'] },
+                            ].map((group, gi) => (
+                              <div
+                                key={gi}
+                                className={`flex flex-col gap-1 ${group.side === 'me' ? 'items-end' : 'items-start'}`}
+                              >
+                                {group.widths.map((w, bi) => (
+                                  <div
+                                    key={bi}
+                                    className={`h-9 rounded-2xl animate-pulse ${w} ${group.side === 'me'
+                                      ? theme === 'dark' ? 'bg-gray-700 rounded-br-sm' : 'bg-gray-200 rounded-br-sm'
+                                      : theme === 'dark' ? 'bg-gray-800 rounded-bl-sm' : 'bg-gray-100 rounded-bl-sm'
+                                      }`}
+                                    style={{ animationDelay: `${(gi * 0.12 + bi * 0.06).toFixed(2)}s` }}
+                                  />
+                                ))}
+                              </div>
+                            ))}
                           </div>
                         ) : (
                           <>
@@ -2323,7 +2320,6 @@ const MessagesScreen: React.FC = () => {
                                   key={msg.id}
                                   msg={msg}
                                   theme={theme}
-                                  onDelete={handleDeleteMessage}
                                   onContextMenu={handleMessageContextMenu}
                                 />
                               ))
@@ -2331,35 +2327,62 @@ const MessagesScreen: React.FC = () => {
                           </>
                         )}
 
-                        {/* Message Context Menu */}
-                        {selectedMessageId && selectedMessageId !== 'menu' && messageMenuPosition && (
+                        {/* Telegram/WhatsApp Style Context Menu */}
+                        {selectedMessageId && messageMenuPosition && (
                           <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className={`message-context-menu fixed z-50 rounded-lg shadow-lg border ${theme === 'dark'
-                                ? 'bg-gray-800 border-gray-700'
-                                : 'bg-white border-gray-200'
-                              }`}
+                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                            transition={{ duration: 0.15, ease: 'easeOut' }}
+                            className={`message-context-menu fixed z-[100] rounded-xl shadow-2xl p-1.5 flex flex-col min-w-[140px]
+                              ${theme === 'dark'
+                                ? 'bg-gray-800/95 border border-white/10 backdrop-blur-md'
+                                : 'bg-white/95 border border-black/10 backdrop-blur-md'}`
+                            }
                             style={{
-                              left: `${messageMenuPosition.x}px`,
-                              top: `${messageMenuPosition.y}px`,
-                              transform: 'translate(-50%, -100%)'
+                              left: `${Math.min(Math.max(16, messageMenuPosition.x - 70), window.innerWidth - 156)}px`, // Keep in bounds horizontally
+                              top: `${Math.min(messageMenuPosition.y - 10, window.innerHeight - 100)}px`,  // Keep in bounds vertically
                             }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <button
-                              onClick={() => handleDeleteMessage(selectedMessageId)}
-                              className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-opacity-50 transition-colors ${theme === 'dark'
-                                  ? 'text-red-400 hover:bg-red-500/20'
-                                  : 'text-red-600 hover:bg-red-50'
-                                }`}
+                            <span className={`px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider opacity-60
+                              ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}
                             >
-                              <Trash2 className="w-4 h-4" />
-                              {t('messages.delete_message')}
+                              Message Options
+                            </span>
+                            <div className={`mt-1 w-full h-px ${theme === 'dark' ? 'bg-white/5' : 'bg-black/5'}`} />
+
+                            {messages.find(m => m.id === selectedMessageId)?.sender === 'me' && (
+                              <button
+                                onClick={() => handleDeleteMessage(selectedMessageId)}
+                                className={`w-full text-left mt-1 px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors
+                                  ${theme === 'dark'
+                                    ? 'hover:bg-white/10 text-red-400'
+                                    : 'hover:bg-black/5 text-red-500'}`
+                                }
+                              >
+                                <span className="font-medium text-[15px]">Delete</span>
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => {
+                                setSelectedMessageId(null);
+                                setMessageMenuPosition(null);
+                              }}
+                              className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors
+                                ${theme === 'dark'
+                                  ? 'hover:bg-white/10 text-gray-200'
+                                  : 'hover:bg-black/5 text-gray-700'}`
+                              }
+                            >
+                              <span className="font-medium text-[15px]">Cancel</span>
+                              <X size={16} />
                             </button>
                           </motion.div>
                         )}
+
 
                       </div>
                     </motion.div>
@@ -2402,8 +2425,8 @@ const MessagesScreen: React.FC = () => {
                   <div
                     ref={inputContainerRef}
                     className={`border-t w-full transition-all duration-300 ${isMobile
-                        ? 'fixed bottom-0 left-0 right-0 z-50'
-                        : 'relative flex-shrink-0 p-3 sm:p-4'
+                      ? 'fixed bottom-0 left-0 right-0 z-50'
+                      : 'relative flex-shrink-0 p-3 sm:p-4'
                       } ${theme === 'dark'
                         ? 'border-gray-800 bg-black'
                         : 'border-gray-200 bg-white'
@@ -2647,8 +2670,8 @@ const MessagesScreen: React.FC = () => {
                       />
                       <div
                         className={`flex w-full items-center gap-2 rounded-full border transition-all ${theme === 'dark'
-                            ? 'bg-gray-800 border-transparent focus-within:border-gray-700 focus-within:ring-2 focus-within:ring-gray-600'
-                            : 'bg-gray-100 border-transparent focus-within:border-gray-200 focus-within:ring-2 focus-within:ring-gray-300'
+                          ? 'bg-gray-800 border-transparent focus-within:border-gray-700 focus-within:ring-2 focus-within:ring-gray-600'
+                          : 'bg-gray-100 border-transparent focus-within:border-gray-200 focus-within:ring-2 focus-within:ring-gray-300'
                           } px-3 py-2 sm:py-2.5`}
                       >
                         <div className="flex items-center space-x-1">
@@ -2658,12 +2681,12 @@ const MessagesScreen: React.FC = () => {
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             className={`p-1.5 rounded-full transition-all duration-200 ${selectedImages.length > 0
-                                ? theme === 'dark'
-                                  ? 'bg-blue-500/15 text-blue-400'
-                                  : 'bg-blue-50 text-blue-600'
-                                : theme === 'dark'
-                                  ? 'hover:bg-gray-700 text-gray-400'
-                                  : 'hover:bg-gray-200 text-gray-600'
+                              ? theme === 'dark'
+                                ? 'bg-blue-500/15 text-blue-400'
+                                : 'bg-blue-50 text-blue-600'
+                              : theme === 'dark'
+                                ? 'hover:bg-gray-700 text-gray-400'
+                                : 'hover:bg-gray-200 text-gray-600'
                               }`}
                           >
                             <Image className="w-4 h-4" />
@@ -2674,12 +2697,12 @@ const MessagesScreen: React.FC = () => {
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             className={`p-1.5 rounded-full transition-all duration-200 ${selectedVideos.length > 0
-                                ? theme === 'dark'
-                                  ? 'bg-purple-500/15 text-purple-400'
-                                  : 'bg-purple-50 text-purple-600'
-                                : theme === 'dark'
-                                  ? 'hover:bg-gray-700 text-gray-400'
-                                  : 'hover:bg-gray-200 text-gray-600'
+                              ? theme === 'dark'
+                                ? 'bg-purple-500/15 text-purple-400'
+                                : 'bg-purple-50 text-purple-600'
+                              : theme === 'dark'
+                                ? 'hover:bg-gray-700 text-gray-400'
+                                : 'hover:bg-gray-200 text-gray-600'
                               }`}
                           >
                             <Video className="w-4 h-4" />
@@ -2709,12 +2732,12 @@ const MessagesScreen: React.FC = () => {
                           disabled={!message.trim() && selectedImages.length === 0 && selectedVideos.length === 0}
                           whileTap={{ scale: 0.95 }}
                           className={`flex-shrink-0 p-2 rounded-full transition-all ${(message.trim() || selectedImages.length > 0 || selectedVideos.length > 0)
-                              ? theme === 'dark'
-                                ? 'bg-white text-black hover:bg-gray-200'
-                                : 'bg-black text-white hover:bg-gray-900'
-                              : theme === 'dark'
-                                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            ? theme === 'dark'
+                              ? 'bg-white text-black hover:bg-gray-200'
+                              : 'bg-black text-white hover:bg-gray-900'
+                            : theme === 'dark'
+                              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             }`}
                         >
                           <Send className="w-4 h-4" />

@@ -302,9 +302,14 @@ const PlacesScreen: React.FC = () => {
           key={`map-${theme}`}
           center={defaultCenter}
           zoom={13}
-          style={{ width: '100%', height: '100%' }}
+          style={{
+            width: '100%',
+            height: '100%',
+            background: theme === 'dark' ? '#030712' : '#f3f4f6'
+          }}
           zoomControl={false}
           preferCanvas={true}
+          className="z-0"
         >
           <TileLayer
             key={`tile-${theme}`}

@@ -153,7 +153,7 @@ const ProfileEngagementsScreen: React.FC = () => {
         const users: EngagementUser[] = engagementsArray
           .map((engagement: any) => {
             const userData =
-              type === 'followers' ? engagement.engager : engagement.engagee;
+               engagement.kind === 'follower' ? engagement.engagee : engagement.engagee;
 
             if (!userData) {
               return null;

@@ -55,8 +55,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const refresh = async () => {
     setLoading(true);
     try {
-      const res = await api.call<InitialData>(Actions.SYSTEM_INITIAL_SYNC);
-      setData(res.data);
+      const res = await api.call<{ data: InitialData }>(Actions.SYSTEM_INITIAL_SYNC);
+      setData(res?.data || null);
     } catch (err) {
       console.error("Initial sync failed:", err);
     } finally {

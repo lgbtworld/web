@@ -14,7 +14,7 @@ import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useSettings } from './contexts/SettingsContext';
 import AuthWizard from './components/AuthWizard';
-import { MapPin, Heart, MessageCircle, User, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Wallet } from 'lucide-react';
+import { MapPin, Heart, MessageCircle, User, Users, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Wallet } from 'lucide-react';
 import TrendsPanel, { NormalizedTrend } from './components/TrendsPanel';
 import PopularUsersPanel from './components/PopularUsersPanel';
 import PlaceDetailsScreen from './components/PlaceDetailsScreen';
@@ -32,7 +32,8 @@ import PremiumScreen from './components/PremiumScreen.tsx';
 import PostDetails from './components/PostDetails.tsx';
 import WalletScreen from './components/WalletScreen.tsx';
 import PlacesScreen from './components/PlacesScreen.tsx';
-
+import ReferralsScreen from './components/ReferralsScreen.tsx';
+import ReferralHandler from './components/ReferralHandler.tsx';
 const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/': 'pride',
   '/pride': 'pride',
@@ -43,6 +44,7 @@ const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/notifications': 'notifications',
   '/places': 'places',
   '/wallet': 'wallet',
+  '/referrals': 'referrals',
   '/classifieds': 'classifieds',
 };
 
@@ -190,6 +192,13 @@ function AppContent() {
       accent: 'from-cyan-400/80 to-blue-500/80'
     },
     {
+      id: 'referrals',
+      label: t('app.nav.referrals', { defaultValue: 'Referrals' }),
+      path: '/referrals',
+      icon: Users,
+      accent: 'from-fuchsia-400/80 to-purple-500/80'
+    },
+    {
       id: 'profile',
       label: t('app.nav.profile'),
       path: profilePath,
@@ -199,7 +208,7 @@ function AppContent() {
   ], [profilePath, t]);
 
   const mobileNavItems = React.useMemo(() => {
-    const mobileOrder = ['pride', 'nearby', 'match', 'places', 'messages', 'notifications', 'wallet', 'profile'];
+    const mobileOrder = ['pride', 'nearby', 'match', 'places', 'messages', 'notifications', 'wallet', 'referrals', 'profile'];
     return mobileOrder
       .map((id) => sidebarNavItems.find((item) => item.id === id))
       .filter(Boolean) as typeof sidebarNavItems;
@@ -207,7 +216,7 @@ function AppContent() {
 
   const sidebarNavSections = React.useMemo(() => {
     const primaryOrder = ['pride', 'nearby', 'match', 'places', 'messages'];
-    const secondaryOrder = ['notifications', 'wallet', 'profile'];
+    const secondaryOrder = ['notifications', 'wallet', 'referrals', 'profile'];
 
     const sortByOrder = (ids: string[]) =>
       ids
@@ -636,6 +645,7 @@ function AppContent() {
               <Route path="/landing" element={<LandingPage />} />
               <Route path="/places" element={<PlacesScreen />} />
               <Route path="/places/:publicId" element={<PlaceDetailsScreen />} />
+              <Route path="/ref/:code" element={<ReferralHandler />} />
 
               {/* Protected Routes */}
               <Route path="/" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
@@ -644,6 +654,7 @@ function AppContent() {
               <Route path="/testpage" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
               <Route path="/premium" element={<ProtectedRoute><PremiumScreen /></ProtectedRoute>} />
               <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} />
+              <Route path="/referrals" element={<ProtectedRoute><ReferralsScreen /></ProtectedRoute>} />
 
               <Route
                 path="/:username/:engagementType"

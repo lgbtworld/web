@@ -64,6 +64,8 @@ const NotificationsScreen: React.FC = () => {
         return CheckCheck;
       case 'match_unmatch':
         return Users;
+      case 'referral':
+        return Users;
       default:
         return Bell;
     }
@@ -79,7 +81,8 @@ const NotificationsScreen: React.FC = () => {
     n.type === 'profile_visit' ||
     n.type === 'friend_request' ||
     n.type === 'event_reminder' ||
-    n.type === 'system_alert'
+    n.type === 'system_alert' ||
+    n.type === 'referral'
   ).length;
 
   const filteredNotifications = activeTab === 'all'
@@ -98,7 +101,8 @@ const NotificationsScreen: React.FC = () => {
                 n.type === 'profile_visit' ||
                 n.type === 'friend_request' ||
                 n.type === 'event_reminder' ||
-                n.type === 'system_alert'
+                n.type === 'system_alert' ||
+                n.type === 'referral'
               );
 
   const formatTime = (createdAt: string) => {
@@ -223,6 +227,8 @@ const NotificationsScreen: React.FC = () => {
       navigate('/messages');
     } else if (notification.type === 'new_match' || notification.type === 'match_unmatch') {
       navigate('/matches');
+    } else if (notification.type === 'referral') {
+      navigate('/referrals');
     } else if (notification.sender?.username) {
       navigate(`/${notification.sender.username}`);
     }
@@ -232,16 +238,16 @@ const NotificationsScreen: React.FC = () => {
     <Container>
       {/* Header - Sticky */}
       <div className={`sticky top-0 z-50 border-b ${theme === 'dark'
-          ? 'border-gray-800/50 bg-black/95 backdrop-blur-xl'
-          : 'border-gray-100/50 bg-white/95 backdrop-blur-xl'
+        ? 'border-gray-800/50 bg-black/95 backdrop-blur-xl'
+        : 'border-gray-100/50 bg-white/95 backdrop-blur-xl'
         }`}>
         <div className="w-full px-4 lg:px-6">
           {/* Top Bar */}
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-3">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${theme === 'dark'
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white'
+                ? 'bg-white text-black'
+                : 'bg-black text-white'
                 }`}>
                 <Bell className="w-5 h-5" />
               </div>
@@ -260,8 +266,8 @@ const NotificationsScreen: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={`p-2 rounded-full transition-colors ${theme === 'dark'
-                    ? 'hover:bg-white/10 text-gray-400 hover:text-white'
-                    : 'hover:bg-black/10 text-gray-500 hover:text-gray-900'
+                  ? 'hover:bg-white/10 text-gray-400 hover:text-white'
+                  : 'hover:bg-black/10 text-gray-500 hover:text-gray-900'
                   }`}
                 title={t('notifications.mark_all_read')}
               >
@@ -271,8 +277,8 @@ const NotificationsScreen: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={`p-2 rounded-full transition-colors ${theme === 'dark'
-                    ? 'hover:bg-white/10 text-gray-400 hover:text-white'
-                    : 'hover:bg-black/10 text-gray-500 hover:text-gray-900'
+                  ? 'hover:bg-white/10 text-gray-400 hover:text-white'
+                  : 'hover:bg-black/10 text-gray-500 hover:text-gray-900'
                   }`}
                 title={t('notifications.settings')}
               >
@@ -286,12 +292,12 @@ const NotificationsScreen: React.FC = () => {
             <button
               onClick={() => setActiveTab('all')}
               className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'all'
-                  ? theme === 'dark'
-                    ? 'text-white'
-                    : 'text-black'
-                  : theme === 'dark'
-                    ? 'text-gray-500 hover:text-gray-300'
-                    : 'text-gray-500 hover:text-gray-700'
+                ? theme === 'dark'
+                  ? 'text-white'
+                  : 'text-black'
+                : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               {t('notifications.all')}
@@ -307,19 +313,19 @@ const NotificationsScreen: React.FC = () => {
             <button
               onClick={() => setActiveTab('messages')}
               className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'messages'
-                  ? theme === 'dark'
-                    ? 'text-white'
-                    : 'text-black'
-                  : theme === 'dark'
-                    ? 'text-gray-500 hover:text-gray-300'
-                    : 'text-gray-500 hover:text-gray-700'
+                ? theme === 'dark'
+                  ? 'text-white'
+                  : 'text-black'
+                : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               {t('notifications.messages')}
               {messageCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                    ? 'bg-white/10 text-white'
-                    : 'bg-black/10 text-black'
+                  ? 'bg-white/10 text-white'
+                  : 'bg-black/10 text-black'
                   }`}>
                   {messageCount}
                 </span>
@@ -336,19 +342,19 @@ const NotificationsScreen: React.FC = () => {
             <button
               onClick={() => setActiveTab('matches')}
               className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'matches'
-                  ? theme === 'dark'
-                    ? 'text-white'
-                    : 'text-black'
-                  : theme === 'dark'
-                    ? 'text-gray-500 hover:text-gray-300'
-                    : 'text-gray-500 hover:text-gray-700'
+                ? theme === 'dark'
+                  ? 'text-white'
+                  : 'text-black'
+                : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               {t('notifications.matches')}
               {matchCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                    ? 'bg-white/10 text-white'
-                    : 'bg-black/10 text-black'
+                  ? 'bg-white/10 text-white'
+                  : 'bg-black/10 text-black'
                   }`}>
                   {matchCount}
                 </span>
@@ -365,19 +371,19 @@ const NotificationsScreen: React.FC = () => {
             <button
               onClick={() => setActiveTab('likes')}
               className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'likes'
-                  ? theme === 'dark'
-                    ? 'text-white'
-                    : 'text-black'
-                  : theme === 'dark'
-                    ? 'text-gray-500 hover:text-gray-300'
-                    : 'text-gray-500 hover:text-gray-700'
+                ? theme === 'dark'
+                  ? 'text-white'
+                  : 'text-black'
+                : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               {t('notifications.likes')}
               {likeCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                    ? 'bg-white/10 text-white'
-                    : 'bg-black/10 text-black'
+                  ? 'bg-white/10 text-white'
+                  : 'bg-black/10 text-black'
                   }`}>
                   {likeCount}
                 </span>
@@ -394,19 +400,19 @@ const NotificationsScreen: React.FC = () => {
             <button
               onClick={() => setActiveTab('follows')}
               className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'follows'
-                  ? theme === 'dark'
-                    ? 'text-white'
-                    : 'text-black'
-                  : theme === 'dark'
-                    ? 'text-gray-500 hover:text-gray-300'
-                    : 'text-gray-500 hover:text-gray-700'
+                ? theme === 'dark'
+                  ? 'text-white'
+                  : 'text-black'
+                : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               {t('notifications.follows')}
               {followCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                    ? 'bg-white/10 text-white'
-                    : 'bg-black/10 text-black'
+                  ? 'bg-white/10 text-white'
+                  : 'bg-black/10 text-black'
                   }`}>
                   {followCount}
                 </span>
@@ -423,19 +429,19 @@ const NotificationsScreen: React.FC = () => {
             <button
               onClick={() => setActiveTab('gifts')}
               className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'gifts'
-                  ? theme === 'dark'
-                    ? 'text-white'
-                    : 'text-black'
-                  : theme === 'dark'
-                    ? 'text-gray-500 hover:text-gray-300'
-                    : 'text-gray-500 hover:text-gray-700'
+                ? theme === 'dark'
+                  ? 'text-white'
+                  : 'text-black'
+                : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               {t('notifications.gifts')}
               {giftCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                    ? 'bg-white/10 text-white'
-                    : 'bg-black/10 text-black'
+                  ? 'bg-white/10 text-white'
+                  : 'bg-black/10 text-black'
                   }`}>
                   {giftCount}
                 </span>
@@ -452,19 +458,19 @@ const NotificationsScreen: React.FC = () => {
             <button
               onClick={() => setActiveTab('other')}
               className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'other'
-                  ? theme === 'dark'
-                    ? 'text-white'
-                    : 'text-black'
-                  : theme === 'dark'
-                    ? 'text-gray-500 hover:text-gray-300'
-                    : 'text-gray-500 hover:text-gray-700'
+                ? theme === 'dark'
+                  ? 'text-white'
+                  : 'text-black'
+                : theme === 'dark'
+                  ? 'text-gray-500 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               {t('notifications.other')}
               {otherCount > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                    ? 'bg-white/10 text-white'
-                    : 'bg-black/10 text-black'
+                  ? 'bg-white/10 text-white'
+                  : 'bg-black/10 text-black'
                   }`}>
                   {otherCount}
                 </span>

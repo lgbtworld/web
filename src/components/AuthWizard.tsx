@@ -29,20 +29,20 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
 
   // Track notification permission
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(null);
-  
-  
+
+
   const requestNotificationPermission = async () => {
-  if (typeof window !== 'undefined' && 'Notification' in window) {
-    if (Notification.permission === 'default') {
-      const perm = await Notification.requestPermission();
-      setNotificationPermission(perm);
-      console.log('Permission result:', perm);
-    } else {
-      setNotificationPermission(Notification.permission);
-      console.log('Existing permission:', Notification.permission);
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        const perm = await Notification.requestPermission();
+        setNotificationPermission(perm);
+        console.log('Permission result:', perm);
+      } else {
+        setNotificationPermission(Notification.permission);
+        console.log('Existing permission:', Notification.permission);
+      }
     }
-  }
-};
+  };
 
 
   const [formData, setFormData] = useState<{
@@ -54,6 +54,7 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
     day: string;
     month: string;
     year: string;
+    referralCode: string;
   }>({
     name: '',
     nickname: '',
@@ -62,7 +63,8 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
     birthDate: '',
     day: '',
     month: '',
-    year: ''
+    year: '',
+    referralCode: typeof window !== 'undefined' ? localStorage.getItem('referralCode') || '' : ''
   });
 
   // Date picker state
@@ -128,7 +130,7 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
       placeholder: '',
       type: 'captcha'
     },
-    
+
   ];
 
   const getDaysInMonth = (month: number, year: number) => {
@@ -225,7 +227,7 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
         nickname: formData.nickname,
         password: formData.password
       };
-      
+
       api.handleLogin(loginData)
         .then(response => {
           login(response.token, response.user);
@@ -249,8 +251,9 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
         name: formData.nickname,
         nickname: formData.nickname,
         password: formData.password,
+        referralCode: formData.referralCode,
         recaptchaToken: recaptchaToken,
-        domain:"coolvibes.lgbt",
+        domain: "coolvibes.lgbt",
       };
 
       setIsLoading(true);
@@ -281,7 +284,7 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
     } else {
       // Clear error when going back
       setError('');
-      
+
       // Handle register flow
       if (authMode === 'register' && currentStep === 2) {
         setCurrentStep(0); // Go back to auth-mode
@@ -361,12 +364,12 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
               <motion.button
                 onClick={() => setAuthMode('login')}
                 className={`p-4 sm:p-6 rounded-2xl border-2 text-center transition-all w-full ${authMode === 'login'
-                    ? theme === 'dark'
-                      ? 'bg-white text-gray-900 border-white shadow-md'
-                      : 'bg-gray-900 text-white border-gray-900 shadow-md'
-                    : theme === 'dark'
-                      ? 'bg-gray-800 border-gray-700 text-white hover:border-gray-600'
-                      : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'
+                  ? theme === 'dark'
+                    ? 'bg-white text-gray-900 border-white shadow-md'
+                    : 'bg-gray-900 text-white border-gray-900 shadow-md'
+                  : theme === 'dark'
+                    ? 'bg-gray-800 border-gray-700 text-white hover:border-gray-600'
+                    : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'
                   }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -379,12 +382,12 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
               <motion.button
                 onClick={() => setAuthMode('register')}
                 className={`p-4 sm:p-6 rounded-2xl border-2 text-center transition-all w-full ${authMode === 'register'
-                    ? theme === 'dark'
-                      ? 'bg-white text-gray-900 border-white shadow-md'
-                      : 'bg-gray-900 text-white border-gray-900 shadow-md'
-                    : theme === 'dark'
-                      ? 'bg-gray-800 border-gray-700 text-white hover:border-gray-600'
-                      : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'
+                  ? theme === 'dark'
+                    ? 'bg-white text-gray-900 border-white shadow-md'
+                    : 'bg-gray-900 text-white border-gray-900 shadow-md'
+                  : theme === 'dark'
+                    ? 'bg-gray-800 border-gray-700 text-white hover:border-gray-600'
+                    : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'
                   }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -493,6 +496,24 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
                 </p>
               )}
             </div>
+            <div>
+              <label className={`block text-sm sm:text-sm font-medium mb-2 sm:mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                {t('auth.referral_code', { defaultValue: 'Referral Code (Optional)' })}
+              </label>
+              <input
+                type="text"
+                placeholder={t('auth.placeholder_referral_code', { defaultValue: 'Enter referral code' })}
+                value={formData.referralCode}
+                onChange={(e) => updateFormData('referralCode', e.target.value)}
+                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border-2 focus:outline-none focus:border-opacity-100 transition-all text-base sm:text-base ${theme === 'dark'
+                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-white'
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
+                  }`}
+              />
+              <p className={`text-xs mt-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
+                {t('auth.referral_hint', { defaultValue: 'Earn 50 LGBT tokens if you have an invite code.' })}
+              </p>
+            </div>
           </div>
         );
 
@@ -503,7 +524,7 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t('auth.current_status')}: {notificationPermission ?? 'unknown'}</p>
             </div>
             <motion.button
-              onClick={()=>{
+              onClick={() => {
                 requestNotificationPermission()
               }}
               className={`w-full px-6 py-4 rounded-2xl font-semibold text-lg transition-all duration-200 ${theme === 'dark'
@@ -587,113 +608,113 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
         </div>
       )}
 
-          {/* Step Content */}
+      {/* Step Content */}
+      <motion.div
+        key={currentStep}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="text-center px-4 sm:px-8 py-2 sm:py-6"
+      >
+        <div className={`w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-6 rounded-xl sm:rounded-2xl flex items-center justify-center ${theme === 'dark'
+          ? 'bg-gray-800'
+          : 'bg-gray-100'
+          }`}>
+          <currentStepData.icon className={`w-5 h-5 sm:w-8 sm:h-8 ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`} />
+        </div>
+        <h2 className={`text-lg sm:text-2xl font-bold mb-1 sm:mb-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
+          {currentStepData.title}
+        </h2>
+        <p className={`text-xs sm:text-base leading-relaxed ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+          {currentStepData.subtitle}
+        </p>
+      </motion.div>
+
+      {/* Form */}
+      <div className="px-4 sm:px-8 pb-20 sm:pb-8">
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="mb-3 sm:mb-8"
+        >
+          {renderFormField()}
+        </motion.div>
+
+        {/* Error Message - Show for all steps if error exists */}
+        {error && (
           <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="text-center px-4 sm:px-8 py-2 sm:py-6"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className={`mb-6 p-4 rounded-2xl border ${theme === 'dark'
+              ? 'bg-red-900/20 border-red-700 text-red-300'
+              : 'bg-red-50 border-red-200 text-red-700'
+              }`}
           >
-            <div className={`w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-6 rounded-xl sm:rounded-2xl flex items-center justify-center ${theme === 'dark'
-              ? 'bg-gray-800'
-              : 'bg-gray-100'
-              }`}>
-              <currentStepData.icon className={`w-5 h-5 sm:w-8 sm:h-8 ${theme === 'dark' ? 'text-white' : 'text-gray-900'
-                }`} />
-            </div>
-            <h2 className={`text-lg sm:text-2xl font-bold mb-1 sm:mb-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'
-              }`}>
-              {currentStepData.title}
-            </h2>
-            <p className={`text-xs sm:text-base leading-relaxed ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-              {currentStepData.subtitle}
-            </p>
+            <p className="text-sm font-medium">{error}</p>
           </motion.div>
+        )}
 
-          {/* Form */}
-          <div className="px-4 sm:px-8 pb-20 sm:pb-8">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="mb-3 sm:mb-8"
-            >
-              {renderFormField()}
-            </motion.div>
-
-            {/* Error Message - Show for all steps if error exists */}
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className={`mb-6 p-4 rounded-2xl border ${theme === 'dark'
-                  ? 'bg-red-900/20 border-red-700 text-red-300'
-                  : 'bg-red-50 border-red-200 text-red-700'
+        {/* Actions */}
+        <div className="flex flex-row flex-nowrap gap-2 sm:gap-4 items-stretch">
+          {currentStep > 0 ? (
+            <motion.button
+              onClick={handleBack}
+              className={`flex-shrink-0 flex items-center justify-center px-4 sm:px-6 py-4 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-base sm:text-base transition-all duration-200 whitespace-nowrap ${theme === 'dark'
+                ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
                 }`}
-              >
-                <p className="text-sm font-medium">{error}</p>
-              </motion.div>
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <ArrowLeft className="w-5 h-5 sm:w-5 sm:h-5 mr-2 sm:mr-2" />
+              <span>{t('auth.back')}</span>
+            </motion.button>
+          ) : (
+            <motion.button
+              onClick={onClose}
+              className={`flex-shrink-0 flex items-center justify-center px-4 sm:px-6 py-4 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-base sm:text-base transition-all duration-200 whitespace-nowrap ${theme === 'dark'
+                ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+                }`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <ArrowLeft className="w-5 h-5 sm:w-5 sm:h-5 mr-2 sm:mr-2" />
+              <span>{t('auth.back')}</span>
+            </motion.button>
+          )}
+
+          <motion.button
+            onClick={handleNext}
+            disabled={!canProceed() || isLoading}
+            className={`flex-1 flex items-center justify-center px-4 sm:px-8 py-4 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-base sm:text-lg transition-all duration-200 min-w-0 ${canProceed() && !isLoading
+              ? theme === 'dark'
+                ? 'bg-white text-gray-900 hover:bg-gray-100 shadow-lg hover:shadow-white/25'
+                : 'bg-gray-900 text-white hover:bg-gray-800 shadow-lg hover:shadow-gray-900/25'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            whileHover={canProceed() && !isLoading ? { scale: 1.02 } : {}}
+            whileTap={canProceed() && !isLoading ? { scale: 0.98 } : {}}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className={`w-4 h-4 sm:w-5 sm:h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2`} />
+                <span className="text-sm sm:text-base">{authMode === 'login' ? t('auth.signing_in') : t('auth.creating_account')}</span>
+              </div>
+            ) : (
+              <>
+                <span className="text-base sm:text-base whitespace-nowrap">{currentStep === (authMode === 'login' ? 1 : 3) ? (authMode === 'login' ? t('auth.sign_in') : t('auth.complete_registration')) : t('auth.continue')}</span>
+                <ArrowRight className="w-5 h-5 sm:w-5 sm:h-5 ml-2 flex-shrink-0" />
+              </>
             )}
+          </motion.button>
 
-            {/* Actions */}
-            <div className="flex flex-row flex-nowrap gap-2 sm:gap-4 items-stretch">
-              {currentStep > 0 ? (
-                <motion.button
-                  onClick={handleBack}
-                  className={`flex-shrink-0 flex items-center justify-center px-4 sm:px-6 py-4 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-base sm:text-base transition-all duration-200 whitespace-nowrap ${theme === 'dark'
-                    ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
-                    }`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <ArrowLeft className="w-5 h-5 sm:w-5 sm:h-5 mr-2 sm:mr-2" />
-                  <span>{t('auth.back')}</span>
-                </motion.button>
-              ) : (
-                <motion.button
-                  onClick={onClose}
-                  className={`flex-shrink-0 flex items-center justify-center px-4 sm:px-6 py-4 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-base sm:text-base transition-all duration-200 whitespace-nowrap ${theme === 'dark'
-                    ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
-                    }`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <ArrowLeft className="w-5 h-5 sm:w-5 sm:h-5 mr-2 sm:mr-2" />
-                  <span>{t('auth.back')}</span>
-                </motion.button>
-              )}
-
-              <motion.button
-                onClick={handleNext}
-                disabled={!canProceed() || isLoading}
-                className={`flex-1 flex items-center justify-center px-4 sm:px-8 py-4 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-base sm:text-lg transition-all duration-200 min-w-0 ${canProceed() && !isLoading
-                  ? theme === 'dark'
-                    ? 'bg-white text-gray-900 hover:bg-gray-100 shadow-lg hover:shadow-white/25'
-                    : 'bg-gray-900 text-white hover:bg-gray-800 shadow-lg hover:shadow-gray-900/25'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                whileHover={canProceed() && !isLoading ? { scale: 1.02 } : {}}
-                whileTap={canProceed() && !isLoading ? { scale: 0.98 } : {}}
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <div className={`w-4 h-4 sm:w-5 sm:h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2`} />
-                    <span className="text-sm sm:text-base">{authMode === 'login' ? t('auth.signing_in') : t('auth.creating_account')}</span>
-                  </div>
-                ) : (
-                  <>
-                    <span className="text-base sm:text-base whitespace-nowrap">{currentStep === (authMode === 'login' ? 1 : 3) ? (authMode === 'login' ? t('auth.sign_in') : t('auth.complete_registration')) : t('auth.continue')}</span>
-                    <ArrowRight className="w-5 h-5 sm:w-5 sm:h-5 ml-2 flex-shrink-0" />
-                  </>
-                )}
-              </motion.button>
-
-            </div>
-          </div>
+        </div>
+      </div>
     </>
   );
 
@@ -702,7 +723,7 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
       <div className={`w-full rounded-3xl overflow-hidden ${theme === 'dark'
         ? 'bg-gray-900'
         : 'bg-white'
-      }`}>
+        }`}>
         {content}
       </div>
     );
@@ -723,7 +744,7 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
           className={`w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl border ${theme === 'dark'
             ? 'bg-gray-900 border-gray-800'
             : 'bg-white border-gray-200'
-          }`}
+            }`}
         >
           {content}
         </motion.div>

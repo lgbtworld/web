@@ -260,7 +260,7 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
       setError('');
       api.handleRegister(user)
         .then(response => {
-          login(response.token, response.user);
+          login(response.data.token, response.data.user);
           onClose();
         })
         .catch(err => {

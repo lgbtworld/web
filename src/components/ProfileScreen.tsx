@@ -1102,6 +1102,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'profile' | 'posts' | 'replies' | 'media' | 'likes'>('profile');
   const [isFollowing, setIsFollowing] = useState(false);
+  const [showAuthWizard, setShowAuthWizard] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   useEffect(() => {
     if (!user || !authUser) {
@@ -4722,12 +4723,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
           <main className={`flex-1 w-full min-w-0 ${theme === 'dark' ? 'border-x border-black' : 'border-x border-gray-100'}`}>
 
             {/* Cover Photo */}
-            <div className={`h-48  relative ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+            <div className={`h-48  relative ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} overflow-hidden`}>
               {getCoverImageUrl() ? (
                 <img
                   src={getCoverImageUrl() || ''}
                   alt="Cover"
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover ${!isAuthenticated ? 'blur-xl' : ''}`}
                 />
               ) : (
                 <div className={`w-full h-full ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`} />
@@ -4739,11 +4740,11 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
               {/* Profile Picture & Edit Button Row */}
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-16 mb-3 relative gap-3">
                 {/* Profile Picture */}
-                <div className={`relative w-32 h-32 rounded-full border-4 ${theme === 'dark' ? 'border-black' : 'border-white'} ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} z-10`}>
+                <div className={`relative w-32 h-32 rounded-full border-4 ${theme === 'dark' ? 'border-black' : 'border-white'} ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} z-10 overflow-hidden`}>
                   <img
                     src={getProfileImageUrl()}
                     alt={user.displayname}
-                    className="w-full h-full gay rounded-full object-cover"
+                    className={`w-full h-full gay rounded-full object-cover ${!isAuthenticated ? 'blur-xl' : ''}`}
                   />
                 </div>
 
@@ -4880,6 +4881,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
             </div>
 
             {/* Tabs - Sticky */}
+            {isAuthenticated && (
             <div className={`sticky z-20 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'} backdrop-blur-sm ${theme === 'dark' ? 'bg-gray-950/95' : 'bg-white/95'}`} style={{ top: inline || isEmbed ? '0' : `${headerHeight}px` }}>
               <div className="flex relative">
                 {[
@@ -4916,8 +4918,34 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                 ))}
               </div>
             </div>
+            )}
 
             <div className='w-full min-h-[100dvh]'>
+              {!isAuthenticated ? (
+                <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-6">
+                  <div className={`w-20 h-20 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                    <Lock className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
+                  </div>
+                  <div className="max-w-xs mx-auto">
+                    <h3 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                      {t('profile.private_profile', { defaultValue: 'Private Profile' })}
+                    </h3>
+                    <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {t('profile.login_to_view_details', { defaultValue: 'Log in to view full profile details, photos, and more.' })}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowAuthWizard(true)}
+                    className={`px-8 py-3 rounded-xl font-bold text-sm transition-all transform active:scale-95 ${theme === 'dark'
+                        ? 'bg-white text-black hover:bg-gray-200'
+                        : 'bg-black text-white hover:bg-gray-800'
+                      }`}
+                  >
+                    {t('auth.sign_in')}
+                  </button>
+                </div>
+              ) : (
+                <>
               {/* Profile */}
               {activeTab === 'profile' && (
                 <div className="px-4 py-6 space-y-10">
@@ -5575,11 +5603,17 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     )}
                   </>
                 )}
-              </div>
+                </div>
+                </>
+              )}
             </div>
           </main>
         )}
       </div>
+      <AuthWizard
+        isOpen={showAuthWizard}
+        onClose={() => setShowAuthWizard(false)}
+      />
 
     </>
   );

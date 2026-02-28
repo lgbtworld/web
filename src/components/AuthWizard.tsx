@@ -363,12 +363,12 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <motion.button
                 onClick={() => setAuthMode('login')}
-                className={`p-4 sm:p-6 rounded-2xl border-2 text-center transition-all w-full ${authMode === 'login'
+                className={`p-4 sm:p-6 rounded-2xl border text-center transition-all w-full ${authMode === 'login'
                   ? theme === 'dark'
-                    ? 'bg-white text-gray-900 border-white shadow-md'
-                    : 'bg-gray-900 text-white border-gray-900 shadow-md'
+                    ? 'bg-white text-black border-transparent shadow-lg shadow-white/10'
+                    : 'bg-gray-900 text-white border-transparent shadow-lg'
                   : theme === 'dark'
-                    ? 'bg-gray-800 border-gray-700 text-white hover:border-gray-600'
+                    ? 'bg-gray-800/50 border-gray-800 text-white hover:border-gray-700 hover:bg-gray-800'
                     : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'
                   }`}
                 whileHover={{ scale: 1.02 }}
@@ -381,12 +381,12 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
 
               <motion.button
                 onClick={() => setAuthMode('register')}
-                className={`p-4 sm:p-6 rounded-2xl border-2 text-center transition-all w-full ${authMode === 'register'
+                className={`p-4 sm:p-6 rounded-2xl border text-center transition-all w-full ${authMode === 'register'
                   ? theme === 'dark'
-                    ? 'bg-white text-gray-900 border-white shadow-md'
-                    : 'bg-gray-900 text-white border-gray-900 shadow-md'
+                    ? 'bg-white text-black border-transparent shadow-lg shadow-white/10'
+                    : 'bg-gray-900 text-white border-transparent shadow-lg'
                   : theme === 'dark'
-                    ? 'bg-gray-800 border-gray-700 text-white hover:border-gray-600'
+                    ? 'bg-gray-800/50 border-gray-800 text-white hover:border-gray-700 hover:bg-gray-800'
                     : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'
                   }`}
                 whileHover={{ scale: 1.02 }}
@@ -412,9 +412,9 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
                 placeholder={t('auth.placeholder_nickname')}
                 value={formData.nickname}
                 onChange={(e) => handleNicknameChange(e.target.value)}
-                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border-2 focus:outline-none focus:border-opacity-100 transition-all text-base sm:text-base ${theme === 'dark'
-                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-white'
-                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
+                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border focus:outline-none ring-inset transition-all text-base sm:text-base ${theme === 'dark'
+                  ? 'bg-gray-900 border-gray-700/70 text-white placeholder-gray-500 focus:ring-2 focus:ring-white/40 focus:border-white/90'
+                  : 'bg-white border-gray-200/90 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-gray-900/20 focus:border-gray-900/80'
                   }`}
                 autoFocus
               />
@@ -428,9 +428,9 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
                 placeholder={t('auth.placeholder_password')}
                 value={formData.password}
                 onChange={(e) => updateFormData('password', e.target.value)}
-                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border-2 focus:outline-none focus:border-opacity-100 transition-all text-base sm:text-base ${theme === 'dark'
-                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-white'
-                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
+                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border focus:outline-none ring-inset transition-all text-base sm:text-base ${theme === 'dark'
+                  ? 'bg-gray-900 border-gray-700/70 text-white placeholder-gray-500 focus:ring-2 focus:ring-white/40 focus:border-white/90'
+                  : 'bg-white border-gray-200/90 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-gray-900/20 focus:border-gray-900/80'
                   }`}
               />
             </div>
@@ -449,9 +449,9 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
                 placeholder={t('auth.placeholder_nickname')}
                 value={formData.nickname}
                 onChange={(e) => handleNicknameChange(e.target.value)}
-                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border-2 focus:outline-none focus:border-opacity-100 transition-all text-base sm:text-base ${theme === 'dark'
-                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-white'
-                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
+                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border focus:outline-none ring-inset transition-all text-base sm:text-base ${theme === 'dark'
+                  ? 'bg-gray-900 border-gray-700/70 text-white placeholder-gray-500 focus:ring-2 focus:ring-white/40 focus:border-white/90'
+                  : 'bg-white border-gray-200/90 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-gray-900/20 focus:border-gray-900/80'
                   }`}
                 autoFocus
               />
@@ -465,9 +465,9 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
                 placeholder={t('auth.placeholder_password')}
                 value={formData.password}
                 onChange={(e) => updateFormData('password', e.target.value)}
-                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border-2 focus:outline-none focus:border-opacity-100 transition-all text-base sm:text-base ${theme === 'dark'
-                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-white'
-                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
+                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border focus:outline-none ring-inset transition-all text-base sm:text-base ${theme === 'dark'
+                  ? 'bg-gray-900 border-gray-700/70 text-white placeholder-gray-500 focus:ring-2 focus:ring-white/40 focus:border-white/90'
+                  : 'bg-white border-gray-200/90 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-gray-900/20 focus:border-gray-900/80'
                   }`}
               />
             </div>
@@ -480,9 +480,9 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
                 placeholder={t('auth.placeholder_confirm_password')}
                 value={formData.confirmPassword}
                 onChange={(e) => updateFormData('confirmPassword', e.target.value)}
-                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border-2 focus:outline-none focus:border-opacity-100 transition-all text-base sm:text-base ${theme === 'dark'
-                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-white'
-                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
+                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border focus:outline-none ring-inset transition-all text-base sm:text-base ${theme === 'dark'
+                  ? 'bg-gray-900 border-gray-700/70 text-white placeholder-gray-500 focus:ring-2 focus:ring-white/40 focus:border-white/90'
+                  : 'bg-white border-gray-200/90 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-gray-900/20 focus:border-gray-900/80'
                   }`}
               />
               {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
@@ -505,9 +505,9 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
                 placeholder={t('auth.placeholder_referral_code', { defaultValue: 'Enter referral code' })}
                 value={formData.referralCode}
                 onChange={(e) => updateFormData('referralCode', e.target.value)}
-                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border-2 focus:outline-none focus:border-opacity-100 transition-all text-base sm:text-base ${theme === 'dark'
-                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-white'
-                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-900'
+                className={`w-full px-4 sm:px-4 py-4 sm:py-4 rounded-xl sm:rounded-2xl border focus:outline-none ring-inset transition-all text-base sm:text-base ${theme === 'dark'
+                  ? 'bg-gray-900 border-gray-700/70 text-white placeholder-gray-500 focus:ring-2 focus:ring-white/40 focus:border-white/90'
+                  : 'bg-white border-gray-200/90 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-gray-900/20 focus:border-gray-900/80'
                   }`}
               />
               <p className={`text-xs mt-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
@@ -695,7 +695,9 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
               ? theme === 'dark'
                 ? 'bg-white text-gray-900 hover:bg-gray-100 shadow-lg hover:shadow-white/25'
                 : 'bg-gray-900 text-white hover:bg-gray-800 shadow-lg hover:shadow-gray-900/25'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : theme === 'dark'
+                ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
               }`}
             whileHover={canProceed() && !isLoading ? { scale: 1.02 } : {}}
             whileTap={canProceed() && !isLoading ? { scale: 0.98 } : {}}

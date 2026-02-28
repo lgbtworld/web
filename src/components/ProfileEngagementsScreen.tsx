@@ -1,15 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, RefreshCw, Users, UserPlus } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Users, UserPlus, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
 import { useTranslation } from 'react-i18next';
 import Container from './Container';
 import { api } from '../services/api';
 import { Actions } from '../services/actions';
 import { getSafeImageURLEx } from '../helpers/helpers';
+import AuthWizard from './AuthWizard';
 
 type EngagementType = 'followers' | 'followings';
 
@@ -42,8 +44,10 @@ const ProfileEngagementsScreen: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const { isAuthenticated } = useAuth();
   const { defaultLanguage } = useApp();
   const { t } = useTranslation('common');
+  const [showAuthWizard, setShowAuthWizard] = useState(false);
 
   const resolvedType = useMemo(() => {
     const lower = engagementType.toLowerCase();
@@ -149,7 +153,7 @@ const ProfileEngagementsScreen: React.FC = () => {
         const users: EngagementUser[] = engagementsArray
           .map((engagement: any) => {
             const userData =
-              engagement.kind === 'follower' ? engagement.engagee : engagement.engagee;
+              type === 'followers' ? engagement.engager : engagement.engagee;
 
             if (!userData) {
               return null;
@@ -236,8 +240,20 @@ const ProfileEngagementsScreen: React.FC = () => {
       return;
     }
 
-    void loadEngagements(resolvedType);
-  }, [resolvedType, profile, fetchProfile, loadEngagements]);
+    if (isAuthenticated) {
+      void loadEngagements(resolvedType);
+    } else {
+      // Clear data if user is not authenticated
+      setEngagements([]);
+      setCursor(null);
+    }
+  }, [
+    resolvedType,
+    profile,
+    fetchProfile,
+    loadEngagements,
+    isAuthenticated,
+  ]);
 
   const handleRefresh = () => {
     if (!resolvedType || loadingEngagements) {
@@ -336,6 +352,31 @@ const ProfileEngagementsScreen: React.FC = () => {
         </div>
 
         <div className="px-4 py-6 space-y-5">
+          {!isAuthenticated ? (
+            <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-6">
+              <div className={`w-20 h-20 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                <Lock className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
+              </div>
+              <div className="max-w-xs mx-auto">
+                <h3 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  {t('profile.private_profile', { defaultValue: 'Private List' })}
+                </h3>
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {t('profile.login_to_view_details', { defaultValue: 'Log in to view this list.' })}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAuthWizard(true)}
+                className={`px-8 py-3 rounded-xl font-bold text-sm transition-all transform active:scale-95 ${theme === 'dark'
+                  ? 'bg-white text-black hover:bg-gray-200'
+                  : 'bg-black text-white hover:bg-gray-800'
+                  }`}
+              >
+                {t('auth.sign_in')}
+              </button>
+            </div>
+          ) : (
+            <>
           {loadingProfile ? (
             <div className="flex items-center justify-center py-20">
               <motion.div
@@ -562,11 +603,16 @@ const ProfileEngagementsScreen: React.FC = () => {
               </div>
             </>
           )}
-        </div>
+        </>
+      )}
+    </div>
       </div>
+      <AuthWizard
+        isOpen={showAuthWizard}
+        onClose={() => setShowAuthWizard(false)}
+      />
     </Container>
   );
 };
 
 export default ProfileEngagementsScreen;
-

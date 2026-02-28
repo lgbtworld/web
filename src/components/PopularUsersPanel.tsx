@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Users, RefreshCw } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
 import { Actions } from '../services/actions';
@@ -31,8 +32,9 @@ interface PopularUser {
   followers_count?: number;
 }
 
-const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
+const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 20 }) => {
   const { theme } = useTheme();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation('common');
 
@@ -63,7 +65,7 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
       const response = await api.call<{ users?: PopularUser[] }>(Actions.CMD_USER_FETCH_NEARBY_USERS, {
         method: 'POST',
         body: {
-          limit,
+          limit:limit,
           cursor: null,
         },
       });
@@ -183,7 +185,8 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 6 }) => {
                 src={resolveAvatar(user)}
                 onError={(e) => handleAvatarError(e, user)}
                 alt={user.displayname || user.username}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${!isAuthenticated ? 'blur-md' : ''
+                  }`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-95" />
               <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 p-4 text-left">

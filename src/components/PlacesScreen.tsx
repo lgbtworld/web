@@ -226,8 +226,8 @@ const PlacesScreen: React.FC = () => {
           setError('LOCATION_DENIED');
         } else {
           setError(t('places.location_permission_error'));
+          setLoadingInitial(false);
         }
-        setLoadingInitial(false);
       },
       { timeout: 10000 }
     );

@@ -507,10 +507,10 @@ function AppContent() {
                     ? 'bg-gray-900/30 border-gray-800/90'
                     : 'bg-white border-black/[0.06]'
                     }`}>
-                    <p className="text-xs uppercase tracking-[0.3em] opacity-60">
+                    <p className={`text-xs uppercase tracking-[0.3em] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                       {t('app.join_title', 'Welcome')}
                     </p>
-                    <p className="text-lg font-semibold mt-1">
+                    <p className={`text-lg font-semibold mt-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                       {t('app.join_subtitle', 'Create your profile')}
                     </p>
                     <button
@@ -646,6 +646,10 @@ function AppContent() {
               <Route path="/places" element={<PlacesScreen />} />
               <Route path="/places/:publicId" element={<PlaceDetailsScreen />} />
               <Route path="/ref/:code" element={<ReferralHandler />} />
+              <Route path="/:username/status/:postId" element={<PostDetails />} />
+              <Route path="/status/:postId" element={<PostDetails />} />
+              <Route path="/:username/:engagementType" element={<ProfileEngagementsScreen />} />
+              <Route path="/:username" element={<ProfileScreen />} />
 
               {/* Protected Routes */}
               <Route path="/" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
@@ -655,14 +659,6 @@ function AppContent() {
               <Route path="/premium" element={<ProtectedRoute><PremiumScreen /></ProtectedRoute>} />
               <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} />
               <Route path="/referrals" element={<ProtectedRoute><ReferralsScreen /></ProtectedRoute>} />
-
-              <Route
-                path="/:username/:engagementType"
-                element={<ProtectedRoute><ProfileEngagementsScreen /></ProtectedRoute>}
-              />
-              <Route path="/:username/status/:postId" element={<ProtectedRoute><PostDetails /></ProtectedRoute>} />
-              <Route path="/status/:postId" element={<ProtectedRoute><PostDetails /></ProtectedRoute>} />
-              <Route path="/:username" element={<ProtectedRoute><ProfileScreen /></ProtectedRoute>} />
 
               <Route path="/search" element={<ProtectedRoute><SearchScreen /></ProtectedRoute>} />
               <Route path="/match" element={<ProtectedRoute><MatchScreen /></ProtectedRoute>} />

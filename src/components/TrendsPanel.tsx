@@ -196,6 +196,7 @@ const TrendsPanel: React.FC<TrendsPanelProps> = ({ limit = 20, onTrendSelect }) 
         method: "POST",
         body: { limit },
       });
+
       let normalized: NormalizedTrend[] = [];
 
       if (Array.isArray(response?.trends)) {
@@ -534,4 +535,3 @@ const cardBackground =
 };
 
 export default TrendsPanel;
-

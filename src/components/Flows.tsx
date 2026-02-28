@@ -30,14 +30,13 @@ if (typeof document !== 'undefined' && !document.getElementById('skeleton-shimme
 export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
   return (
     <div className={`${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
-      
+
       {/* Header */}
       <div className="px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {/* Avatar */}
-          <div className={`w-10 h-10 rounded-full overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-          }`}>
+          <div className={`w-10 h-10 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+            }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
@@ -46,12 +45,11 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
                 backgroundSize: '200% 100%'
               }} />
           </div>
-          
+
           {/* Username and timestamp */}
           <div className="space-y-2">
-            <div className={`h-4 w-32 rounded overflow-hidden ${
-              theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-            }`}>
+            <div className={`h-4 w-32 rounded overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+              }`}>
               <div className="w-full h-full shimmer-animation"
                 style={{
                   background: theme === 'dark'
@@ -60,9 +58,8 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
                   backgroundSize: '200% 100%'
                 }} />
             </div>
-            <div className={`h-3 w-24 rounded overflow-hidden ${
-              theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-            }`}>
+            <div className={`h-3 w-24 rounded overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+              }`}>
               <div className="w-full h-full shimmer-animation"
                 style={{
                   background: theme === 'dark'
@@ -73,11 +70,10 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
             </div>
           </div>
         </div>
-        
+
         {/* Menu button */}
-        <div className={`w-8 h-8 rounded-full overflow-hidden ${
-          theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-        }`}>
+        <div className={`w-8 h-8 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+          }`}>
           <div className="w-full h-full shimmer-animation"
             style={{
               background: theme === 'dark'
@@ -92,9 +88,8 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
       <div className="px-4 pb-3 space-y-3">
         {/* Text lines */}
         <div className="space-y-2">
-          <div className={`h-4 w-full rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-          }`}>
+          <div className={`h-4 w-full rounded overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+            }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
@@ -103,9 +98,8 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
                 backgroundSize: '200% 100%'
               }} />
           </div>
-          <div className={`h-4 w-5/6 rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-          }`}>
+          <div className={`h-4 w-5/6 rounded overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+            }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
@@ -114,9 +108,8 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
                 backgroundSize: '200% 100%'
               }} />
           </div>
-          <div className={`h-4 w-4/6 rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-          }`}>
+          <div className={`h-4 w-4/6 rounded overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+            }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
@@ -126,11 +119,10 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
               }} />
           </div>
         </div>
-        
+
         {/* Image placeholder */}
-        <div className={`w-full h-64 rounded-2xl overflow-hidden ${
-          theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-        }`}>
+        <div className={`w-full h-64 rounded-2xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+          }`}>
           <div className="w-full h-full shimmer-animation"
             style={{
               background: theme === 'dark'
@@ -142,13 +134,11 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
       </div>
 
       {/* Actions */}
-      <div className={`px-4 py-3 flex items-center justify-between border-t ${
-        theme === 'dark' ? 'border-gray-800/50' : 'border-gray-100'
-      }`}>
+      <div className={`px-4 py-3 flex items-center justify-between border-t ${theme === 'dark' ? 'border-gray-800/50' : 'border-gray-100'
+        }`}>
         <div className="flex items-center gap-6">
-          <div className={`w-6 h-6 rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-          }`}>
+          <div className={`w-6 h-6 rounded overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+            }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
@@ -157,9 +147,8 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
                 backgroundSize: '200% 100%'
               }} />
           </div>
-          <div className={`w-6 h-6 rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-          }`}>
+          <div className={`w-6 h-6 rounded overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+            }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
@@ -168,9 +157,8 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
                 backgroundSize: '200% 100%'
               }} />
           </div>
-          <div className={`w-6 h-6 rounded overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-          }`}>
+          <div className={`w-6 h-6 rounded overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+            }`}>
             <div className="w-full h-full shimmer-animation"
               style={{
                 background: theme === 'dark'
@@ -180,9 +168,8 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
               }} />
           </div>
         </div>
-        <div className={`w-16 h-4 rounded overflow-hidden ${
-          theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
-        }`}>
+        <div className={`w-16 h-4 rounded overflow-hidden ${theme === 'dark' ? 'bg-gray-900/70' : 'bg-gray-200'
+          }`}>
           <div className="w-full h-full shimmer-animation"
             style={{
               background: theme === 'dark'
@@ -197,6 +184,32 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
 };
 
 type ApiPost = PostComponentApiPost;
+
+interface MemoizedPostItemProps {
+  post: ApiPost;
+  theme: string;
+  onPostClick: (postId: string, username: string) => void;
+  onProfileClick: (username: string) => void;
+  onRefreshParent: () => void;
+  onUpdatePost: (post: ApiPost) => void;
+}
+
+const MemoizedPostItem = React.memo(({ post, theme, onPostClick, onProfileClick, onRefreshParent, onUpdatePost }: MemoizedPostItemProps) => {
+  return (
+    <div className={`${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
+      <Post
+        post={post}
+        onPostClick={(postId, username) => onPostClick(postId, username)}
+        onProfileClick={onProfileClick}
+        onRefreshParent={onRefreshParent}
+        onUpdatePost={onUpdatePost}
+      />
+    </div>
+  );
+}, (prevProps, nextProps) => {
+  // Sadece ana prop değişikliklerinde re-render et (fonksiyon referanslarını es geç)
+  return prevProps.post === nextProps.post && prevProps.theme === nextProps.theme;
+});
 
 interface TimelineResponse {
   posts: ApiPost[];
@@ -254,7 +267,7 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
           setLoading(false);
         });
       }, 50); // Reduced delay
-      
+
       return () => {
         clearTimeout(timeoutId);
         if (rafId) {
@@ -273,20 +286,20 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
         const response: TimelineResponse = await api.fetchTimeline({ limit: 10, cursor: "" });
         console.log('Initial fetch response:', response);
         setPosts(response.posts);
-        
+
         // Handle next_cursor - can be number, string, or null/undefined
         let newCursor = '';
         if (response.next_cursor !== null && response.next_cursor !== undefined) {
           newCursor = String(response.next_cursor);
         }
-        
+
         console.log('Initial cursor:', newCursor);
         setNextCursor(newCursor);
         // hasMore should be based on whether there's a next cursor
         const hasMorePosts = newCursor !== '' && newCursor !== '0' && newCursor !== 'null' && newCursor !== 'undefined';
         console.log('Initial hasMore:', hasMorePosts);
         setHasMore(hasMorePosts);
-        
+
         // If no posts, hide loading immediately
         if (response.posts.length === 0) {
           setLoading(false);
@@ -317,18 +330,18 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
 
     // Check if nextCursor is valid (not empty string, not '0', and not null/undefined)
     if (
-      !currentNextCursor || 
-      currentNextCursor === '' || 
-      currentNextCursor === '0' || 
-      currentNextCursor === 'null' || 
-      currentNextCursor === 'undefined' || 
-      currentLoadingMore || 
+      !currentNextCursor ||
+      currentNextCursor === '' ||
+      currentNextCursor === '0' ||
+      currentNextCursor === 'null' ||
+      currentNextCursor === 'undefined' ||
+      currentLoadingMore ||
       !currentHasMore ||
       isRequestPendingRef.current
     ) {
-      console.log('Load more skipped:', { 
-        nextCursor: currentNextCursor, 
-        loadingMore: currentLoadingMore, 
+      console.log('Load more skipped:', {
+        nextCursor: currentNextCursor,
+        loadingMore: currentLoadingMore,
         hasMore: currentHasMore,
         isPending: isRequestPendingRef.current
       });
@@ -339,34 +352,38 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
       console.log('Loading more posts with cursor:', currentNextCursor);
       setLoadingMore(true);
       isRequestPendingRef.current = true;
-      
+
       // Wait for skeleton to render (single frame is enough)
       await new Promise(resolve => {
         requestAnimationFrame(() => {
           resolve(undefined);
         });
       });
-      
+
       // Minimum loading time to ensure skeleton is visible
       const minLoadingTime = 300; // Reduced to 300ms for better UX
       const startTime = Date.now();
-      
+
       const response: TimelineResponse = await api.fetchTimeline({ limit: 10, cursor: currentNextCursor });
 
       console.log('Load more response:', response);
 
       if (response.posts && response.posts.length > 0) {
-        setPosts(prevPosts => [...prevPosts, ...response.posts]);
-        
+        setPosts(prevPosts => {
+          const existingIds = new Set(prevPosts.map(p => p.id));
+          const newUniquePosts = response.posts.filter(p => !existingIds.has(p.id));
+          return [...prevPosts, ...newUniquePosts];
+        });
+
         // Handle next_cursor - can be number, string, or null/undefined
         let newCursor = '';
         if (response.next_cursor !== null && response.next_cursor !== undefined) {
           newCursor = String(response.next_cursor);
         }
-        
+
         console.log('New cursor after load more:', newCursor);
         setNextCursor(newCursor);
-        
+
         // Update hasMore based on whether there's a next cursor
         const hasMorePosts = newCursor !== '' && newCursor !== '0' && newCursor !== 'null' && newCursor !== 'undefined';
         console.log('Has more after load more:', hasMorePosts);
@@ -377,11 +394,11 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
         setHasMore(false);
         setNextCursor('');
       }
-      
+
       // Ensure minimum loading time for skeleton visibility
       const elapsedTime = Date.now() - startTime;
       const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
-      
+
       if (remainingTime > 0) {
         await new Promise(resolve => setTimeout(resolve, remainingTime));
       }
@@ -404,19 +421,19 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
       if (!element || element === document.body || element === document.documentElement) {
         return null;
       }
-      
+
       // Check if current element is scrollable
       const style = window.getComputedStyle(element);
-      const isScrollable = 
-        style.overflowY === 'auto' || 
+      const isScrollable =
+        style.overflowY === 'auto' ||
         style.overflowY === 'scroll' ||
         style.overflow === 'auto' ||
         style.overflow === 'scroll';
-      
+
       if (isScrollable && element.scrollHeight > element.clientHeight) {
         return element;
       }
-      
+
       // Check parent
       return findScrollContainer(element.parentElement);
     };
@@ -441,8 +458,8 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
       const possibleContainers = document.querySelectorAll('div[style*="overflow"], div[style*="overflow-y"]');
       for (const container of Array.from(possibleContainers)) {
         const style = window.getComputedStyle(container as HTMLElement);
-        if ((style.overflowY === 'auto' || style.overflowY === 'scroll') && 
-            (container as HTMLElement).scrollHeight > (container as HTMLElement).clientHeight) {
+        if ((style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+          (container as HTMLElement).scrollHeight > (container as HTMLElement).clientHeight) {
           scrollContainerRef.current = container as HTMLElement;
           return container as HTMLElement;
         }
@@ -476,11 +493,11 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
 
         // Additional checks
         if (
-          currentLoading || 
-          !currentNextCursor || 
-          currentNextCursor === '' || 
-          currentNextCursor === '0' || 
-          currentNextCursor === 'null' || 
+          currentLoading ||
+          !currentNextCursor ||
+          currentNextCursor === '' ||
+          currentNextCursor === '0' ||
+          currentNextCursor === 'null' ||
           currentNextCursor === 'undefined'
         ) {
           return;
@@ -515,14 +532,14 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
 
         // Load more when 1200px from bottom (slightly increased for earlier trigger)
         if (distanceFromBottom <= 1200) {
-          console.log('Triggering load more:', { 
-            distanceFromBottom, 
-            hasMore: currentHasMore, 
-            loadingMore: currentLoadingMore, 
-            loading: currentLoading, 
+          console.log('Triggering load more:', {
+            distanceFromBottom,
+            hasMore: currentHasMore,
+            loadingMore: currentLoadingMore,
+            loading: currentLoading,
             nextCursor: currentNextCursor
           });
-          
+
           loadMorePosts();
         }
       }, 50);
@@ -566,7 +583,7 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
         attachListener();
       }
     }, 100);
-    
+
     return () => {
       if (currentListenerTarget) {
         if (currentListenerTarget === window) {
@@ -593,20 +610,20 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
       const response: TimelineResponse = await api.fetchTimeline({ limit: 10, cursor: "" });
       console.log('Refresh response:', response);
       setPosts(response.posts);
-      
+
       // Handle next_cursor - can be number, string, or null/undefined
       let newCursor = '';
       if (response.next_cursor !== null && response.next_cursor !== undefined) {
         newCursor = String(response.next_cursor);
       }
-      
+
       console.log('Refresh cursor:', newCursor);
       setNextCursor(newCursor);
       // hasMore should be based on whether there's a next cursor
       const hasMorePosts = newCursor !== '' && newCursor !== '0' && newCursor !== 'null' && newCursor !== 'undefined';
       console.log('Refresh hasMore:', hasMorePosts);
       setHasMore(hasMorePosts);
-      
+
       // If no posts, hide loading immediately
       if (response.posts.length === 0) {
         setLoading(false);
@@ -630,7 +647,7 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
       {/* Create Post - Hidden on mobile */}
       <div className={`hidden lg:block ${theme === 'dark' ? 'bg-gray-400 border-b border-gray-900' : 'bg-white border-b border-gray-100'}`}>
         <CreatePost
-        fullScreen={false}
+          fullScreen={false}
           title="Create Post"
           buttonText="Post"
           placeholder="Every vibe tells a story. What's yours? 🌈"
@@ -639,7 +656,7 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
           }}
         />
       </div>
- 
+
 
       {/* Posts Feed */}
       <div className='pb-[25dvh] '>
@@ -661,39 +678,34 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
             <div className={`w-full`}>
               <div className="p-4">
                 <div className="flex flex-col items-center text-center space-y-4">
-                  <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl flex items-center justify-center backdrop-blur-xl ${
-                    theme === 'dark'
-                      ? 'bg-red-500/10 border border-red-500/20'
-                      : 'bg-red-50 border border-red-200/50'
-                  }`}>
-                    <AlertCircle className={`w-8 h-8 sm:w-10 sm:h-10 ${
-                      theme === 'dark' ? 'text-red-400' : 'text-red-500'
-                    }`} />
+                  <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl flex items-center justify-center backdrop-blur-xl ${theme === 'dark'
+                    ? 'bg-red-500/10 border border-red-500/20'
+                    : 'bg-red-50 border border-red-200/50'
+                    }`}>
+                    <AlertCircle className={`w-8 h-8 sm:w-10 sm:h-10 ${theme === 'dark' ? 'text-red-400' : 'text-red-500'
+                      }`} />
                   </div>
                   <div>
-                    <h3 className={`text-lg sm:text-xl font-semibold tracking-tight mb-2 ${
-                      theme === 'dark' ? 'text-white' : 'text-gray-900'
-                    }`}>
+                    <h3 className={`text-lg sm:text-xl font-semibold tracking-tight mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                       Unable to Load Posts
                     </h3>
-                    <p className={`text-sm sm:text-base font-medium ${
-                      theme === 'dark' ? 'text-white/60' : 'text-gray-500'
-                    }`}>
+                    <p className={`text-sm sm:text-base font-medium ${theme === 'dark' ? 'text-white/60' : 'text-gray-500'
+                      }`}>
                       We couldn't connect to the server. Please check your connection and try again.
                     </p>
                   </div>
                   <motion.button
                     onClick={refreshPosts}
                     disabled={loading}
-                    className={`flex items-center gap-2.5 px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base transition-all duration-200 backdrop-blur-xl ${
-                      loading
-                        ? theme === 'dark'
-                          ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed'
-                          : 'bg-gray-200/50 text-gray-400 cursor-not-allowed'
-                        : theme === 'dark'
+                    className={`flex items-center gap-2.5 px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base transition-all duration-200 backdrop-blur-xl ${loading
+                      ? theme === 'dark'
+                        ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed'
+                        : 'bg-gray-200/50 text-gray-400 cursor-not-allowed'
+                      : theme === 'dark'
                         ? 'bg-white text-black hover:bg-gray-100 active:bg-gray-100'
                         : 'bg-black text-white hover:bg-gray-800 active:bg-gray-800'
-                    }`}
+                      }`}
                     whileHover={!loading ? { scale: 1.02 } : {}}
                     whileTap={!loading ? { scale: 0.98 } : {}}
                   >
@@ -709,34 +721,25 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
             No posts available
           </div>
         ) : (
-       
+
           posts.map((post) => (
-            <div
+            <MemoizedPostItem
               key={post.id}
-              className={`${theme === 'dark' ? 'bg-black' : 'bg-white'}`}
-            >
-              <Post
-                post={post}
-                onPostClick={(postId, username) => onPostClick(postId, username)}
-                onProfileClick={onProfileClick}
-                onRefreshParent={() => {
-                  refreshPosts();
-                }}
-                  onUpdatePost={handlePostUpdate}
-              />
-            </div>
+              post={post}
+              theme={theme}
+              onPostClick={onPostClick}
+              onProfileClick={onProfileClick}
+              onRefreshParent={refreshPosts}
+              onUpdatePost={handlePostUpdate}
+            />
           ))
-      
+
         )}
-        {/* Loading More Skeleton */}
+        {/* Loading More Indicator */}
         {loadingMore && (
-          <>
-            {[1, 2, 3].map((index) => (
-              <div key={`skeleton-${index}`}>
-                <PostSkeleton theme={theme} />
-              </div>
-            ))}
-          </>
+          <div className="py-8 flex justify-center items-center">
+            <div className="w-8 h-8 rounded-full border-2 border-[var(--brand-color,#ec4899)] border-t-transparent animate-spin" />
+          </div>
         )}
         {!hasMore && posts.length > 0 && (
           <div className={`p-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -744,8 +747,8 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
           </div>
         )}
       </div>
-  
-      </div>
+
+    </div>
   );
 };
 

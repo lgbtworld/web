@@ -239,11 +239,11 @@ const ReferralsScreen: React.FC = () => {
                         </div>
 
                         <div className={`rounded-[24px] overflow-hidden ${cardBgColor} border-[0.5px] ${borderColor} shadow-sm`}>
-                            {user?.engagements?.engagement_details?.map((engagement: any, idx: number) => (
+                            {user?.engagements?.engagement_details?.filter((e: any) => e.kind === 'referral')?.map((engagement: any, idx: number, arr: any[]) => (
                                 <div
                                     key={engagement.id}
                                     onClick={() => navigate(`/${engagement.engager.username}`)}
-                                    className={`p-4 flex items-center justify-between cursor-pointer transition-colors duration-200 ${idx !== (user?.engagements?.engagement_details?.length || 0) - 1
+                                    className={`p-4 flex items-center justify-between cursor-pointer transition-colors duration-200 ${idx !== arr.length - 1
                                         ? `border-b-[0.5px] ${borderColor}`
                                         : ''
                                         } ${isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}

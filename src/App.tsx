@@ -34,6 +34,7 @@ import WalletScreen from './components/WalletScreen.tsx';
 import PlacesScreen from './components/PlacesScreen.tsx';
 import ReferralsScreen from './components/ReferralsScreen.tsx';
 import ReferralHandler from './components/ReferralHandler.tsx';
+import ConfirmationModal from './components/ConfirmationModal.tsx';
 const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/': 'pride',
   '/pride': 'pride',
@@ -79,6 +80,7 @@ function AppContent() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileProfileMenuOpen, setIsMobileProfileMenuOpen] = useState(false);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const { theme, toggleTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
@@ -281,14 +283,16 @@ function AppContent() {
     setIsMobileMenuOpen(false);
   }, []);
 
-  const handleLogout = React.useCallback((after?: () => void) => {
-    if (!window.confirm(t('app.logout_confirmation'))) {
-      return;
-    }
+  const handleLogoutConfirm = React.useCallback(() => {
     logout();
     navigate('/');
+    setIsLogoutModalOpen(false);
+  }, [logout, navigate]);
+
+  const requestLogout = React.useCallback((after?: () => void) => {
     after?.();
-  }, [logout, navigate, t]);
+    setIsLogoutModalOpen(true);
+  }, []);
 
   const bottomNavItems = React.useMemo(() => [
     { id: 'pride', icon: HandFist, label: 'Pride', accent: 'from-rose-500/90 via-fuchsia-500/80 to-purple-500/70' },
@@ -454,7 +458,7 @@ function AppContent() {
                               </button>
                               <div className={`h-px ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
                               <button
-                                onClick={() => handleLogout(() => setIsProfileMenuOpen(false))}
+                                onClick={() => requestLogout(() => setIsProfileMenuOpen(false))}
                                 className={`w-full px-4 py-3 flex items-center gap-3 text-left ${theme === 'dark'
                                   ? 'text-red-400 hover:bg-red-500/10'
                                   : 'text-red-600 hover:bg-red-50'
@@ -492,7 +496,7 @@ function AppContent() {
                         {t('app.view_profile', 'Profile')}
                       </button>
                       <button
-                        onClick={() => handleLogout()}
+                        onClick={() => requestLogout()}
                         className={`rounded-xl px-3 py-2 text-sm font-semibold ${theme === 'dark'
                           ? 'bg-white/5 text-white hover:bg-white/10'
                           : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
@@ -893,7 +897,7 @@ function AppContent() {
                             </button>
                             <div className={`h-px ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
                             <button
-                              onClick={() => handleLogout(() => {
+                              onClick={() => requestLogout(() => {
                                 closeMobileMenus();
                               })}
                               className={`w-full px-4 py-3.5 text-left flex items-center gap-3 transition-colors ${theme === 'dark'
@@ -1045,6 +1049,17 @@ function AppContent() {
         <LanguageSelector isOpen={isLanguageSelectorOpen} onClose={() => setIsLanguageSelectorOpen(false)} />
       )}
 
+      <ConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleLogoutConfirm}
+        title={t('app.logout_confirmation_title', 'Confirm Logout')}
+        message={t('app.logout_confirmation_message', 'Are you sure you want to log out?')}
+        confirmText={t('app.logout', 'Logout')}
+        cancelText={t('app.cancel', 'Cancel')}
+        variant="danger"
+        icon={<LogOut className="w-6 h-6 text-red-500" />}
+      />
     </div>
   );
 }

@@ -212,8 +212,8 @@ const MemoizedPostItem = React.memo(({ post, theme, onPostClick, onProfileClick,
 });
 
 interface TimelineResponse {
-  posts: ApiPost[];
-  next_cursor?: number | string | null;
+      posts: ApiPost[];
+  cursor?: number | string | null;
 }
 
 interface FlowsProps {
@@ -289,8 +289,8 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
 
         // Handle next_cursor - can be number, string, or null/undefined
         let newCursor = '';
-        if (response.next_cursor !== null && response.next_cursor !== undefined) {
-          newCursor = String(response.next_cursor);
+        if (response.cursor !== null && response.cursor !== undefined) {
+          newCursor = String(response.cursor);
         }
 
         console.log('Initial cursor:', newCursor);
@@ -377,8 +377,8 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
 
         // Handle next_cursor - can be number, string, or null/undefined
         let newCursor = '';
-        if (response.next_cursor !== null && response.next_cursor !== undefined) {
-          newCursor = String(response.next_cursor);
+        if (response.cursor !== null && response.cursor !== undefined) {
+          newCursor = String(response.cursor);
         }
 
         console.log('New cursor after load more:', newCursor);
@@ -613,8 +613,8 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
 
       // Handle next_cursor - can be number, string, or null/undefined
       let newCursor = '';
-      if (response.next_cursor !== null && response.next_cursor !== undefined) {
-        newCursor = String(response.next_cursor);
+      if (response.cursor !== null && response.cursor !== undefined) {
+        newCursor = String(response.cursor);
       }
 
       console.log('Refresh cursor:', newCursor);

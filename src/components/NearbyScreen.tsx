@@ -77,7 +77,7 @@ const NearbyScreen: React.FC = () => {
         return {
           ...prevState,
           nearbyUsers: shouldReset ? response.users || [] : [...prevState.nearbyUsers, ...newUsers],
-          nearByCursor: response?.next_cursor || null, // CRITICAL: Clear cursor if no more data
+          nearByCursor: response?.cursor || null, // CRITICAL: Clear cursor if no more data
         };
       });
 

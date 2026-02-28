@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -703,7 +703,7 @@ const MessagesScreen: React.FC = () => {
   }, [location.state, navigate, location.pathname]);
 
   // Fetch chats from backend
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchChats = async () => {
       if (!isAuthenticated || !user?.id) {
         return;
@@ -711,47 +711,22 @@ const MessagesScreen: React.FC = () => {
 
       try {
         setIsLoadingChats(true);
-        const response = await api.call<{
-          chats?: Array<{
-            id: string;
-            type: string;
-            participants?: Array<{
-              user_id: string;
-              unread_count?: number;
-              user?: {
-                id: string;
-                username?: string;
-                displayname?: string;
-                avatar?: {
-                  file?: {
-                    url?: string;
-                  };
-                };
-                public_id?: number;
-              };
-            }>;
-            title?: { en?: string; tr?: string };
-            last_message?: {
-              content?: string | { en?: string; tr?: string;[key: string]: string | undefined };
-              created_at?: string;
-            };
-            unread_count?: number;
-          }>;
-        }>(Actions.CMD_FETCH_CHATS, {
+         const response = await api.call<any>(Actions.CMD_FETCH_CHATS, {
           method: "POST",
           body: {},
         });
 
+
         if (response?.chats && Array.isArray(response.chats)) {
-          const mappedChats = response.chats.map((chat) => {
+          const mappedChats = response.chats.map((chat : any) => {
             // For private chats, find the other participant (not current user)
             const otherParticipant = chat.participants?.find(
-              (p) => p.user_id !== user.id
+              (p : any) => p.user_id !== user.id
             );
 
             // Find current user's participant to get unread_count
             const currentUserParticipant = chat.participants?.find(
-              (p) => p.user_id === user.id
+              (p:any) => p.user_id === user.id
             );
 
             const otherUser = otherParticipant?.user;
@@ -965,7 +940,7 @@ const MessagesScreen: React.FC = () => {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   // Fetch messages function (can be called manually or automatically)
-  const fetchMessages = React.useCallback(async (showRefreshing = false) => {
+  const fetchMessages = useCallback(async (showRefreshing = false) => {
     if (!selectedChat || !user?.id) {
       setMessages([]);
       return;
@@ -996,55 +971,14 @@ const MessagesScreen: React.FC = () => {
       } else {
         setIsLoadingMessages(true);
       }
-      const response = await api.call<{
-        messages?: Array<{
-          id: string;
-          public_id?: string;
-          author_id: string;
-          content?: {
-            en?: string;
-            tr?: string;
-            [key: string]: string | undefined;
-          };
-          text?: string;
-          created_at: string;
-          updated_at?: string;
-          deleted_at?: string | null;
-          author?: {
-            id: string;
-            username?: string;
-            displayname?: string;
-          };
-          attachments?: Array<{
-            id: string;
-            file: {
-              id: string;
-              url: string;
-              mime_type: string;
-              name: string;
-              storage_path?: string;
-              variants?: {
-                image?: {
-                  original?: { url: string };
-                  small?: { url: string };
-                  medium?: { url: string };
-                  large?: { url: string };
-                  thumbnail?: { url: string };
-                };
-              };
-            };
-          }>;
-        }>;
-        success?: boolean;
-      }>(Actions.CMD_FETCH_MESSAGES, {
+      const response = await api.call<any>(Actions.CMD_FETCH_MESSAGES, {
         method: "POST",
         body: {
           chat_id: realChatId,
         },
       });
-
       if (response?.messages && Array.isArray(response.messages)) {
-        const mappedMessages = response.messages.map((msg) => {
+        const mappedMessages = response.messages.map((msg : any) => {
           // Determine if message is from current user
           const isFromMe = msg.author_id === user.id;
 
@@ -1149,7 +1083,7 @@ const MessagesScreen: React.FC = () => {
 
   // Fetch messages only when the selected chat or user changes, NOT when fetchMessages ref changes.
   // Previously depended on [fetchMessages] which re-ran every time chatsList changed (e.g. on send).
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedChat && user?.id) {
       fetchMessages();
     }

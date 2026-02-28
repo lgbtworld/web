@@ -263,7 +263,7 @@ export class ApiService {
       const response = await httpClient.get("/", {
         params: { action, ...options.params },
       });
-      return response.data as T;
+      return response.data.data as T;
     }
     const token = localStorage.getItem("authToken"); // direkt al
 
@@ -278,7 +278,7 @@ export class ApiService {
     });
 
 
-    return response.data as T;
+    return response.data.data as T;
   }
 }
 

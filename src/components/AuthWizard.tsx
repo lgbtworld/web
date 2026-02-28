@@ -230,11 +230,11 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
 
       api.handleLogin(loginData)
         .then(response => {
-          login(response.data.token, response.data.user);
+          login(response.token, response.user);
           onClose();
         })
         .catch(err => {
-          setError(err.response?.data?.message || 'Login failed. Please try again.');
+          setError(err.response?.message || 'Login failed. Please try again.');
         })
         .finally(() => {
           setIsLoading(false);
@@ -260,11 +260,11 @@ const AuthWizard: React.FC<AuthWizardProps> = ({ isOpen, onClose, mode = 'modal'
       setError('');
       api.handleRegister(user)
         .then(response => {
-          login(response.data.token, response.data.user);
+          login(response.token, response.user);
           onClose();
         })
         .catch(err => {
-          setError(err.response?.data?.message || 'Registration failed. Please try again.');
+          setError(err.response?.message || 'Registration failed. Please try again.');
           // Reset captcha on error
           if (recaptchaRef.current) {
             recaptchaRef.current.reset();

@@ -39,10 +39,10 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType>({
   data: null,
-  refresh: async () => {},
+  refresh: async () => { },
   loading: true,
   defaultLanguage: "en",
-  setDefaultLanguage: () => {}
+  setDefaultLanguage: () => { }
 });
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -51,12 +51,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const storedLang = typeof window !== 'undefined' ? localStorage.getItem('lang') : null;
   const [defaultLanguage, setDefaultLanguage] = useState<string>(storedLang || i18n.language || "en");
 
-  
+
   const refresh = async () => {
     setLoading(true);
     try {
       const res = await api.call<InitialData>(Actions.SYSTEM_INITIAL_SYNC);
-      setData(res);
+      setData(res.data);
     } catch (err) {
       console.error("Initial sync failed:", err);
     } finally {

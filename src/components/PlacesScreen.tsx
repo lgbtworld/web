@@ -410,7 +410,7 @@ const PlacesScreen: React.FC = () => {
         <div className={`rounded-2xl p-8 mt-8 border text-center max-w-xl mx-auto relative z-10 ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'
           }`}>
           <div className="relative">
-            <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${theme === 'dark' ? 'bg-gray-800 text-purple-400' : 'bg-purple-50 text-purple-600'
+            <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'
               }`}>
               <MapPin className="w-8 h-8" />
             </div>
@@ -423,7 +423,8 @@ const PlacesScreen: React.FC = () => {
             <button
               type="button"
               onClick={handleInitialFetch}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white transition-all active:scale-[0.98]"
+              className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98] ${theme === 'dark' ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'
+                }`}
             >
               <RefreshCw className="w-4 h-4" />
               {t('places.retry') || 'Tekrar Dene'}
@@ -445,7 +446,7 @@ const PlacesScreen: React.FC = () => {
               }`}
           >
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-100 text-purple-600'
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${theme === 'dark' ? 'bg-white/10 text-white' : 'bg-black/10 text-black'
                 }`}>
                 <MapPin className="w-5 h-5" />
               </div>
@@ -463,7 +464,8 @@ const PlacesScreen: React.FC = () => {
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={handleInitialFetch}
-                className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all active:scale-95 whitespace-nowrap"
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 whitespace-nowrap ${theme === 'dark' ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'
+                  }`}
               >
                 Access Location
               </button>

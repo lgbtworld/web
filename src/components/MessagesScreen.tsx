@@ -1115,8 +1115,20 @@ const MessagesScreen: React.FC = () => {
   };
 
   // Handle message deletion
-  const handleDeleteMessage = (messageId: string) => {
-    setMessages(prev => prev.filter(msg => msg.id !== messageId));
+  const handleDeleteMessage = async (messageId: string, forAll: boolean) => {
+    const currentChat = chatsList.find(chat => chat.id === selectedChat);
+    if (!currentChat?.chatId) return;
+
+    try {
+      if (forAll) {
+        await api.deleteMessageForAll(currentChat.chatId, messageId);
+      } else {
+        await api.deleteMessageForMe(currentChat.chatId, messageId);
+      }
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+    } catch (error) {
+      console.error('Error deleting message:', error);
+    }
     setSelectedMessageId(null);
     setMessageMenuPosition(null);
   };
@@ -1158,18 +1170,48 @@ const MessagesScreen: React.FC = () => {
   }, [selectedMessageId]);
 
   // Handle chat deletion
-  const handleDeleteChat = (chatId: string) => {
-    if (selectedChat === chatId) {
-      setSelectedChat(null);
+  const handleDeleteChat = async (chatId: string, forAll: boolean) => {
+    const chat = chatsList.find(c => c.id === chatId);
+    if (!chat?.chatId) return;
+
+    try {
+      if (forAll) {
+        await api.deleteChatForAll(chat.chatId);
+      } else {
+        await api.deleteChatForMe(chat.chatId);
+      }
+      
+      if (selectedChat === chatId) {
+        setSelectedChat(null);
+      }
+      setChatsList(prev => prev.filter(c => c.id !== chatId));
+    } catch (error) {
+      console.error('Error deleting chat:', error);
     }
-    setChatsList(prev => prev.filter(chat => chat.id !== chatId));
+    setOpenChatItemMenu(null);
+    setShowChatMenu(false);
   };
 
   // Clear chat history
-  const handleClearChatHistory = () => {
-    if (selectedChat) {
-      setMessages([]);
+  const handleClearChatHistory = async (chatId: string, forAll: boolean) => {
+    const chat = chatsList.find(c => c.id === chatId);
+    if (!chat?.chatId) return;
+
+    try {
+      if (forAll) {
+        await api.clearChatHistoryForAll(chat.chatId);
+      } else {
+        await api.clearChatHistoryForMe(chat.chatId);
+      }
+      
+      if (selectedChat === chatId) {
+        setMessages([]);
+      }
+    } catch (error) {
+      console.error('Error clearing chat history:', error);
     }
+    setShowChatMenu(false);
+    setOpenChatItemMenu(null);
   };
 
   // Close chat menu on outside click
@@ -1943,17 +1985,45 @@ const MessagesScreen: React.FC = () => {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button
-                            onClick={() => {
-                              handleDeleteChat(chat.id);
-                              setOpenChatItemMenu(null);
-                            }}
-                            className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-opacity-50 transition-colors rounded-lg ${theme === 'dark'
-                              ? 'text-red-400 hover:bg-red-500/20'
+                            onClick={() => handleClearChatHistory(chat.id, false)}
+                            className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2.5 rounded-lg transition-colors ${theme === 'dark'
+                              ? 'text-gray-200 hover:bg-white/10'
+                              : 'text-gray-700 hover:bg-black/5'
+                              }`}
+                          >
+                            <RefreshCw className="w-4 h-4 opacity-70" />
+                            Clear History for Me
+                          </button>
+                          <button
+                            onClick={() => handleClearChatHistory(chat.id, true)}
+                            className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2.5 rounded-lg transition-colors ${theme === 'dark'
+                              ? 'text-gray-200 hover:bg-white/10'
+                              : 'text-gray-700 hover:bg-black/5'
+                              }`}
+                          >
+                            <RefreshCw className="w-4 h-4 opacity-70" />
+                            Clear History for All
+                          </button>
+                          <div className={`my-1 h-px ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`} />
+                          <button
+                            onClick={() => handleDeleteChat(chat.id, false)}
+                            className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2.5 rounded-lg transition-colors ${theme === 'dark'
+                              ? 'text-gray-200 hover:bg-white/10'
+                              : 'text-gray-700 hover:bg-black/5'
+                              }`}
+                          >
+                            <Trash2 className="w-4 h-4 opacity-70" />
+                            Delete for Me
+                          </button>
+                          <button
+                            onClick={() => handleDeleteChat(chat.id, true)}
+                            className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2.5 rounded-lg transition-colors ${theme === 'dark'
+                              ? 'text-red-400 hover:bg-red-500/10'
                               : 'text-red-600 hover:bg-red-50'
                               }`}
                           >
-                            <Trash2 className="w-4 h-4" />
-                            {t('messages.delete_chat')}
+                            <Trash2 className="w-4 h-4 opacity-70" />
+                            Delete for All
                           </button>
                         </motion.div>
                       )}
@@ -2115,29 +2185,69 @@ const MessagesScreen: React.FC = () => {
                       </motion.button>
                       {showChatMenu && (
                         <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          className={`absolute right-0 top-full mt-2 rounded-lg shadow-lg border z-50 ${theme === 'dark'
-                            ? 'bg-gray-800 border-gray-700'
-                            : 'bg-white border-gray-200'
+                          initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          className={`absolute right-0 top-full mt-2 z-50 min-w-[200px] rounded-xl shadow-2xl border backdrop-blur-md overflow-hidden ${theme === 'dark'
+                            ? 'bg-gray-900/90 border-gray-700'
+                            : 'bg-white/90 border-gray-200'
                             }`}
-                          style={{ minWidth: '180px' }}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <button
-                            onClick={() => {
-                              handleClearChatHistory();
-                              setShowChatMenu(false);
-                            }}
-                            className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-opacity-50 transition-colors ${theme === 'dark'
-                              ? 'text-red-400 hover:bg-red-500/20'
-                              : 'text-red-600 hover:bg-red-50'
-                              }`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            {t('messages.clear_chat_history')}
-                          </button>
+                          <div className="p-1">
+                            {selectedChat && (
+                              <>
+                                <button
+                                  onClick={() => handleClearChatHistory(selectedChat, false)}
+                                  className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2.5 rounded-lg transition-colors ${theme === 'dark'
+                                    ? 'text-gray-200 hover:bg-white/10'
+                                    : 'text-gray-700 hover:bg-black/5'
+                                    }`}
+                                >
+                                  <RefreshCw className="w-4 h-4 opacity-70" />
+                                  Clear History for Me
+                                </button>
+                                <button
+                                  onClick={() => handleClearChatHistory(selectedChat, true)}
+                                  className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2.5 rounded-lg transition-colors ${theme === 'dark'
+                                    ? 'text-gray-200 hover:bg-white/10'
+                                    : 'text-gray-700 hover:bg-black/5'
+                                    }`}
+                                >
+                                  <RefreshCw className="w-4 h-4 opacity-70" />
+                                  Clear History for All
+                                </button>
+                              </>
+                            )}
+                            
+                            <div className={`my-1 h-px ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`} />
+
+                            {selectedChat && (
+                              <>
+                                <button
+                                  onClick={() => handleDeleteChat(selectedChat, false)}
+                                  className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2.5 rounded-lg transition-colors ${theme === 'dark'
+                                    ? 'text-gray-200 hover:bg-white/10'
+                                    : 'text-gray-700 hover:bg-black/5'
+                                    }`}
+                                >
+                                  <Trash2 className="w-4 h-4 opacity-70" />
+                                  Delete Chat for Me
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteChat(selectedChat, true)}
+                                  className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2.5 rounded-lg transition-colors ${theme === 'dark'
+                                    ? 'text-red-400 hover:bg-red-500/10'
+                                    : 'text-red-600 hover:bg-red-50'
+                                    }`}
+                                >
+                                  <Trash2 className="w-4 h-4 opacity-70" />
+                                  Delete Chat for All
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </motion.div>
                       )}
                     </div>
@@ -2268,52 +2378,61 @@ const MessagesScreen: React.FC = () => {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 10 }}
                             transition={{ duration: 0.15, ease: 'easeOut' }}
-                            className={`message-context-menu fixed z-[100] rounded-xl shadow-2xl p-1.5 flex flex-col min-w-[140px]
+                            className={`message-context-menu fixed z-[100] rounded-xl shadow-2xl overflow-hidden min-w-[180px]
                               ${theme === 'dark'
                                 ? 'bg-gray-800/95 border border-white/10 backdrop-blur-md'
                                 : 'bg-white/95 border border-black/10 backdrop-blur-md'}`
                             }
                             style={{
-                              left: `${Math.min(Math.max(16, messageMenuPosition.x - 70), window.innerWidth - 156)}px`, // Keep in bounds horizontally
-                              top: `${Math.min(messageMenuPosition.y - 10, window.innerHeight - 100)}px`,  // Keep in bounds vertically
+                              left: `${Math.min(Math.max(16, messageMenuPosition.x - 90), window.innerWidth - 196)}px`,
+                              top: `${Math.min(messageMenuPosition.y - 10, window.innerHeight - 160)}px`,
                             }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <span className={`px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider opacity-60
-                              ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}
-                            >
-                              Message Options
-                            </span>
-                            <div className={`mt-1 w-full h-px ${theme === 'dark' ? 'bg-white/5' : 'bg-black/5'}`} />
-
-                            {messages.find(m => m.id === selectedMessageId)?.sender === 'me' && (
+                            <div className="p-1.5">
                               <button
-                                onClick={() => handleDeleteMessage(selectedMessageId)}
-                                className={`w-full text-left mt-1 px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors
-                                  ${theme === 'dark'
-                                    ? 'hover:bg-white/10 text-red-400'
-                                    : 'hover:bg-black/5 text-red-500'}`
-                                }
+                                onClick={() => handleDeleteMessage(selectedMessageId, false)}
+                                className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-3 rounded-lg transition-colors ${theme === 'dark'
+                                  ? 'text-gray-200 hover:bg-white/10'
+                                  : 'text-gray-700 hover:bg-black/5'
+                                  }`}
                               >
-                                <span className="font-medium text-[15px]">Delete</span>
-                                <Trash2 size={16} />
+                                <Trash2 className="w-4 h-4 opacity-70" />
+                                <span className="font-medium">Delete for Me</span>
                               </button>
-                            )}
 
-                            <button
-                              onClick={() => {
-                                setSelectedMessageId(null);
-                                setMessageMenuPosition(null);
-                              }}
-                              className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors
-                                ${theme === 'dark'
-                                  ? 'hover:bg-white/10 text-gray-200'
-                                  : 'hover:bg-black/5 text-gray-700'}`
-                              }
-                            >
-                              <span className="font-medium text-[15px]">Cancel</span>
-                              <X size={16} />
-                            </button>
+                              {messages.find(m => m.id === selectedMessageId)?.sender === 'me' && (
+                                <>
+                                  <div className={`my-1 h-px mx-1 ${theme === 'dark' ? 'bg-white/10' : 'bg-black/5'}`} />
+                                  <button
+                                    onClick={() => handleDeleteMessage(selectedMessageId, true)}
+                                    className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-3 rounded-lg transition-colors ${theme === 'dark'
+                                      ? 'text-red-400 hover:bg-red-500/10'
+                                      : 'text-red-600 hover:bg-red-50'
+                                      }`}
+                                  >
+                                    <Trash2 className="w-4 h-4 opacity-70" />
+                                    <span className="font-medium">Delete for All</span>
+                                  </button>
+                                </>
+                              )}
+
+                              <div className={`my-1 h-px mx-1 ${theme === 'dark' ? 'bg-white/10' : 'bg-black/5'}`} />
+
+                              <button
+                                onClick={() => {
+                                  setSelectedMessageId(null);
+                                  setMessageMenuPosition(null);
+                                }}
+                                className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-3 rounded-lg transition-colors ${theme === 'dark'
+                                  ? 'text-gray-400 hover:bg-white/10'
+                                  : 'text-gray-500 hover:bg-black/5'
+                                  }`}
+                              >
+                                <X className="w-4 h-4 opacity-70" />
+                                <span className="font-medium">Cancel</span>
+                              </button>
+                            </div>
                           </motion.div>
                         )}
 

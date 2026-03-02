@@ -211,6 +211,52 @@ export class ApiService {
     });
   }
 
+
+  async deleteChatForMe(chatId: string) {
+    return this.call(Actions.CMD_DELETE_CHAT_FOR_USER, {
+      method: "POST",
+      body: { chat_id: chatId },
+    });
+  }
+
+  async deleteChatForAll(chatId: string){
+    return this.call(Actions.CMD_DELETE_CHAT_FOR_ALL, {
+      method: "POST",
+      body: { chat_id: chatId },
+    });
+  }
+
+  async deleteMessageForMe(chatId:string, messageId:string){
+    return this.call(Actions.CMD_DELETE_MESSAGE_FOR_USER, {
+      method: "POST",
+      body: { chat_id: chatId,message_id:messageId },
+    });
+  }
+
+  async deleteMessageForAll(chatId:string, messageId:string){
+    return this.call(Actions.CMD_DELETE_MESSAGE_FOR_ALL, {
+      method: "POST",
+      body: { chat_id: chatId,message_id:messageId },
+    });
+  }
+
+
+  async clearChatHistoryForMe(chatId:string){
+    return this.call(Actions.CMD_CLEAR_CHAT_HISTORY_FOR_USER, {
+      method: "POST",
+      body: { chat_id: chatId },
+    });
+  }
+
+  async clearChatHistoryForAll(chatId:string){
+    return this.call(Actions.CMD_CLEAR_CHAT_HISTORY_FOR_ALL, {
+      method: "POST",
+      body: { chat_id: chatId },
+    });
+  }
+
+  
+
   async updatePreferences(id: string, bit_index: number, enabled: boolean) {
     return this.call(Actions.CMD_USER_UPDATE_PREFERENCES, {
       method: "POST",

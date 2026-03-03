@@ -63,6 +63,7 @@ import { YouTubeNode } from './Lexical/nodes/YouTubeNode';
 import YouTubePlugin, { INSERT_YOUTUBE_COMMAND } from './Lexical/plugins/YouTubePlugin';
 import { INSERT_PAGE_BREAK } from './Lexical/plugins/PageBreakPlugin';
 import EmojiPicker from './EmojiPicker';
+import  AutoLinkPlugin  from './Lexical/plugins/AutoLinkPlugin';
 
 
 // ToolbarPlugin wrapper component
@@ -1013,6 +1014,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                     <HashtagPlugin/>
                     <ListPlugin/>
                     <LinkPlugin/>
+                    <AutoLinkPlugin />
                     <ImagesPlugin  captionsEnabled={false}/>
                     <YouTubePlugin />
                     <NewMentionsPlugin/>

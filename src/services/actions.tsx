@@ -6,6 +6,7 @@ export const Actions = {
   CMD_GET_VAPID_PUBLIC_KEY: "system_vapid_get_key",
   CMD_SET_VAPID_SUBSCRIBE: "system_vapid_subscribe",
   CMD_GET_NOTIFICATIONS: "system_notifications",
+	CMD_LINK_METADATA   : "system.link_metadata",
 
   // AUTH
   AUTH_LOGIN: "auth.login",

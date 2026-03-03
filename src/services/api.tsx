@@ -12,6 +12,13 @@ interface ApiRequestOptions {
 export class ApiService {
 
 
+  async fetchMetadata(url : any) {
+    return this.call(Actions.CMD_LINK_METADATA, {
+      method: "POST",
+      body:{url:url}
+    });
+  }
+
   async checkNewNotifications(limit:number = 1,cursor:any = null){
     return this.call(Actions.CMD_USER_GET_NOTIFICATIONS, {
       method: "POST",

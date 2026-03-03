@@ -66,6 +66,7 @@ import EmojiPicker from './EmojiPicker';
 import  AutoLinkPlugin  from './Lexical/plugins/AutoLinkPlugin';
 import AutoEmbedPlugin from './Lexical/plugins/AutoEmbedPlugin';
 import { TweetNode } from './Lexical/nodes/TweetNode';
+import { MetadataNode } from './Lexical/nodes/MetadataNode';
 
 // ToolbarPlugin wrapper component
 const ToolbarPluginWrapper = ({ setEditorInstance }: { setEditorInstance: (editor: any) => void }) => {
@@ -837,7 +838,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
     selectionAlwaysOnDisplay: true,
     listStrictIndent: false,
     measureTypingPerf: false,
-    nodes: [HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, MentionNode, ImageNode, YouTubeNode, TweetNode],
+    nodes: [HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, MentionNode, ImageNode, YouTubeNode, TweetNode, MetadataNode],
     theme: {
       paragraph: `mb-2 text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`,
       heading: {

@@ -1,5 +1,19 @@
-import { DecoratorNode, SerializedLexicalNode } from 'lexical';
-import  { JSX } from 'react';
+import type {
+  DOMExportOutput,
+  EditorConfig,
+  ElementFormatType,
+  LexicalEditor,
+  NodeKey,
+  Spread,
+} from 'lexical';
+
+import { BlockWithAlignableContents } from '@lexical/react/LexicalBlockWithAlignableContents';
+import {
+  DecoratorBlockNode,
+  SerializedDecoratorBlockNode,
+} from '@lexical/react/LexicalDecoratorBlockNode';
+
+import type { JSX } from 'react';
 
 export type OGNodePayload = {
   title?: string;
@@ -9,48 +23,59 @@ export type OGNodePayload = {
   siteName?: string;
 };
 
-export type SerializedOGNode = SerializedLexicalNode & OGNodePayload;
+export type SerializedOGNode = Spread<
+  {
+    title?: string;
+    description?: string;
+    image?: string;
+    url?: string;
+    siteName?: string;
+  },
+  SerializedDecoratorBlockNode
+>;
 
-export class MetadataNode extends DecoratorNode<JSX.Element> {
-  __title?: string;
-  __description?: string;
-  __image?: string;
-  __url?: string;
-  __siteName?: string;
+export class MetadataNode extends DecoratorBlockNode {
+  __title: string;
+  __description: string;
+  __image: string;
+  __url: string;
+  __siteName: string;
 
-  constructor({
-    title = '',
-    description = '',
-    image = '',
-    url = '',
-    siteName = '',
-  }: OGNodePayload = {}) {
-    super();
-    this.__title = title;
-    this.__description = description;
-    this.__image = image;
-    this.__url = url;
-    this.__siteName = siteName;
-  }
-
-  static getType() {
+  static getType(): string {
     return 'og';
   }
 
-  static clone(node: MetadataNode) {
-    return new MetadataNode({
-      title: node.__title,
-      description: node.__description,
-      image: node.__image,
-      url: node.__url,
-      siteName: node.__siteName,
-    });
+  static clone(node: MetadataNode): MetadataNode {
+    return new MetadataNode(
+      {
+        title: node.__title,
+        description: node.__description,
+        image: node.__image,
+        url: node.__url,
+        siteName: node.__siteName,
+      },
+      node.__format,
+      node.__key,
+    );
+  }
+
+  constructor(
+    payload: OGNodePayload,
+    format?: ElementFormatType,
+    key?: NodeKey,
+  ) {
+    super(format, key);
+
+    this.__title = payload.title || '';
+    this.__description = payload.description || '';
+    this.__image = payload.image || '';
+    this.__url = payload.url || '';
+    this.__siteName = payload.siteName || '';
   }
 
   exportJSON(): SerializedOGNode {
     return {
-      type: 'og',
-      version: 1,
+      ...super.exportJSON(),
       title: this.__title,
       description: this.__description,
       image: this.__image,
@@ -59,56 +84,79 @@ export class MetadataNode extends DecoratorNode<JSX.Element> {
     };
   }
 
-  static importJSON(serializedNode: SerializedOGNode) {
-    return new MetadataNode({
+  static importJSON(serializedNode: SerializedOGNode): MetadataNode {
+    return $createMetadataNode({
       title: serializedNode.title,
       description: serializedNode.description,
       image: serializedNode.image,
       url: serializedNode.url,
       siteName: serializedNode.siteName,
-    });
+    }).updateFromJSON(serializedNode);
   }
 
-  createDOM() {
-    const div = document.createElement('div');
-    return div;
+  exportDOM(): DOMExportOutput {
+    const element = document.createElement('div');
+    element.setAttribute('data-lexical-og-url', this.__url);
+    return { element };
   }
 
-  updateDOM() {
-    return false;
-  }
+  decorate(editor: LexicalEditor, config: EditorConfig): JSX.Element {
+    const embedBlockTheme = config.theme.embedBlock || {};
 
-  decorate() {
+    const className = {
+      base: embedBlockTheme.base || '',
+      focus: embedBlockTheme.focus || '',
+    };
+
     return (
-     <a
-  href={this.__url}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="group flex w-full h-full flex-col gap-2 rounded-lg overflow-hidden duration-200 no-underline"
->
-        <div className="w-full">
-          <img
-            src={this.__image}
-            alt={this.__title}
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="flex flex-col justify-center p-3">
-          {this.__siteName && (
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              {this.__siteName}
-            </div>
+      <BlockWithAlignableContents
+        className={className}
+        format={this.__format}
+        nodeKey={this.getKey()}
+      >
+        <a
+          href={this.__url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block group rounded-lg overflow-hidden no-underline border border-gray-200 dark:border-gray-700 hover:shadow-md transition"
+        >
+          {this.__image && (
+            <img
+              src={this.__image}
+              alt={this.__title}
+              className="w-full object-cover"
+            />
           )}
-          <div className="font-semibold text-sm mt-1">{this.__title}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-3">
-            {this.__description}
+
+          <div className="p-3 flex flex-col gap-1">
+            {this.__siteName && (
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {this.__siteName}
+              </div>
+            )}
+
+            <div className="font-semibold text-sm">
+              {this.__title}
+            </div>
+
+            <div className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+              {this.__description}
+            </div>
           </div>
-        </div>
-      </a>
+        </a>
+      </BlockWithAlignableContents>
     );
   }
 }
 
-export function $createMetadataNode(payload: OGNodePayload) {
+export function $createMetadataNode(
+  payload: OGNodePayload,
+): MetadataNode {
   return new MetadataNode(payload);
+}
+
+export function $isMetadataNode(
+  node: unknown,
+): node is MetadataNode {
+  return node instanceof MetadataNode;
 }

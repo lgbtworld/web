@@ -39,7 +39,7 @@ export default function LexicalAutoLinkPlugin(): JSX.Element {
 
   useEffect(() => {
     // YouTube otomatik embed
-    return editor.registerNodeTransform(TextNode, async (textNode) => {
+    return editor.registerNodeTransform(TextNode, (textNode) => {
       const text = textNode.getTextContent();
 
 
@@ -69,29 +69,34 @@ export default function LexicalAutoLinkPlugin(): JSX.Element {
       if (urlMatch) {
         const url = urlMatch[0].startsWith('http') ? urlMatch[0] : `https://${urlMatch[0]}`;
 
-        try {
-         
-          const res = await api.fetchMetadata(encodeURIComponent(url))
-          if (!res) return;
+ 
+    (async () => {
+      try {
+        const res = await api.fetchMetadata(encodeURIComponent(url));
+        if (!res) return;
 
-          const og = res.og ? res.og :res.twitter ? res.twitter:null; 
+        const og = res.og ?? res.twitter;
+        if (!og) return;
 
-          console.log("Coder",og)
+        editor.update(() => {
+          // node hâlâ document içinde mi kontrol et
+          if (!textNode.isAttached()) return;
 
-          editor.update(() => {
-            const ogNode = $createMetadataNode({
-              title: og.title,
-              description: og.description,
-              image: og.image,
-              url: og.url,
-              siteName: og.site_name,
-            });
-             textNode.replace(ogNode);
-
+          const ogNode = $createMetadataNode({
+            title: og.title,
+            description: og.description,
+            image: og.image,
+            url: og.url,
+            siteName: og.site_name,
           });
-        } catch (err) {
-          console.error('OG fetch failed', err);
-        }
+
+          textNode.replace(ogNode);
+        });
+      } catch (err) {
+        console.error("OG fetch failed", err);
+      }
+    })();
+
       }
 
     });

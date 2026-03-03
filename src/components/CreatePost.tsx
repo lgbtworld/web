@@ -64,7 +64,8 @@ import YouTubePlugin, { INSERT_YOUTUBE_COMMAND } from './Lexical/plugins/YouTube
 import { INSERT_PAGE_BREAK } from './Lexical/plugins/PageBreakPlugin';
 import EmojiPicker from './EmojiPicker';
 import  AutoLinkPlugin  from './Lexical/plugins/AutoLinkPlugin';
-
+import AutoEmbedPlugin from './Lexical/plugins/AutoEmbedPlugin';
+import { TweetNode } from './Lexical/nodes/TweetNode';
 
 // ToolbarPlugin wrapper component
 const ToolbarPluginWrapper = ({ setEditorInstance }: { setEditorInstance: (editor: any) => void }) => {
@@ -836,7 +837,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
     selectionAlwaysOnDisplay: true,
     listStrictIndent: false,
     measureTypingPerf: false,
-    nodes: [HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, MentionNode, ImageNode, YouTubeNode],
+    nodes: [HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, MentionNode, ImageNode, YouTubeNode, TweetNode],
     theme: {
       paragraph: `mb-2 text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`,
       heading: {

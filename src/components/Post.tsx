@@ -33,6 +33,7 @@ import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import YouTubePlugin from './Lexical/plugins/YouTubePlugin';
 import { YouTubeNode } from './Lexical/nodes/YouTubeNode';
+import { TweetNode } from './Lexical/nodes/TweetNode';
 
 // API data structure interfaces
 interface ApiPost {
@@ -569,7 +570,7 @@ const Post: React.FC<PostProps> = ({
   const editorConfig = useMemo(() => ({
     namespace: "CoolVibesEditorEx",
     editable: true,
-    nodes:[HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode,MentionNode,ImageNode,YouTubeNode],
+    nodes:[HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode,MentionNode,ImageNode,YouTubeNode,TweetNode],
     theme: {
       paragraph: `relative m-0 w-full mb-2 text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`,
       heading: {

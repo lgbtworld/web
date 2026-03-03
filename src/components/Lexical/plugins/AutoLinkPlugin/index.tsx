@@ -8,6 +8,7 @@ import {$insertNodeToNearestRoot} from '@lexical/utils';
 import {$createYouTubeNode, YouTubeNode} from '../../nodes/YouTubeNode';
 import {useEffect} from 'react';
 import {TextNode} from 'lexical';
+import { $createTweetNode } from '../../nodes/TweetNode';
 
 const URL_REGEX =
   /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)(?<![-.+():%])/;
@@ -18,6 +19,9 @@ const EMAIL_REGEX =
 // YouTube regex
 const YOUTUBE_REGEX =
   /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+
+const TWITTER_REGEX =
+  /https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/;
 
 const MATCHERS = [
   createLinkMatcherWithRegExp(URL_REGEX, (text) => {
@@ -35,18 +39,30 @@ export default function LexicalAutoLinkPlugin(): JSX.Element {
     // YouTube otomatik embed
     return editor.registerNodeTransform(TextNode, (textNode) => {
       const text = textNode.getTextContent();
-      const match = text.match(YOUTUBE_REGEX);
-
-      if (match) {
-        const videoId = match[1];
-        const youTubeNode = $createYouTubeNode(videoId);
-
-        // Orijinal linki sil
-        textNode.remove();
-
-        // Embed node'u ekle
-        $insertNodeToNearestRoot(youTubeNode);
+     
+     
+       const ytMatch = text.match(YOUTUBE_REGEX);
+      if (ytMatch && ytMatch.length > 1) {
+        const videoId = ytMatch[1];
+        editor.update(() => {
+          const youTubeNode = $createYouTubeNode(videoId);
+          textNode.replace(youTubeNode);
+        });
+        return;
       }
+
+      // Twitter embed
+      const twMatch = text.match(TWITTER_REGEX);
+      if (twMatch && twMatch.length > 1) {
+        const tweetID = twMatch[1]; // sadece ID alıyoruz
+        editor.update(() => {
+          const tweetNode = $createTweetNode(tweetID);
+          textNode.replace(tweetNode);
+        });
+        return;
+      }
+      
+      
     });
   }, [editor]);
 

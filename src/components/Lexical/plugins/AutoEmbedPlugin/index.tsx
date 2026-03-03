@@ -23,7 +23,6 @@ import * as ReactDOM from 'react-dom';
 
 import useModal from '../../hooks/useModal';
 import Button from '../../ui/Button';
-import {DialogActions} from '../../ui/Dialog';
 import {INSERT_FIGMA_COMMAND} from '../FigmaPlugin';
 import {INSERT_TWEET_COMMAND} from '../TwitterPlugin';
 import {INSERT_YOUTUBE_COMMAND} from '../YouTubePlugin';
@@ -278,14 +277,7 @@ export function AutoEmbedDialog({
           }}
         />
       </div>
-      <DialogActions>
-        <Button
-          disabled={!embedResult}
-          onClick={onClick}
-          data-test-id={`${embedConfig.type}-embed-modal-submit-btn`}>
-          Embed
-        </Button>
-      </DialogActions>
+ 
     </div>
   );
 }

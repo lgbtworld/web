@@ -55,35 +55,46 @@ function $convertTweetElement(
 
 let isTwitterScriptLoading = true;
 
+
+
+const Skeleton = () => (
+  <div className="relative w-[550px] h-[315px] mx-auto rounded-xl overflow-hidden shadow-lg bg-gray-200">
+    {/* shimmer effect */}
+    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-[shimmer_1.5s_infinite]"></div>
+
+    <style>{`
+      @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+      .animate-[shimmer_1.5s_infinite] {
+        animation: shimmer 1.5s infinite;
+      }
+    `}</style>
+  </div>
+);
+
 function TweetComponent({
   className,
   format,
-  loadingComponent,
   nodeKey,
   onError,
   onLoad,
   tweetID,
 }: TweetComponentProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-
   const previousTweetIDRef = useRef<string>('');
   const [isTweetLoading, setIsTweetLoading] = useState(false);
 
   const createTweet = useCallback(async () => {
     try {
-      // @ts-expect-error Twitter is attached to the window.
+      // @ts-expect-error
       await window.twttr.widgets.createTweet(tweetID, containerRef.current);
-
       setIsTweetLoading(false);
       isTwitterScriptLoading = false;
-
-      if (onLoad) {
-        onLoad();
-      }
+      if (onLoad) onLoad();
     } catch (error) {
-      if (onError) {
-        onError(String(error));
-      }
+      if (onError) onError(String(error));
     }
   }, [onError, onLoad, tweetID]);
 
@@ -97,16 +108,12 @@ function TweetComponent({
         script.async = true;
         document.body?.appendChild(script);
         script.onload = createTweet;
-        if (onError) {
-          script.onerror = onError as OnErrorEventHandler;
-        }
+        if (onError) script.onerror = onError as OnErrorEventHandler;
       } else {
         createTweet();
       }
 
-      if (previousTweetIDRef) {
-        previousTweetIDRef.current = tweetID;
-      }
+      previousTweetIDRef.current = tweetID;
     }
   }, [createTweet, onError, tweetID]);
 
@@ -115,7 +122,7 @@ function TweetComponent({
       className={className}
       format={format}
       nodeKey={nodeKey}>
-      {isTweetLoading ? loadingComponent : null}
+      {isTweetLoading && <Skeleton />}
       <div
         style={{display: 'inline-block', width: '550px'}}
         ref={containerRef}
@@ -123,7 +130,6 @@ function TweetComponent({
     </BlockWithAlignableContents>
   );
 }
-
 export type SerializedTweetNode = Spread<
   {
     id: string;

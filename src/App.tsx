@@ -14,7 +14,7 @@ import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useSettings } from './contexts/SettingsContext';
 import AuthWizard from './components/AuthWizard';
-import { MapPin, Heart, MessageCircle, User, Users, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Wallet, Navigation } from 'lucide-react';
+import { MapPin, Heart, MessageCircle, User, Users, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist } from 'lucide-react';
 import TrendsPanel, { NormalizedTrend } from './components/TrendsPanel';
 import PopularUsersPanel from './components/PopularUsersPanel';
 import PlaceDetailsScreen from './components/PlaceDetailsScreen';
@@ -30,11 +30,11 @@ import TestPage from './components/TestPage.tsx';
 import PwaInstallPrompt, { PwaInstallProvider, usePwaInstall } from './components/PwaInstallPrompt';
 import PremiumScreen from './components/PremiumScreen.tsx';
 import PostDetails from './components/PostDetails.tsx';
-import WalletScreen from './components/WalletScreen.tsx';
+// import WalletScreen from './components/WalletScreen.tsx'; // TODO: Re-enable
 import PlacesScreen from './components/PlacesScreen.tsx';
 import ReferralsScreen from './components/ReferralsScreen.tsx';
 import ReferralHandler from './components/ReferralHandler.tsx';
-import CheckInScreen from './components/CheckInScreen';
+// import CheckInScreen from './components/CheckInScreen'; // TODO: Re-enable
 import ConfirmationModal from './components/ConfirmationModal.tsx';
 const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/': 'pride',
@@ -153,13 +153,14 @@ function AppContent() {
       icon: HandFist,
       accent: 'from-rose-500/90 via-fuchsia-500/80 to-purple-500/70'
     },
-    {
-      id: 'checkin',
-      label: t('app.nav.checkin', { defaultValue: 'Check-In' }),
-      path: '/checkin',
-      icon: Navigation,
-      accent: 'from-blue-400/80 to-indigo-500/80'
-    },
+    // TODO: Re-enable checkin when ready
+    // {
+    //   id: 'checkin',
+    //   label: t('app.nav.checkin', { defaultValue: 'Check-In' }),
+    //   path: '/checkin',
+    //   icon: Navigation,
+    //   accent: 'from-blue-400/80 to-indigo-500/80'
+    // },
     {
       id: 'nearby',
       label: t('app.nav.nearby'),
@@ -195,13 +196,14 @@ function AppContent() {
       icon: Bell,
       accent: 'from-emerald-400/80 to-teal-500/80'
     },
-    {
-      id: 'wallet',
-      label: t('wallet.title'),
-      path: '/wallet',
-      icon: Wallet,
-      accent: 'from-cyan-400/80 to-blue-500/80'
-    },
+    // TODO: Re-enable wallet when ready
+    // {
+    //   id: 'wallet',
+    //   label: t('wallet.title'),
+    //   path: '/wallet',
+    //   icon: Wallet,
+    //   accent: 'from-cyan-400/80 to-blue-500/80'
+    // },
     {
       id: 'referrals',
       label: t('app.nav.referrals', { defaultValue: 'Referrals' }),
@@ -219,15 +221,15 @@ function AppContent() {
   ], [profilePath, t]);
 
   const mobileNavItems = React.useMemo(() => {
-    const mobileOrder = ['pride', 'checkin', 'nearby', 'match', 'places', 'messages', 'notifications', 'wallet', 'referrals', 'profile'];
+    const mobileOrder = ['pride', 'nearby', 'match', 'places', 'messages', 'notifications', 'referrals', 'profile'];
     return mobileOrder
       .map((id) => sidebarNavItems.find((item) => item.id === id))
       .filter(Boolean) as typeof sidebarNavItems;
   }, [sidebarNavItems]);
 
   const sidebarNavSections = React.useMemo(() => {
-    const primaryOrder = ['pride', 'checkin', 'nearby', 'match', 'places', 'messages'];
-    const secondaryOrder = ['notifications', 'wallet', 'referrals', 'profile'];
+    const primaryOrder = ['pride', 'nearby', 'match', 'places', 'messages'];
+    const secondaryOrder = ['notifications', 'referrals', 'profile'];
 
     const sortByOrder = (ids: string[]) =>
       ids
@@ -688,10 +690,10 @@ function AppContent() {
               <Route path="/pride" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
               <Route path="/testpage" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
               <Route path="/premium" element={<ProtectedRoute><PremiumScreen /></ProtectedRoute>} />
-              <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} />
+              {/* <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} /> */}
               <Route path="/referrals" element={<ProtectedRoute><ReferralsScreen /></ProtectedRoute>} />
 
-              <Route path="/checkin" element={<ProtectedRoute><CheckInScreen /></ProtectedRoute>} />
+              {/* <Route path="/checkin" element={<ProtectedRoute><CheckInScreen /></ProtectedRoute>} /> */}
 
               <Route path="/search" element={<ProtectedRoute><SearchScreen /></ProtectedRoute>} />
               <Route path="/match" element={<ProtectedRoute><MatchScreen /></ProtectedRoute>} />

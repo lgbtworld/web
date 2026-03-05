@@ -18,7 +18,6 @@ import {
     Hand,
     X,
     Globe,
-    Radar,
     Send,
     Minimize2,
     Maximize2,
@@ -239,23 +238,6 @@ const MOCK_CHECKINS: CheckIn[] = [
     }
 ];
 
-// Custom Radar Marker Icon (Using Black/White theme for CoolVibes)
-const createRadarIcon = (theme: string) => {
-    const color = theme === 'dark' ? 'white' : 'black';
-    const opacityPing = theme === 'dark' ? 'opacity-20' : 'opacity-10';
-    return L.divIcon({
-        className: 'custom-radar-icon',
-        html: `
-      <div class="relative flex items-center justify-center">
-        <div class="absolute w-12 h-12 bg-${color} ${opacityPing} rounded-full animate-ping"></div>
-        <div class="absolute w-8 h-8 bg-${color} opacity-20 rounded-full animate-pulse"></div>
-        <div class="relative w-4 h-4 bg-${color} rounded-full border border-${theme === 'dark' ? 'black' : 'white'} shadow-sm"></div>
-      </div>
-    `,
-        iconSize: [48, 48],
-        iconAnchor: [24, 24]
-    });
-};
 
 const createUserIcon = (avatar: string, theme: string) => {
     const borderColor = theme === 'dark' ? 'white' : 'black';
@@ -461,8 +443,9 @@ export default function CheckInScreen() {
                         }
                     />
 
-                    <RadarScan />
-                    <Marker position={userLocation} icon={createRadarIcon(theme)} />
+
+                    <Marker position={userLocation} icon={createUserIcon('https://i.pravatar.cc/150?u=me', theme)} />
+
 
                     {checkins.map((checkin) => (
                         <Marker
@@ -491,12 +474,7 @@ export default function CheckInScreen() {
             <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-between">
                 <div className="p-6 flex items-center justify-between pointer-events-auto mt-12 lg:mt-0">
                     <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-full ${theme === 'dark' ? 'bg-gray-900/90' : 'bg-white/90'} backdrop-blur-md border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200/60'} flex items-center justify-center`}>
-                            <Radar className={`w-6 h-6 ${theme === 'dark' ? 'text-white' : 'text-black'}`} />
-                        </div>
-                        <div>
-                            <h2 className={`text-2xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Radar</h2>
-                        </div>
+                        {/* Header content removed as per request */}
                     </div>
                 </div>
 
@@ -567,7 +545,7 @@ export default function CheckInScreen() {
                         <div className={`px-4 py-2 flex items-center justify-between border-b ${theme === 'dark' ? 'border-white/5' : 'border-gray-50'}`}>
                             <div className="flex items-center gap-2">
                                 <h3 className={`font-black tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'} text-[15px]`}>
-                                    Radarlar
+                                    Howls
                                 </h3>
                                 <div className="flex items-center gap-1.5 ml-1 px-2 py-0.5 rounded-full bg-emerald-500/10 transition-colors">
                                     <span className={`w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse`} />
@@ -581,19 +559,19 @@ export default function CheckInScreen() {
                             <div className={`flex items-center gap-1 p-1 rounded-full ${theme === 'dark' ? 'bg-gray-900/40' : 'bg-gray-50'} border ${theme === 'dark' ? 'border-white/5' : 'border-black/5'}`}>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setSheetMode('min'); }}
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${sheetMode === 'min' ? (theme === 'dark' ? 'bg-white text-black shadow-sm' : 'bg-black text-white shadow-sm') : (theme === 'dark' ? 'text-gray-500 hover:text-white' : 'text-gray-400 hover:text-black')}`}
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${sheetMode === 'min' ? (theme === 'dark' ? 'bg-white text-black shadow-sm' : 'bg-black text-white shadow-sm') : (theme === 'dark' ? 'text-gray-400 hover:bg-gray-800/45 hover:text-white' : 'text-gray-400 hover:bg-black/[0.03] hover:text-black')}`}
                                 >
                                     <Minimize2 className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setSheetMode('half'); }}
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${sheetMode === 'half' ? (theme === 'dark' ? 'bg-white text-black shadow-sm' : 'bg-black text-white shadow-sm') : (theme === 'dark' ? 'text-gray-500 hover:text-white' : 'text-gray-400 hover:text-black')}`}
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${sheetMode === 'half' ? (theme === 'dark' ? 'bg-white text-black shadow-sm' : 'bg-black text-white shadow-sm') : (theme === 'dark' ? 'text-gray-400 hover:bg-gray-800/45 hover:text-white' : 'text-gray-400 hover:bg-black/[0.03] hover:text-black')}`}
                                 >
                                     <Minus className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setSheetMode('full'); }}
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${sheetMode === 'full' ? (theme === 'dark' ? 'bg-white text-black shadow-sm' : 'bg-black text-white shadow-sm') : (theme === 'dark' ? 'text-gray-500 hover:text-white' : 'text-gray-400 hover:text-black')}`}
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${sheetMode === 'full' ? (theme === 'dark' ? 'bg-white text-black shadow-sm' : 'bg-black text-white shadow-sm') : (theme === 'dark' ? 'text-gray-400 hover:bg-gray-800/45 hover:text-white' : 'text-gray-400 hover:bg-black/[0.03] hover:text-black')}`}
                                 >
                                     <Maximize2 className="w-3.5 h-3.5" />
                                 </button>
@@ -604,7 +582,7 @@ export default function CheckInScreen() {
                     {/* Scrollable List */}
                     <div className={`flex-1 overflow-y-auto px-4 pb-24 lg:pb-6 space-y-3 no-scrollbar relative z-0 mt-4`}>
                         {checkins.map(checkin => (
-                            <div key={checkin.id} className={`${theme === 'dark' ? 'bg-gray-900/40 border-gray-800/60 hover:border-gray-700' : 'bg-white border-gray-200/50 hover:bg-gray-50'} border rounded-[24px] flex items-stretch min-h-[92px] w-full cursor-pointer transition-all overflow-hidden group/card`}>
+                            <div key={checkin.id} className={`${theme === 'dark' ? 'bg-gray-900/40 border-gray-800/60 hover:bg-gray-800/45 hover:border-gray-700' : 'bg-white border-gray-200/50 hover:bg-black/[0.03]'} border rounded-[24px] flex items-stretch min-h-[92px] w-full cursor-pointer transition-all overflow-hidden group/card`}>
                                 {/* Left: Avatar & Info */}
                                 <div className="flex flex-1 p-3 gap-4 items-center min-w-0">
                                     <div className="relative flex-shrink-0 w-[64px] h-[64px]">
@@ -672,9 +650,9 @@ export default function CheckInScreen() {
                         {/* Prominent Close Button */}
                         <button
                             onClick={closeMenu}
-                            className={`absolute top-8 right-8 w-12 h-12 rounded-full ${theme === 'dark' ? 'bg-gray-900 hover:bg-white text-gray-500 hover:text-black border-gray-800' : 'bg-white hover:bg-black text-gray-400 hover:text-white border-gray-200/40'} flex items-center justify-center transition-all z-[110] border group shadow-sm`}
+                            className={`absolute top-8 right-8 w-12 h-12 rounded-full ${theme === 'dark' ? 'bg-gray-900 hover:bg-gray-800/45 text-white border-gray-800' : 'bg-white hover:bg-black/[0.03] text-black border-gray-200/40'} flex items-center justify-center transition-all z-[110] border group shadow-sm`}
                         >
-                            <X className="w-10 h-10 group-hover:rotate-90 transition-transform" />
+                            <X className="w-8 h-8 transition-transform group-hover:rotate-90" />
                         </button>
 
                         <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
@@ -785,6 +763,4 @@ export default function CheckInScreen() {
     );
 }
 
-function RadarScan() {
-    return null;
-}
+

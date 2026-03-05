@@ -9,7 +9,7 @@ import QuickMessages from '../QuickMessages';
 import { calculateAge, getSafeImageURLEx } from '../../helpers/helpers';
 import { Actions } from '../../services/actions';
 import { api } from '../../services/api';
-import { ActionBar, burstConfig, BurstOverlayState, BurstType, createOverlayConfetti, createOverlayParticles, createOverlayStreaks } from './ActionBar';
+import { burstConfig, BurstOverlayState, BurstType, createOverlayConfetti, createOverlayParticles, createOverlayStreaks } from './ActionBar';
 
 interface UserCardProps {
   user: any;

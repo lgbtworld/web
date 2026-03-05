@@ -14,7 +14,7 @@ import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useSettings } from './contexts/SettingsContext';
 import AuthWizard from './components/AuthWizard';
-import { MapPin, Heart, MessageCircle, User, Users, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Wallet } from 'lucide-react';
+import { MapPin, Heart, MessageCircle, User, Users, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Wallet, Navigation } from 'lucide-react';
 import TrendsPanel, { NormalizedTrend } from './components/TrendsPanel';
 import PopularUsersPanel from './components/PopularUsersPanel';
 import PlaceDetailsScreen from './components/PlaceDetailsScreen';
@@ -34,6 +34,7 @@ import WalletScreen from './components/WalletScreen.tsx';
 import PlacesScreen from './components/PlacesScreen.tsx';
 import ReferralsScreen from './components/ReferralsScreen.tsx';
 import ReferralHandler from './components/ReferralHandler.tsx';
+import CheckInScreen from './components/CheckInScreen';
 import ConfirmationModal from './components/ConfirmationModal.tsx';
 const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/': 'pride',
@@ -47,9 +48,10 @@ const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/wallet': 'wallet',
   '/referrals': 'referrals',
   '/classifieds': 'classifieds',
+  '/checkin': 'checkin',
 };
 
-const RIGHT_SIDEBAR_HIDDEN_PATHS = new Set(['/messages', '/landing', '/classifieds', '/places', '/match', '/nearby']);
+const RIGHT_SIDEBAR_HIDDEN_PATHS = new Set(['/messages', '/landing', '/classifieds', '/places', '/match', '/nearby', '/checkin']);
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -152,6 +154,13 @@ function AppContent() {
       accent: 'from-rose-500/90 via-fuchsia-500/80 to-purple-500/70'
     },
     {
+      id: 'checkin',
+      label: t('app.nav.checkin', { defaultValue: 'Check-In' }),
+      path: '/checkin',
+      icon: Navigation,
+      accent: 'from-blue-400/80 to-indigo-500/80'
+    },
+    {
       id: 'nearby',
       label: t('app.nav.nearby'),
       path: '/nearby',
@@ -167,7 +176,7 @@ function AppContent() {
     },
     {
       id: 'places',
-      label: t('app.nav.places', 'Places'),
+      label: t('app.nav.places', { defaultValue: 'Places' }),
       path: '/places',
       icon: MapPin,
       accent: 'from-green-400/80 to-emerald-500/80'
@@ -210,14 +219,14 @@ function AppContent() {
   ], [profilePath, t]);
 
   const mobileNavItems = React.useMemo(() => {
-    const mobileOrder = ['pride', 'nearby', 'match', 'places', 'messages', 'notifications', 'wallet', 'referrals', 'profile'];
+    const mobileOrder = ['pride', 'checkin', 'nearby', 'match', 'places', 'messages', 'notifications', 'wallet', 'referrals', 'profile'];
     return mobileOrder
       .map((id) => sidebarNavItems.find((item) => item.id === id))
       .filter(Boolean) as typeof sidebarNavItems;
   }, [sidebarNavItems]);
 
   const sidebarNavSections = React.useMemo(() => {
-    const primaryOrder = ['pride', 'nearby', 'match', 'places', 'messages'];
+    const primaryOrder = ['pride', 'checkin', 'nearby', 'match', 'places', 'messages'];
     const secondaryOrder = ['notifications', 'wallet', 'referrals', 'profile'];
 
     const sortByOrder = (ids: string[]) =>
@@ -228,12 +237,12 @@ function AppContent() {
     return [
       {
         id: 'primary',
-        title: t('app.sidebar.primary', 'Discover'),
+        title: t('app.sidebar.primary', { defaultValue: 'Discover' }),
         items: sortByOrder(primaryOrder)
       },
       {
         id: 'secondary',
-        title: t('app.sidebar.secondary', 'Manage'),
+        title: t('app.sidebar.secondary', { defaultValue: 'Manage' }),
         items: sortByOrder(secondaryOrder)
       }
     ];
@@ -511,7 +520,7 @@ function AppContent() {
                           : 'bg-gray-900 text-white'
                           }`}
                       >
-                        {t('app.view_profile', 'Profile')}
+                        {t('app.view_profile', { defaultValue: 'Profile' })}
                       </button>
                       <button
                         onClick={() => requestLogout()}
@@ -529,11 +538,11 @@ function AppContent() {
                     ? 'bg-gray-900/30 border-gray-800/90'
                     : 'bg-white border-black/[0.06]'
                     }`}>
-                    <p className={`text-xs uppercase tracking-[0.3em] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {t('app.join_title', 'Welcome')}
+                    <p className={`text-[10px] uppercase tracking-[0.3em] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {t('app.join_title', { defaultValue: 'Welcome' })}
                     </p>
                     <p className={`text-lg font-semibold mt-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                      {t('app.join_subtitle', 'Create your profile')}
+                      {t('app.join_subtitle', { defaultValue: 'Create your profile' })}
                     </p>
                     <button
                       onClick={() => setIsAuthWizardOpen(true)}
@@ -616,7 +625,7 @@ function AppContent() {
                         )}
                         <div>
                           <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">
-                            {t('app.theme', 'Theme')}
+                            {t('app.theme', { defaultValue: 'Theme' })}
                           </p>
                           <p className="text-sm font-semibold">
                             {theme === 'dark' ? t('app.light_mode') : t('app.dark_mode')}
@@ -681,6 +690,8 @@ function AppContent() {
               <Route path="/premium" element={<ProtectedRoute><PremiumScreen /></ProtectedRoute>} />
               <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} />
               <Route path="/referrals" element={<ProtectedRoute><ReferralsScreen /></ProtectedRoute>} />
+
+              <Route path="/checkin" element={<ProtectedRoute><CheckInScreen /></ProtectedRoute>} />
 
               <Route path="/search" element={<ProtectedRoute><SearchScreen /></ProtectedRoute>} />
               <Route path="/match" element={<ProtectedRoute><MatchScreen /></ProtectedRoute>} />
@@ -938,7 +949,7 @@ function AppContent() {
                       : 'border-black/[0.08] bg-white'
                       }`}>
                       <p className={`px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {t('app.sidebar.primary', 'Discover')}
+                        {t('app.sidebar.primary', { defaultValue: 'Discover' })}
                       </p>
                       <div className="space-y-1.5">
                         {mobileNavItems.map((item, index) => {
@@ -1070,10 +1081,10 @@ function AppContent() {
         isOpen={isLogoutModalOpen}
         onClose={() => setIsLogoutModalOpen(false)}
         onConfirm={handleLogoutConfirm}
-        title={t('app.logout_confirmation_title', 'Confirm Logout')}
-        message={t('app.logout_confirmation_message', 'Are you sure you want to log out?')}
-        confirmText={t('app.logout', 'Logout')}
-        cancelText={t('app.cancel', 'Cancel')}
+        title={t('app.logout_confirmation_title', { defaultValue: 'Confirm Logout' })}
+        message={t('app.logout_confirmation_message', { defaultValue: 'Are you sure you want to log out?' })}
+        confirmText={t('app.logout', { defaultValue: 'Logout' })}
+        cancelText={t('app.cancel', { defaultValue: 'Cancel' })}
         variant="danger"
         icon={<LogOut className="w-6 h-6 text-red-500" />}
       />

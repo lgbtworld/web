@@ -771,10 +771,9 @@ function AppContent() {
                   animate={{ x: 0 }}
                   exit={{ x: '-100%' }}
                   transition={{
-                    type: 'spring',
-                    stiffness: 380,
-                    damping: 32,
-                    mass: 0.7
+                    type: 'tween',
+                    ease: [0.16, 1, 0.3, 1],
+                    duration: 0.4
                   }}
                   style={{
                     willChange: 'transform',
@@ -782,8 +781,8 @@ function AppContent() {
                     backfaceVisibility: 'hidden'
                   }}
                   className={`fixed top-0 left-0 bottom-0 w-[320px] max-w-[85vw] z-[101] ${theme === 'dark'
-                    ? 'bg-gradient-to-br from-gray-900/98 to-black/98 backdrop-blur-2xl border-r border-gray-800/80'
-                    : 'bg-gradient-to-br from-white via-gray-50 to-white backdrop-blur-2xl border-r border-black/[0.08]'
+                    ? 'bg-gray-950 border-r border-gray-800/80'
+                    : 'bg-white border-r border-black/[0.08]'
                     } flex flex-col shadow-2xl`}
                   onAnimationStart={() => {
                     if (isMobileMenuOpen) {

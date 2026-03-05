@@ -1,11 +1,21 @@
 import { useEffect, useRef } from "react";
 import { urlBase64ToUint8Array } from "../helpers/helpers";
 import { api } from "../services/api";
+import { useAuth } from "./AuthContext";
 
 export function PushNotificationSetupContext() {
+  const { isAuthenticated } = useAuth();
   const fallbackInterval = useRef<number | null>(null);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      if (fallbackInterval.current) {
+        clearInterval(fallbackInterval.current);
+        fallbackInterval.current = null;
+      }
+      return;
+    }
+
     const ua = navigator.userAgent.toLowerCase();
     const isOpera = ua.includes("opr") || ua.includes("opera");
     const isSafari =
@@ -28,9 +38,10 @@ export function PushNotificationSetupContext() {
     return () => {
       if (fallbackInterval.current) {
         clearInterval(fallbackInterval.current);
+        fallbackInterval.current = null;
       }
     };
-  }, []);
+  }, [isAuthenticated]);
 
   async function setupPush() {
     try {
@@ -94,7 +105,7 @@ export function PushNotificationSetupContext() {
 
     fallbackInterval.current = window.setInterval(async () => {
       try {
-        const res = await api.checkNewNotifications(1,null);
+        const res = await api.checkNewNotifications(1, null);
 
         if (res?.success && res.notifications && res.notifications.length > 0) {
           const unread = res.notifications.some(n => n.is_read === false);
@@ -113,7 +124,7 @@ export function PushNotificationSetupContext() {
 
             const notif = new Notification(firstUnread.title || "New Notification", {
               body: firstUnread.payload?.body || firstUnread.message || "You have new notifications",
-              icon: "https://coolvibes.io/icons/icon_128x128.png"
+              icon: "https://coolvibes.lgbt/icons/icon_128x128.png"
             });
 
             notif.onclick = function (event) {

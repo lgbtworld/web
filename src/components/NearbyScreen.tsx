@@ -125,6 +125,29 @@ const NearbyScreen: React.FC = () => {
 
   }, [])
 
+  useEffect(() => {
+    const handleUserBlocked = (e: any) => {
+      const blockedId = e.detail?.userId;
+      if (blockedId) {
+        setState((prevState: any) => ({
+          ...prevState,
+          nearbyUsers: prevState.nearbyUsers.filter((u: any) => u.public_id !== blockedId && u.id !== blockedId)
+        }));
+
+        setSelectedUser((prev: any) => {
+          if (prev && (prev.public_id === blockedId || prev.id === blockedId)) {
+            return null;
+          }
+          return prev;
+        });
+      }
+    };
+
+    window.addEventListener('userBlocked', handleUserBlocked);
+    return () => window.removeEventListener('userBlocked', handleUserBlocked);
+  }, [setState]);
+
+
 
   const handleRefresh = () => {
     setState((prevState: any) => ({

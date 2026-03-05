@@ -161,14 +161,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, viewMode = 'card' }) =
     if (!user?.public_id) return;
 
     try {
-      await api.call(Actions.CMD_USER_TOGGLE_BLOCK, {
-        method: 'POST',
-        body: {
-          user_id: user.public_id,
-        },
-      });
-
-
+      await api.toggleBlockUser(user.public_id);
     } catch (error) {
       console.error('Error toggling like:', error);
       // Optionally show error message to user

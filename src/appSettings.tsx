@@ -11,8 +11,8 @@ export const applicationName = "coolvibes"
 // Google reCAPTCHA Site Key (v2)
 // Replace with your actual reCAPTCHA site key from https://www.google.com/recaptcha/admin
 export const RECAPTCHA_SITE_KEY = "6LecaQIsAAAAAOptodMnAZCOiKSVysrvKnmsXDix"; // Test key for development
-export const YOUTUBE_API_KEY ="AIzaSyDVaUFhS8lcvNWZCsupEWC-m6CH1RGrMIU"
-export const TENOR_API_KEY= "AIzaSyDVaUFhS8lcvNWZCsupEWC-m6CH1RGrMIU";
+export const YOUTUBE_API_KEY = "AIzaSyDVaUFhS8lcvNWZCsupEWC-m6CH1RGrMIU"
+export const TENOR_API_KEY = "AIzaSyDVaUFhS8lcvNWZCsupEWC-m6CH1RGrMIU";
 
 const hostName = window.location.hostname; // sadece domain, örn: localhost
 const port = window.location.port;         // port numarası, örn: 5173
@@ -33,7 +33,7 @@ const domainToSocketURL: Record<string, [string, string]> = {
   'coolvibes.app': ['wss://socket.coolvibes.app', 'wss://socket2.coolvibes.app'],
 };
 
-const remoteDebug = false
+const remoteDebug = true
 const defaultServiceURL: [string, string] = remoteDebug ? ['https://api.coolvibes.app', 'https://api.coolvibes.app'] : ['http://localhost:3001', 'http://localhost:3000'];
 const defaultSocketURL: [string, string] = remoteDebug ? ['wss://socket.coolvibes.app', 'wss://socket2.coolvibes.app'] : ['ws://localhost:3002', 'ws://localhost:3003'];
 

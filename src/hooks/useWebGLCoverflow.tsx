@@ -76,6 +76,7 @@ interface WebGLReelsOptions {
     vibes: Vibe[];
     onActiveIndexChange: (index: number) => void;
     isMuted: boolean;
+    onActiveMediaLoadingChange?: (isLoading: boolean) => void;
 }
 
 interface MediaItem {
@@ -87,7 +88,7 @@ interface MediaItem {
     resolution: [number, number];
 }
 
-export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMuted }: WebGLReelsOptions) {
+export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMuted, onActiveMediaLoadingChange }: WebGLReelsOptions) {
     const glRef = useRef<WebGLRenderingContext | null>(null);
     const programRef = useRef<WebGLProgram | null>(null);
     const animationFrameRef = useRef<number>(0);
@@ -99,10 +100,10 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
         isMutedRef.current = isMuted;
     }, [isMuted]);
 
-    const interactionRef = useRef({ 
-        isDragging: false, 
-        startY: 0, 
-        lastY: 0, 
+    const interactionRef = useRef({
+        isDragging: false,
+        startY: 0,
+        lastY: 0,
         dragHistory: [] as { time: number, y: number }[],
         lastWheelTime: 0,
         hasInteracted: false,
@@ -121,11 +122,11 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
         const vertexShader = createShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER_SOURCE);
         const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, FRAGMENT_SHADER_SOURCE);
         if (!vertexShader || !fragmentShader) return;
-        
+
         const program = createProgram(gl, vertexShader, fragmentShader);
         if (!program) return;
         programRef.current = program;
-        
+
         const positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
@@ -167,7 +168,7 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
 
             const isVideo = vibe.mediaType === 'video';
             let element: HTMLImageElement | HTMLVideoElement;
-            
+
             const mediaItem: MediaItem = { vibe, texture, element: null!, isReady: false, isVideo, resolution: [1, 1] };
 
             if (isVideo) {
@@ -190,15 +191,15 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
                         mediaItem.resolution = [poster.naturalWidth, poster.naturalHeight];
                     };
                 }
-                
+
                 element.addEventListener('loadeddata', () => {
                     const vid = element as HTMLVideoElement;
-                    if(vid.videoWidth > 0) {
+                    if (vid.videoWidth > 0) {
                         mediaItem.resolution = [vid.videoWidth, vid.videoHeight];
-                        mediaItem.isReady = true; 
+                        mediaItem.isReady = true;
                     }
                 }, { once: true });
-                
+
                 (element as HTMLVideoElement).load();
             } else {
                 element = new Image();
@@ -209,24 +210,24 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
                     const glCtx = glRef.current;
                     const img = element as HTMLImageElement;
                     mediaItem.resolution = [img.naturalWidth, img.naturalHeight];
-                    
+
                     glCtx.bindTexture(glCtx.TEXTURE_2D, mediaItem.texture);
                     glCtx.texImage2D(glCtx.TEXTURE_2D, 0, glCtx.RGBA, glCtx.RGBA, glCtx.UNSIGNED_BYTE, img);
                     mediaItem.isReady = true;
                 };
             }
-            
+
             mediaItem.element = element;
             return mediaItem;
         });
         posRef.current = { current: 0, target: 0, velocity: 0 };
     }, [vibes]);
-    
+
     // Encapsulated function to handle the first user interaction that unlocks video playback
     const unlockPlayback = () => {
         if (interactionRef.current.hasInteracted) return;
         interactionRef.current.hasInteracted = true;
-        
+
         // Attempt to play the current video to meet autoplay policies
         const activeIndex = Math.round(posRef.current.current);
         const activeItem = mediaItemsRef.current[activeIndex];
@@ -245,7 +246,7 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
         if (!isMuted) {
             unlockPlayback();
         }
-        
+
         // Sync the muted state to all video elements
         mediaItemsRef.current.forEach(item => {
             if (item.isVideo) {
@@ -267,16 +268,17 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
         const resToLocation = gl.getUniformLocation(program, "u_res_to");
         const progressLocation = gl.getUniformLocation(program, "u_progress");
         const velocityLocation = gl.getUniformLocation(program, "u_velocity");
-        
+
         let lastActiveIndex = -1;
         let lastTime = 0;
+        let lastReportedLoading = false;
 
         const render = (time: number) => {
             animationFrameRef.current = requestAnimationFrame(render);
             if (lastTime === 0) lastTime = time;
             const deltaTime = (time - lastTime) * 0.001;
             lastTime = time;
-            
+
             const dpr = window.devicePixelRatio || 1;
             const displayWidth = Math.round(canvas.clientWidth * dpr);
             const displayHeight = Math.round(canvas.clientHeight * dpr);
@@ -287,7 +289,7 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
             gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
             const pos = posRef.current;
-            if(!interactionRef.current.isDragging) {
+            if (!interactionRef.current.isDragging) {
                 const stiffness = 150;
                 const damping = 26;
                 const force = (pos.target - pos.current) * stiffness;
@@ -296,15 +298,25 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
                 pos.velocity += acceleration * deltaTime;
                 pos.current += pos.velocity * deltaTime;
             }
-            
+
             const activeIndex = Math.round(pos.current);
+            const activeItem = mediaItemsRef.current[activeIndex];
+
+            if (onActiveMediaLoadingChange && activeItem) {
+                const isLoading = !activeItem.isReady;
+                if (isLoading !== lastReportedLoading || lastActiveIndex === -1) {
+                    onActiveMediaLoadingChange(isLoading);
+                    lastReportedLoading = isLoading;
+                }
+            }
+
             if (activeIndex !== lastActiveIndex) {
                 onActiveIndexChange(activeIndex);
                 lastActiveIndex = activeIndex;
             }
-            
+
             if (interactionRef.current.hasInteracted) {
-                 mediaItemsRef.current.forEach((item, idx) => {
+                mediaItemsRef.current.forEach((item, idx) => {
                     if (item.isVideo) {
                         const video = item.element as HTMLVideoElement;
                         if (idx === activeIndex && video.paused) {
@@ -326,7 +338,7 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
             const fromIndex = Math.max(0, Math.min(vibes.length - 1, Math.floor(p)));
             const toIndex = Math.max(0, Math.min(vibes.length - 1, Math.ceil(p)));
             const progress = p - fromIndex;
-            
+
             const fromItem = mediaItemsRef.current[fromIndex];
             const toItem = mediaItemsRef.current[toIndex];
             if (!fromItem || !toItem) return;
@@ -335,20 +347,20 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, fromItem.texture);
             if (fromItem.isReady && fromItem.isVideo) {
-                 const video = fromItem.element as HTMLVideoElement;
-                 if (video.currentTime > 0 && video.readyState >= video.HAVE_CURRENT_DATA) {
+                const video = fromItem.element as HTMLVideoElement;
+                if (video.currentTime > 0 && video.readyState >= video.HAVE_CURRENT_DATA) {
                     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-                 }
+                }
             }
 
             gl.uniform1i(texToLocation, 1);
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, toItem.texture);
             if (toItem.isReady && toItem.isVideo) {
-                 const video = toItem.element as HTMLVideoElement;
-                 if (video.currentTime > 0 && video.readyState >= video.HAVE_CURRENT_DATA) {
+                const video = toItem.element as HTMLVideoElement;
+                if (video.currentTime > 0 && video.readyState >= video.HAVE_CURRENT_DATA) {
                     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-                 }
+                }
             }
 
             gl.uniform2f(resLocation, gl.canvas.width, gl.canvas.height);
@@ -356,21 +368,21 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
             gl.uniform2f(resToLocation, toItem.resolution[0], toItem.resolution[1]);
             gl.uniform1f(progressLocation, progress);
             gl.uniform1f(velocityLocation, pos.velocity);
-            
+
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         };
         render(0);
-        
-        return () => { 
+
+        return () => {
             cancelAnimationFrame(animationFrameRef.current);
             mediaItemsRef.current.forEach(item => {
-                if(item.isVideo) {
+                if (item.isVideo) {
                     (item.element as HTMLVideoElement).pause();
                 }
             });
         };
     }, [vibes, onActiveIndexChange, canvasRef]);
-    
+
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -380,7 +392,7 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
             interactionRef.current.isDragging = true;
             interactionRef.current.startY = e.clientY;
             interactionRef.current.lastY = e.clientY;
-            interactionRef.current.dragHistory = [{time: Date.now(), y: e.clientY}];
+            interactionRef.current.dragHistory = [{ time: Date.now(), y: e.clientY }];
             posRef.current.velocity = 0;
             canvas.setPointerCapture(e.pointerId);
             canvas.style.cursor = 'grabbing';
@@ -391,9 +403,9 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
             const now = Date.now();
             const deltaY = e.clientY - interactionRef.current.lastY;
             interactionRef.current.lastY = e.clientY;
-            
-            posRef.current.current -= deltaY * 0.005; 
-            
+
+            posRef.current.current -= deltaY * 0.005;
+
             interactionRef.current.dragHistory.push({ time: now, y: e.clientY });
             if (interactionRef.current.dragHistory.length > 5) {
                 interactionRef.current.dragHistory.shift();
@@ -406,7 +418,6 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
             canvas.releasePointerCapture(e.pointerId);
             canvas.style.cursor = 'grab';
 
-            const now = Date.now();
             const history = interactionRef.current.dragHistory;
             const first = history[0];
             const last = history[history.length - 1];
@@ -424,14 +435,14 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
             newTarget = Math.max(0, Math.min(vibes.length - 1, newTarget));
             posRef.current.target = newTarget;
         };
-        
+
         const handleWheel = (e: WheelEvent) => {
             e.preventDefault();
             unlockPlayback();
             const now = Date.now();
             if (now - interactionRef.current.lastWheelTime < 500) return;
             interactionRef.current.lastWheelTime = now;
-            
+
             const direction = Math.sign(e.deltaY);
             let newTarget = Math.round(posRef.current.target) + direction;
             newTarget = Math.max(0, Math.min(vibes.length - 1, newTarget));

@@ -12,17 +12,17 @@ interface ApiRequestOptions {
 export class ApiService {
 
 
-  async fetchMetadata(url : any) {
+  async fetchMetadata(url: any) {
     return this.call(Actions.CMD_LINK_METADATA, {
       method: "POST",
-      body:{url:url}
+      body: { url: url }
     });
   }
 
-  async checkNewNotifications(limit:number = 1,cursor:any = null){
+  async checkNewNotifications(limit: number = 1, cursor: any = null) {
     return this.call(Actions.CMD_USER_GET_NOTIFICATIONS, {
       method: "POST",
-      body:{limit:limit,cursor:cursor}
+      body: { limit: limit, cursor: cursor }
     });
   }
 
@@ -32,10 +32,10 @@ export class ApiService {
     });
   }
 
-  async handleSetVapidSubscriptions(params:any) {
+  async handleSetVapidSubscriptions(params: any) {
     return this.call(Actions.CMD_SET_VAPID_SUBSCRIBE, {
       method: "POST",
-      body:params
+      body: params
     });
   }
 
@@ -61,67 +61,67 @@ export class ApiService {
     console.log("handleCreatePost", data)
   }
 
-  async handlePostDelete(postId : any){
+  async handlePostDelete(postId: any) {
     return this.call(Actions.CMD_POST_DELETE, {
       method: "POST",
-      body: {post_id:postId},
+      body: { post_id: postId },
     });
   }
 
-  async handlePostLike(postId : any){
+  async handlePostLike(postId: any) {
     return this.call(Actions.CMD_POST_LIKE, {
       method: "POST",
-      body: {post_id:postId},
+      body: { post_id: postId },
     });
   }
 
-  async handlePostDislike(postId : any){
+  async handlePostDislike(postId: any) {
     return this.call(Actions.CMD_POST_DISLIKE, {
       method: "POST",
-      body: {post_id:postId},
+      body: { post_id: postId },
     });
   }
 
-  async handlePostBanana(postId : any){
+  async handlePostBanana(postId: any) {
     return this.call(Actions.CMD_POST_BANANA, {
       method: "POST",
-      body: {post_id:postId},
+      body: { post_id: postId },
     });
   }
 
-  async handlePostAddToBookmarks(postId : any){
+  async handlePostAddToBookmarks(postId: any) {
     return this.call(Actions.CMD_POST_BOOKMARK, {
       method: "POST",
-      body: {post_id:postId},
+      body: { post_id: postId },
     });
   }
 
-  async handlePostReport(postId : any,reason:any,description:any){
+  async handlePostReport(postId: any, reason: any, description: any) {
     return this.call(Actions.CMD_POST_REPORT, {
       method: "POST",
-      body: {post_id:postId,reason:reason,description:description},
+      body: { post_id: postId, reason: reason, description: description },
     });
   }
 
-  async handleUserReport(userId : any,reason:any,description:any){
+  async handleUserReport(userId: any, reason: any, description: any) {
     return this.call(Actions.CMD_USER_REPORT, {
       method: "POST",
-      body: {userId:userId,reason:reason,description:description},
+      body: { userId: userId, reason: reason, description: description },
     });
   }
 
-  async handlePostView(postId : any){
+  async handlePostView(postId: any) {
     return this.call(Actions.CMD_POST_VIEW, {
       method: "POST",
-      body: {post_id:postId},
+      body: { post_id: postId },
     });
   }
 
 
-  async handleSendTip(postId : any,amount:any){
+  async handleSendTip(postId: any, amount: any) {
     return this.call(Actions.CMD_POST_TIP, {
       method: "POST",
-      body: {post_id:postId,amount:amount},
+      body: { post_id: postId, amount: amount },
     });
   }
 
@@ -137,15 +137,15 @@ export class ApiService {
     const body: Record<string, any> = {
       choice_id: credentials.choice_id,
     };
-    
+
     if (credentials.weight !== undefined && credentials.weight !== null) {
       body.weight = credentials.weight;
     }
-    
+
     if (credentials.rank !== undefined && credentials.rank !== null) {
       body.rank = credentials.rank;
     }
-    
+
     return this.call(Actions.CMD_POST_VOTE, {
       method: "POST",
       body: body,
@@ -181,22 +181,31 @@ export class ApiService {
     });
   }
 
-    async fetchNearbyPlaces(latitude: number | null, longitude: number | null, cursor: string | null = null,distance: string | null = null, limit: number | null = null) {
+  async fetchNearbyPlaces(latitude: number | null, longitude: number | null, cursor: string | null = null, distance: string | null = null, limit: number | null = null) {
     return this.call(Actions.CMD_PLACE_FETCH, {
       method: 'POST',
-      body: { latitude: latitude, longitude: longitude, cursor: cursor,distance:distance, limit: limit },
+      body: { latitude: latitude, longitude: longitude, cursor: cursor, distance: distance, limit: limit },
     });
   }
 
-  async fetchPlacesCategories (cursor: string | null = null, limit: number | null = null) {
+  async fetchPlacesCategories(cursor: string | null = null, limit: number | null = null) {
     return this.call(Actions.CMD_PLACE_CATEGORIES, {
       method: 'POST',
-      body: {limit:limit,cursor:cursor},
+      body: { limit: limit, cursor: cursor },
     });
   }
 
+  async toggleBlockUser(blocked_id: string) {
+    await api.call(Actions.CMD_USER_TOGGLE_BLOCK, {
+      method: 'POST',
+      body: {
+        blocked_id: blocked_id,
+      },
+    });
+    window.dispatchEvent(new CustomEvent('userBlocked', { detail: { userId: blocked_id } }));
+  }
 
-  
+
   async updateProfile(userData: Record<string, any>) {
     return this.call(Actions.CMD_UPDATE_USER_PROFILE, {
       method: "POST",
@@ -226,43 +235,43 @@ export class ApiService {
     });
   }
 
-  async deleteChatForAll(chatId: string){
+  async deleteChatForAll(chatId: string) {
     return this.call(Actions.CMD_DELETE_CHAT_FOR_ALL, {
       method: "POST",
       body: { chat_id: chatId },
     });
   }
 
-  async deleteMessageForMe(chatId:string, messageId:string){
+  async deleteMessageForMe(chatId: string, messageId: string) {
     return this.call(Actions.CMD_DELETE_MESSAGE_FOR_USER, {
       method: "POST",
-      body: { chat_id: chatId,message_id:messageId },
+      body: { chat_id: chatId, message_id: messageId },
     });
   }
 
-  async deleteMessageForAll(chatId:string, messageId:string){
+  async deleteMessageForAll(chatId: string, messageId: string) {
     return this.call(Actions.CMD_DELETE_MESSAGE_FOR_ALL, {
       method: "POST",
-      body: { chat_id: chatId,message_id:messageId },
+      body: { chat_id: chatId, message_id: messageId },
     });
   }
 
 
-  async clearChatHistoryForMe(chatId:string){
+  async clearChatHistoryForMe(chatId: string) {
     return this.call(Actions.CMD_CLEAR_CHAT_HISTORY_FOR_USER, {
       method: "POST",
       body: { chat_id: chatId },
     });
   }
 
-  async clearChatHistoryForAll(chatId:string){
+  async clearChatHistoryForAll(chatId: string) {
     return this.call(Actions.CMD_CLEAR_CHAT_HISTORY_FOR_ALL, {
       method: "POST",
       body: { chat_id: chatId },
     });
   }
 
-  
+
 
   async updatePreferences(id: string, bit_index: number, enabled: boolean) {
     return this.call(Actions.CMD_USER_UPDATE_PREFERENCES, {

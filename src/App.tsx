@@ -340,13 +340,31 @@ function AppContent() {
                   {applicationName}
                 </h1>
               </button>
-              <button
-                onClick={() => setIsAuthWizardOpen(true)}
-                className={`p-2 rounded-full transition-colors ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-black/10'
-                  }`}
-              >
-                <User className={`w-6 h-6 ${theme === 'dark' ? 'text-white' : 'text-black'}`} />
-              </button>
+              {isAuthenticated ? (
+                <button
+                  onClick={() => openProfile()}
+                  className={`relative p-0.5 rounded-full transition-transform active:scale-95`}
+                >
+                  <div className={`w-8 h-8 rounded-full overflow-hidden ring-2 ${theme === 'dark' ? 'ring-white/10' : 'ring-black/10'}`}>
+                    {avatarIconSrc ? (
+                      <img src={avatarIconSrc} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className={`w-full h-full flex items-center justify-center ${theme === 'dark' ? 'bg-white/10' : 'bg-black/10'}`}>
+                        <User className="w-5 h-5 text-gray-500" />
+                      </div>
+                    )}
+                  </div>
+                  <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ${theme === 'dark' ? 'ring-gray-950' : 'ring-white'}`} />
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsAuthWizardOpen(true)}
+                  className={`p-2 rounded-full transition-colors ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-black/10'
+                    }`}
+                >
+                  <User className={`w-6 h-6 ${theme === 'dark' ? 'text-white' : 'text-black'}`} />
+                </button>
+              )}
             </div>
           </header>
 

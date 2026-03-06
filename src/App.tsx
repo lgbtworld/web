@@ -153,7 +153,7 @@ function AppContent() {
   const sidebarNavItems = React.useMemo(() => [
     {
       id: 'pride',
-      label: 'Pride',
+      label: t('app.nav.home', { defaultValue: 'Pride' }),
       path: '/',
       icon: HandFist,
       accent: 'from-rose-500/90 via-fuchsia-500/80 to-purple-500/70'
@@ -413,7 +413,7 @@ function AppContent() {
                       {applicationName}
                     </h1>
                     <p className={`text-[11px] mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                      Stories from the Rainbow
+                      {t('app.subtitle', { defaultValue: 'Stories from the Rainbow' })}
                     </p>
                   </div>
                 </button>

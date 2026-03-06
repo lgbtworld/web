@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import Container from './Container';
+import { useTranslation } from 'react-i18next';
 
 const MOCK_TOPICS = [
     {
@@ -77,6 +78,7 @@ export default function ClassifiedDetailScreen() {
     const { theme } = useTheme();
     const { id } = useParams();
     const navigate = useNavigate();
+    const { t } = useTranslation('common');
     const dark = theme === 'dark';
 
     const topic = useMemo(() => MOCK_TOPICS.find(t => t.id === id), [id]);
@@ -96,7 +98,7 @@ export default function ClassifiedDetailScreen() {
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                         <h2 className={`font-bold text-lg ${dark ? 'text-white' : 'text-gray-900'}`}>
-                            İlan
+                            {t('classifieds.detail_header')}
                         </h2>
                     </div>
 
@@ -142,25 +144,25 @@ export default function ClassifiedDetailScreen() {
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 pt-4">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 text-indigo-500 uppercase tracking-widest text-[9px] font-black">
-                                        <MapPin className="w-3 h-3" /> Lokasyon
+                                        <MapPin className="w-3 h-3" /> {t('classifieds.location')}
                                     </div>
                                     <p className="text-xs md:text-sm font-bold font-mono uppercase truncate">{topic.location}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 text-emerald-500 uppercase tracking-widest text-[9px] font-black">
-                                        <DollarSign className="w-3 h-3" /> Maaş
+                                        <DollarSign className="w-3 h-3" /> {t('classifieds.salary')}
                                     </div>
                                     <p className="text-xs md:text-sm font-bold font-mono uppercase truncate">{topic.salary}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 text-amber-500 uppercase tracking-widest text-[9px] font-black">
-                                        <Clock className="w-3 h-3" /> Çalışma
+                                        <Clock className="w-3 h-3" /> {t('classifieds.work_type')}
                                     </div>
                                     <p className="text-xs md:text-sm font-bold font-mono uppercase truncate">{topic.workType}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 text-purple-500 uppercase tracking-widest text-[9px] font-black">
-                                        <Calendar className="w-3 h-3" /> Tarih
+                                        <Calendar className="w-3 h-3" /> {t('classifieds.date')}
                                     </div>
                                     <p className="text-xs md:text-sm font-bold font-mono uppercase truncate">{topic.timestamp}</p>
                                 </div>
@@ -172,7 +174,7 @@ export default function ClassifiedDetailScreen() {
                         {/* Description Body */}
                         <div className="space-y-12 md:space-y-16">
                             <section>
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 md:mb-8 opacity-40">Hakkında</h3>
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 md:mb-8 opacity-40">{t('classifieds.about')}</h3>
                                 <p className={`text-lg md:text-xl lg:text-2xl leading-relaxed font-medium ${dark ? 'text-gray-300' : 'text-slate-600'}`}>
                                     {topic.description}
                                 </p>
@@ -180,7 +182,7 @@ export default function ClassifiedDetailScreen() {
 
                             {topic.requirements && (
                                 <section>
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 md:mb-8 opacity-40">Beklentiler</h3>
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 md:mb-8 opacity-40">{t('classifieds.expectations')}</h3>
                                     <div className="grid gap-4 md:gap-6">
                                         {topic.requirements.map((req, i) => (
                                             <div key={i} className={`flex items-start gap-5 p-5 md:p-6 rounded-[24px] border transition-colors ${dark ? 'border-gray-900 bg-gray-900/10 hover:border-gray-800' : 'border-slate-100 bg-slate-50/20 hover:border-slate-200'}`}>
@@ -219,28 +221,27 @@ export default function ClassifiedDetailScreen() {
                             <div className="grid grid-cols-1 gap-3 md:gap-4">
                                 <button className={`h-14 md:h-16 rounded-2xl flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] ${dark ? 'bg-white text-black hover:bg-gray-200' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/10'}`}>
                                     <Send className="w-4 h-4" />
-                                    Başvur
+                                    {t('classifieds.apply')}
                                 </button>
                                 <button className={`h-14 md:h-16 rounded-2xl border flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:bg-gray-800/10 ${dark ? 'border-gray-800 bg-gray-900/50' : 'border-slate-200 bg-transparent'}`}>
                                     <User className="w-4 h-4" />
-                                    Profil
+                                    {t('classifieds.profile')}
                                 </button>
                             </div>
 
                             <div className={`mt-8 md:mt-12 pt-8 md:pt-10 border-t border-dashed ${dark ? 'border-gray-800' : 'border-slate-100'} space-y-4`}>
                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
-                                    <span>Hesap</span>
-                                    <span className={dark ? 'text-white' : 'text-slate-900'}>Kurumsal</span>
+                                    <span>{t('classifieds.account')}</span>
+                                    <span className={dark ? 'text-white' : 'text-slate-900'}>{t('classifieds.corporate')}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
-                                    <span>İlanlar</span>
+                                    <span>{t('classifieds.listings')}</span>
                                     <span className={dark ? 'text-white' : 'text-slate-900'}>12</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                </div>
+                </motion.div>
             </main>
         </Container>
     );

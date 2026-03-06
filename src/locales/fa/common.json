@@ -203,7 +203,7 @@
     "popular_users_error": "نمی‌توانستیم کاربران محبوب را در حال حاضر بارگذاری کنیم.",
     "popular_users_retry": "دوباره تلاش کنید",
     "nav": {
-      "home": "خانه",
+      "home": "Pride",
       "nearby": "نزدیک",
       "explore": "کاوش",
       "matches": "تطابق‌ها",
@@ -213,8 +213,22 @@
       "classifieds": "آگهی‌ها",
       "profile": "پروفایل",
       "search": "جستجو",
-      "match": "تطابق"
-    }
+      "match": "تطابق",
+      "referrals": "Referrals",
+      "checkin": "Check-In"
+    },
+    "sidebar": {
+      "primary": "Discover",
+      "secondary": "Manage"
+    },
+    "subtitle": "Stories from the Rainbow",
+    "logout_confirmation_title": "Confirm Logout",
+    "logout_confirmation_message": "Are you sure you want to log out?",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "view_profile": "View Profile",
+    "join_title": "Welcome",
+    "join_subtitle": "Create your profile"
   },
   "months": {
     "january": "ژانویه",
@@ -406,5 +420,43 @@
     "no_places_found_subtitle": "Try adjusting your search or filters.",
     "location_permission_error": "Please grant location permission to see nearby places.",
     "all_categories": "All"
+  },
+  "classifieds": {
+    "title": "Business World",
+    "hire": "I am Hiring",
+    "jobs": "I am Looking for Work",
+    "search_placeholder_hiring": "Search listings...",
+    "search_placeholder_seeking": "Search candidates...",
+    "create_topic": "Create Topic",
+    "global_network": "Global Network",
+    "active_listings": "{{count}} ACTIVE LISTINGS",
+    "no_results": "No Results Found",
+    "examine": "Examine",
+    "detail": "Detail",
+    "new_topic": "New Topic",
+    "new_job_listing": "New Job Listing",
+    "new_seeking_listing": "Seeking Work Announcement",
+    "publish": "Publish",
+    "form_title": "Title",
+    "form_description": "Description",
+    "form_metadata": "Metadata (Location, Budget, Duration)",
+    "form_title_placeholder": "Position or skill summary...",
+    "form_description_placeholder": "Provide detailed information...",
+    "form_metadata_placeholder": "e.g.: Remote • $5000 • Full-time",
+    "form_publish": "Publish Topic",
+    "back": "Back",
+    "detail_header": "Listing",
+    "apply": "Apply",
+    "profile": "Profile",
+    "account": "Account",
+    "listings": "Listings",
+    "corporate": "Corporate",
+    "about": "About",
+    "expectations": "Expectations",
+    "location": "Location",
+    "salary": "Salary",
+    "work_type": "Work Type",
+    "date": "Date",
+    "clear_search": "Clear Search"
   }
 }

@@ -9,13 +9,13 @@ import {
   ArrowUpRight,
   ShieldCheck,
   MessageSquare,
-  Send,
   MoreHorizontal,
   Globe,
   Briefcase
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import Container from './Container';
+import { useTranslation } from 'react-i18next';
 
 interface Topic {
   id: string;
@@ -85,6 +85,7 @@ const ALL_TOPICS = [...MOCK_TOPICS, ...GENERATED_TOPICS];
 export default function ClassifiedsScreen() {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
   const dark = theme === 'dark';
 
   const [activeTab, setActiveTab] = useState<'seeking' | 'hiring'>('hiring');
@@ -124,7 +125,7 @@ export default function ClassifiedsScreen() {
                   : dark ? 'text-gray-500 hover:bg-white/5' : 'text-slate-400 hover:bg-slate-50'
                   }`}
               >
-                İş Veriyorum
+                {t('classifieds.hire')}
               </button>
               <button
                 onClick={() => setActiveTab('seeking')}
@@ -133,7 +134,7 @@ export default function ClassifiedsScreen() {
                   : dark ? 'text-gray-500 hover:bg-white/5' : 'text-slate-400 hover:bg-slate-50'
                   }`}
               >
-                İş Arıyorum
+                {t('classifieds.jobs')}
               </button>
             </div>
 
@@ -142,7 +143,7 @@ export default function ClassifiedsScreen() {
               <Search className={`absolute left-3.5 w-4 h-4 transition-colors ${dark ? 'text-gray-600 group-focus-within:text-white' : 'text-slate-300 group-focus-within:text-slate-900'}`} />
               <input
                 type="text"
-                placeholder={`${activeTab === 'hiring' ? 'İlan' : 'Aday'} ara...`}
+                placeholder={t(activeTab === 'hiring' ? 'classifieds.search_placeholder_hiring' : 'classifieds.search_placeholder_seeking')}
                 className={`w-full h-full pl-10 pr-4 rounded-xl border text-xs font-bold transition-all focus:outline-none focus:ring-1 focus:ring-indigo-500/20 ${dark
                   ? 'bg-white/[0.03] border-gray-800 placeholder:text-gray-700 text-white focus:bg-white/[0.06] focus:border-gray-700'
                   : 'bg-slate-50 border-slate-100 placeholder:text-slate-400 text-slate-900 focus:bg-white focus:border-slate-300'
@@ -183,11 +184,11 @@ export default function ClassifiedsScreen() {
             <div className="flex items-center gap-4">
               <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${dark ? 'text-gray-600' : 'text-slate-400'}`}>
                 <Globe className="w-3.5 h-3.5" />
-                Global Network
+                {t('classifieds.global_network')}
               </div>
               <div className={`hidden sm:block h-3 w-px ${dark ? 'bg-gray-800' : 'bg-slate-200'}`} />
               <div className={`text-[10px] font-mono font-bold ${dark ? 'text-indigo-500/80' : 'text-indigo-600'}`}>
-                {filteredTopics.length} AKTİF KAYIT
+                {t('classifieds.active_listings', { count: filteredTopics.length })}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -243,7 +244,7 @@ export default function ClassifiedsScreen() {
                       ))}
                     </div>
                     <div className={`hidden md:flex items-center gap-4 text-[11px] font-black uppercase tracking-widest group-hover:translate-x-2 transition-transform ${dark ? 'text-white' : 'text-slate-900'}`}>
-                      Detay
+                      {t('classifieds.detail')}
                       <ArrowUpRight className="w-5 h-5" />
                     </div>
                   </div>
@@ -252,7 +253,8 @@ export default function ClassifiedsScreen() {
             ) : (
               <div className="py-40 text-center">
                 <Search className={`w-12 h-12 mx-auto mb-6 ${dark ? 'text-gray-800' : 'text-slate-200'}`} />
-                <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${dark ? 'text-gray-700' : 'text-slate-300'}`}>Sonuç Bulunamadı</p>
+                <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${dark ? 'text-gray-700' : 'text-slate-300'}`}>{t('classifieds.no_results')}</p>
+                <button onClick={() => setSearchQuery('')} className="mt-4 text-[10px] font-black uppercase text-indigo-500 hover:underline">{t('classifieds.clear_search')}</button>
               </div>
             )}
           </div>
@@ -275,13 +277,13 @@ export default function ClassifiedsScreen() {
               className={`w-full max-w-lg border rounded-[32px] overflow-hidden ${dark ? 'bg-gray-900 border-gray-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
             >
               <div className={`flex items-center justify-between px-8 h-16 border-b ${dark ? 'bg-gray-950/50 border-gray-800' : 'bg-slate-50 border-slate-200'}`}>
-                <h3 className="text-[11px] font-black uppercase tracking-[0.3em]">Yeni Konu</h3>
+                <h3 className="text-[11px] font-black uppercase tracking-[0.3em]">{t('classifieds.new_topic')}</h3>
                 <button onClick={() => setIsAddingTopic(false)} className="p-2"><X className="w-6 h-6" /></button>
               </div>
               <div className="p-8 space-y-6">
                 {/* Modal content simplified for focus on layout/scroll */}
-                <div className="h-40 flex items-center justify-center text-gray-500">Form Alanı</div>
-                <button className={`w-full h-14 rounded-2xl font-black uppercase tracking-widest ${dark ? 'bg-white text-black' : 'bg-slate-900 text-white'}`}>Yayınla</button>
+                <div className="h-40 flex items-center justify-center text-gray-500">{t('classifieds.form_description')}</div>
+                <button className={`w-full h-14 rounded-2xl font-black uppercase tracking-widest ${dark ? 'bg-white text-black' : 'bg-slate-900 text-white'}`}>{t('classifieds.publish')}</button>
               </div>
             </motion.div>
           </motion.div>

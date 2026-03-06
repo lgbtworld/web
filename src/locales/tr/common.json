@@ -213,8 +213,22 @@
       "classifieds": "İlanlar",
       "profile": "Profil",
       "search": "Ara",
-      "match": "Eşleşme"
-    }
+      "match": "Eşleşme",
+      "referrals": "Referanslar",
+      "checkin": "Check-In"
+    },
+    "sidebar": {
+      "primary": "Keşfet",
+      "secondary": "Yönet"
+    },
+    "subtitle": "Gökkuşağından Hikayeler",
+    "logout_confirmation_title": "Oturumu Kapatmayı Onayla",
+    "logout_confirmation_message": "Çıkış yapmak istediğinizden emin misiniz?",
+    "cancel": "İptal",
+    "confirm": "Onayla",
+    "view_profile": "Profili Görüntüle",
+    "join_title": "Hoş Geldiniz",
+    "join_subtitle": "Profilinizi oluşturun"
   },
   "months": {
     "january": "Ocak",
@@ -450,5 +464,43 @@
     "added_by": "Ekleyen Kullanıcı",
     "business_id": "İşletme ID",
     "verified_by": "{{domain}} tarafından doğrulanmıştır."
+  },
+  "classifieds": {
+    "title": "İş Dünyası",
+    "hire": "İş Veriyorum",
+    "jobs": "İş Arıyorum",
+    "search_placeholder_hiring": "İlan ara...",
+    "search_placeholder_seeking": "Aday ara...",
+    "create_topic": "Konu Aç",
+    "global_network": "Global Network",
+    "active_listings": "{{count}} AKTİF KAYIT",
+    "no_results": "Sonuç Bulunamadı",
+    "examine": "İncele",
+    "detail": "Detay",
+    "new_topic": "Yeni Konu",
+    "new_job_listing": "Yeni İş İlanı",
+    "new_seeking_listing": "İş Arayışı Duyurusu",
+    "publish": "Yayınla",
+    "form_title": "Başlık",
+    "form_description": "Açıklama",
+    "form_metadata": "Metadata (Konum, Bütçe, Süre)",
+    "form_title_placeholder": "Pozisyon veya yetenek özeti...",
+    "form_description_placeholder": "Detaylı bilgi verin...",
+    "form_metadata_placeholder": "örn: Remote • $5000 • Full-time",
+    "form_publish": "Konuyu Yayınla",
+    "back": "Geri",
+    "detail_header": "İlan",
+    "apply": "Başvur",
+    "profile": "Profil",
+    "account": "Hesap",
+    "listings": "İlanlar",
+    "corporate": "Kurumsal",
+    "about": "Hakkında",
+    "expectations": "Beklentiler",
+    "location": "Lokasyon",
+    "salary": "Maaş",
+    "work_type": "Çalışma",
+    "date": "Tarih",
+    "clear_search": "Aramayı Temizle"
   }
 }

@@ -14,7 +14,7 @@ import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useSettings } from './contexts/SettingsContext';
 import AuthWizard from './components/AuthWizard';
-import { MapPin, Heart, MessageCircle, User, Users, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist } from 'lucide-react';
+import { MapPin, Heart, MessageCircle, User, Users, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Briefcase } from 'lucide-react';
 import TrendsPanel, { NormalizedTrend } from './components/TrendsPanel';
 import PopularUsersPanel from './components/PopularUsersPanel';
 import PlaceDetailsScreen from './components/PlaceDetailsScreen';
@@ -184,6 +184,13 @@ function AppContent() {
       accent: 'from-green-400/80 to-emerald-500/80'
     },
     {
+      id: 'classifieds',
+      label: t('app.nav.classifieds', { defaultValue: 'İş Dünyası' }),
+      path: '/classifieds',
+      icon: Briefcase,
+      accent: 'from-indigo-400/80 to-blue-600/80'
+    },
+    {
       id: 'messages',
       label: t('app.nav.messages'),
       path: '/messages',
@@ -222,14 +229,14 @@ function AppContent() {
   ], [profilePath, t]);
 
   const mobileNavItems = React.useMemo(() => {
-    const mobileOrder = ['pride', 'nearby', 'match', 'places', 'messages', 'notifications', 'referrals', 'profile'];
+    const mobileOrder = ['pride', 'nearby', 'match', 'classifieds', 'places', 'messages', 'notifications', 'referrals', 'profile'];
     return mobileOrder
       .map((id) => sidebarNavItems.find((item) => item.id === id))
       .filter(Boolean) as typeof sidebarNavItems;
   }, [sidebarNavItems]);
 
   const sidebarNavSections = React.useMemo(() => {
-    const primaryOrder = ['pride', 'nearby', 'match', 'places', 'messages'];
+    const primaryOrder = ['pride', 'nearby', 'match', 'classifieds', 'places', 'messages'];
     const secondaryOrder = ['notifications', 'referrals', 'profile'];
 
     const sortByOrder = (ids: string[]) =>

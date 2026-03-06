@@ -36,6 +36,7 @@ import ReferralsScreen from './components/ReferralsScreen.tsx';
 import ReferralHandler from './components/ReferralHandler.tsx';
 // import CheckInScreen from './components/CheckInScreen'; // TODO: Re-enable
 import ConfirmationModal from './components/ConfirmationModal.tsx';
+import CheckInScreen from './components/CheckInScreen.tsx';
 const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/': 'pride',
   '/pride': 'pride',
@@ -693,7 +694,7 @@ function AppContent() {
               {/* <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} /> */}
               <Route path="/referrals" element={<ProtectedRoute><ReferralsScreen /></ProtectedRoute>} />
 
-              {/* <Route path="/checkin" element={<ProtectedRoute><CheckInScreen /></ProtectedRoute>} /> */}
+              <Route path="/checkin" element={<ProtectedRoute><CheckInScreen /></ProtectedRoute>} />
 
               <Route path="/search" element={<ProtectedRoute><SearchScreen /></ProtectedRoute>} />
               <Route path="/match" element={<ProtectedRoute><MatchScreen /></ProtectedRoute>} />

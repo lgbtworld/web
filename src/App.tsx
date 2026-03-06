@@ -14,13 +14,14 @@ import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useSettings } from './contexts/SettingsContext';
 import AuthWizard from './components/AuthWizard';
-import { MapPin, Heart, MessageCircle, User, Users, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Briefcase } from 'lucide-react';
+import { MapPin, Heart, MessageCircle, User, Users, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Briefcase, Navigation } from 'lucide-react';
 import TrendsPanel, { NormalizedTrend } from './components/TrendsPanel';
 import PopularUsersPanel from './components/PopularUsersPanel';
 import PlaceDetailsScreen from './components/PlaceDetailsScreen';
 import HomeScreen from './components/HomeScreen';
 import LanguageSelector from './components/LanguageSelector.tsx';
 import ClassifiedsScreen from './components/ClassifiedsScreen';
+import ClassifiedDetailScreen from './components/ClassifiedDetailScreen';
 import './i18n';
 import { useTranslation } from 'react-i18next';
 import { applicationName } from './appSettings.tsx';
@@ -108,13 +109,16 @@ function AppContent() {
   const followingCount = (user as any)?.engagements?.counts?.following_count ?? 0;
   const followerCount = (user as any)?.engagements?.counts?.follower_count ?? 0;
   const avatarIconSrc = getSafeImageURLEx((user as any)?.public_id, (user as any)?.avatar, 'icon') || undefined;
-  const shouldShowRightSidebar = !RIGHT_SIDEBAR_HIDDEN_PATHS.has(location.pathname);
+  const shouldShowRightSidebar = !Array.from(RIGHT_SIDEBAR_HIDDEN_PATHS).some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
 
   // Update activeScreen based on current URL
   React.useEffect(() => {
     const path = location.pathname;
     const nextScreen = ACTIVE_SCREEN_BY_PATH[path];
-    if (nextScreen) {
+
+    if (path.startsWith('/classifieds')) {
+      setActiveScreen('classifieds');
+    } else if (nextScreen) {
       setActiveScreen(nextScreen);
     } else if (path.startsWith('/') && path.split('/').length === 2) {
       // Profile route like /username
@@ -154,14 +158,13 @@ function AppContent() {
       icon: HandFist,
       accent: 'from-rose-500/90 via-fuchsia-500/80 to-purple-500/70'
     },
-    // TODO: Re-enable checkin when ready
-    // {
-    //   id: 'checkin',
-    //   label: t('app.nav.checkin', { defaultValue: 'Check-In' }),
-    //   path: '/checkin',
-    //   icon: Navigation,
-    //   accent: 'from-blue-400/80 to-indigo-500/80'
-    // },
+    {
+      id: 'checkin',
+      label: t('app.nav.checkin', { defaultValue: 'Check-In' }),
+      path: '/checkin',
+      icon: Navigation,
+      accent: 'from-blue-400/80 to-indigo-500/80'
+    },
     {
       id: 'nearby',
       label: t('app.nav.nearby'),
@@ -229,14 +232,14 @@ function AppContent() {
   ], [profilePath, t]);
 
   const mobileNavItems = React.useMemo(() => {
-    const mobileOrder = ['pride', 'nearby', 'match', 'classifieds', 'places', 'messages', 'notifications', 'referrals', 'profile'];
+    const mobileOrder = ['pride', 'checkin', 'nearby', 'match', 'classifieds', 'places', 'messages', 'notifications', 'referrals', 'profile'];
     return mobileOrder
       .map((id) => sidebarNavItems.find((item) => item.id === id))
       .filter(Boolean) as typeof sidebarNavItems;
   }, [sidebarNavItems]);
 
   const sidebarNavSections = React.useMemo(() => {
-    const primaryOrder = ['pride', 'nearby', 'match', 'classifieds', 'places', 'messages'];
+    const primaryOrder = ['pride', 'checkin', 'nearby', 'match', 'classifieds', 'places', 'messages'];
     const secondaryOrder = ['notifications', 'referrals', 'profile'];
 
     const sortByOrder = (ids: string[]) =>
@@ -711,6 +714,7 @@ function AppContent() {
               <Route path="/messages" element={<ProtectedRoute><MessagesScreen /></ProtectedRoute>} />
               <Route path="/notifications" element={<ProtectedRoute><NotificationsScreen /></ProtectedRoute>} />
               <Route path="/classifieds" element={<ProtectedRoute><ClassifiedsScreen /></ProtectedRoute>} />
+              <Route path="/classifieds/:id" element={<ProtectedRoute><ClassifiedDetailScreen /></ProtectedRoute>} />
 
               {/* Fallback */}
               <Route path="*" element={<HomeScreen />} />

@@ -65,7 +65,7 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 20 }) => 
       const response = await api.call<{ users?: PopularUser[] }>(Actions.CMD_USER_FETCH_NEARBY_USERS, {
         method: 'POST',
         body: {
-          limit:limit,
+          limit: limit,
           cursor: null,
         },
       });
@@ -76,12 +76,12 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 20 }) => 
       const message =
         err?.response?.data?.message ||
         err?.message ||
-        t('app.popular_users_error');
+        'Fetch error';
       setError(message);
     } finally {
       setIsLoading(false);
     }
-  }, [limit, t]);
+  }, [limit]);
 
   React.useEffect(() => {
     fetchPopularUsers();
@@ -93,7 +93,7 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 20 }) => 
     );
   }, []);
 
- 
+
 
 
 
@@ -131,8 +131,8 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 20 }) => 
       return (
         <div
           className={`rounded-2xl border p-4 ${theme === 'dark'
-              ? 'border-red-900/40 bg-red-900/10 text-red-200'
-              : 'border-red-100 bg-red-50 text-red-600'
+            ? 'border-red-900/40 bg-red-900/10 text-red-200'
+            : 'border-red-100 bg-red-50 text-red-600'
             }`}
         >
           <p className="text-sm font-medium">{error}</p>
@@ -140,8 +140,8 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 20 }) => 
             type="button"
             onClick={fetchPopularUsers}
             className={`mt-3 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${theme === 'dark'
-                ? 'bg-red-800/60 text-red-100 hover:bg-red-800/80'
-                : 'bg-red-100 text-red-700 hover:bg-red-200'
+              ? 'bg-red-800/60 text-red-100 hover:bg-red-800/80'
+              : 'bg-red-100 text-red-700 hover:bg-red-200'
               }`}
           >
             <RefreshCw className="h-4 w-4" />
@@ -177,8 +177,8 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 20 }) => 
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.04 }}
               className={`group relative overflow-hidden rounded-3xl border ${theme === 'dark'
-                  ? 'border-gray-900 bg-gray-950 hover:border-indigo-500/40 hover:shadow-indigo-500/20'
-                  : 'border-gray-100 bg-white hover:border-gray-300 hover:shadow-[0_12px_30px_-16px_rgba(79,70,229,0.55)]'
+                ? 'border-gray-900 bg-gray-950 hover:border-indigo-500/40 hover:shadow-indigo-500/20'
+                : 'border-gray-100 bg-white hover:border-gray-300 hover:shadow-[0_12px_30px_-16px_rgba(79,70,229,0.55)]'
                 } aspect-[3/4] transition-all`}
             >
               <img

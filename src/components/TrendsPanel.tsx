@@ -221,7 +221,7 @@ const TrendsPanel: React.FC<TrendsPanelProps> = ({ limit = 20, onTrendSelect }) 
       } else {
         normalized = normalizeTrends(
           response,
-          t('app.trending_unknown', { defaultValue: 'Trending Topic' })
+          'Trending'
         );
       }
 
@@ -231,11 +231,11 @@ const TrendsPanel: React.FC<TrendsPanelProps> = ({ limit = 20, onTrendSelect }) 
       setIsExpanded(false);
     } catch (err: any) {
       console.error('Failed to fetch trends', err);
-      setError(err?.response?.data?.message || err?.message || t('app.trending_error', { defaultValue: 'Unable to load trends right now.' }));
+      setError(err?.response?.data?.message || err?.message || 'Error loading trends');
     } finally {
       setLoading(false);
     }
-  }, [limit, t]);
+  }, [limit]);
 
   React.useEffect(() => {
     fetchTrends();
@@ -259,10 +259,10 @@ const TrendsPanel: React.FC<TrendsPanelProps> = ({ limit = 20, onTrendSelect }) 
   }, [onTrendSelect]);
 
   const subtitleColor = theme === 'dark' ? 'text-gray-400' : 'text-gray-500';
-const cardBackground =
-  theme === 'dark'
-    ? 'bg-gradient-to-br from-gray-950/95 via-gray-900/90 to-gray-950/95 backdrop-blur-xl'
-    : 'bg-gradient-to-br from-white via-white/97 to-gray-50';
+  const cardBackground =
+    theme === 'dark'
+      ? 'bg-gradient-to-br from-gray-950/95 via-gray-900/90 to-gray-950/95 backdrop-blur-xl'
+      : 'bg-gradient-to-br from-white via-white/97 to-gray-50';
 
   const MAX_COMPACT_ITEMS = 7;
   const hasOverflow = trends.length > MAX_COMPACT_ITEMS;
@@ -290,9 +290,8 @@ const cardBackground =
           {lastUpdated && (
             <div className="mt-3 flex items-center gap-2">
               <span
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                  theme === 'dark' ? 'bg-white/10 text-gray-200' : 'bg-gray-100 text-gray-600'
-                }`}
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${theme === 'dark' ? 'bg-white/10 text-gray-200' : 'bg-gray-100 text-gray-600'
+                  }`}
               >
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-current" />
                 {t('app.trending_updated', {
@@ -301,9 +300,8 @@ const cardBackground =
               </span>
               {trends.length > 0 && (
                 <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                    theme === 'dark' ? 'bg-white/5 text-gray-300' : 'bg-gray-50 text-gray-600'
-                  }`}
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${theme === 'dark' ? 'bg-white/5 text-gray-300' : 'bg-gray-50 text-gray-600'
+                    }`}
                 >
                   #{trends.length}
                 </span>
@@ -314,11 +312,10 @@ const cardBackground =
         <button
           type="button"
           onClick={fetchTrends}
-          className={`p-2 rounded-full transition-colors ${
-            theme === 'dark'
+          className={`p-2 rounded-full transition-colors ${theme === 'dark'
               ? 'hover:bg-white/15 text-gray-300'
               : 'hover:bg-gray-100 text-gray-600'
-          }`}
+            }`}
           aria-label={t('app.trending_refresh')}
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
@@ -328,21 +325,19 @@ const cardBackground =
       <div className="px-5 pb-5 space-y-3">
         {error ? (
           <div
-            className={`rounded-2xl p-4 ${
-              theme === 'dark'
+            className={`rounded-2xl p-4 ${theme === 'dark'
                 ? 'bg-red-500/15 text-red-200 shadow-[0_14px_32px_-22px_rgba(248,113,113,0.7)]'
                 : 'bg-red-50 text-red-600 shadow-[0_14px_28px_-20px_rgba(248,113,113,0.45)]'
-            }`}
+              }`}
           >
             <p className="text-sm font-medium mb-3">{error}</p>
             <button
               type="button"
               onClick={fetchTrends}
-              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                theme === 'dark'
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${theme === 'dark'
                   ? 'bg-red-500/30 text-red-100 hover:bg-red-500/40'
                   : 'bg-red-100 text-red-600 hover:bg-red-200'
-              }`}
+                }`}
             >
               <RefreshCw className="w-3.5 h-3.5" />
               {t('app.trending_retry')}
@@ -362,14 +357,12 @@ const cardBackground =
                   {Array.from({ length: Math.min(6, limit) }).map((_, index) => (
                     <div
                       key={`skeleton-${index}`}
-                      className={`flex items-center gap-3 rounded-2xl px-3 py-3 animate-pulse ${
-                        theme === 'dark' ? 'bg-white/[0.06]' : 'bg-gray-100/70'
-                      }`}
+                      className={`flex items-center gap-3 rounded-2xl px-3 py-3 animate-pulse ${theme === 'dark' ? 'bg-white/[0.06]' : 'bg-gray-100/70'
+                        }`}
                     >
                       <div
-                        className={`w-6 h-6 rounded-full ${
-                          theme === 'dark' ? 'bg-white/10' : 'bg-gray-200'
-                        }`}
+                        className={`w-6 h-6 rounded-full ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-200'
+                          }`}
                       />
                       <div className="flex-1 space-y-2">
                         <div className={`h-3 w-2/3 rounded ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-200'}`} />
@@ -398,71 +391,67 @@ const cardBackground =
                     const rankStyle = getRankStyle(trend.rank);
 
                     return (
-         <motion.button
-  key={trend.id}
-  type="button"
-  onClick={() => handleSelect(trend)}
-  layout
-  whileHover={{ scale: 0.995, y: -1 }}
-  whileTap={{ scale: 0.985 }}
-  transition={{ type: 'spring', stiffness: 340, damping: 24, mass: 0.9 }}
-  className={`group grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl px-3 py-2.5 transition-all duration-200 cursor-pointer ${
-    theme === 'dark'
-      ? 'bg-white/[0.045] hover:bg-white/[0.08]'
-      : 'bg-white hover:bg-gray-50'
-  }`}
->
-  <span
-    style={rankStyle}
-    className="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold"
-  >
-    {trend.rank}
-  </span>
-  <div className="min-w-0 text-left">
-    <p className={`truncate text-sm font-semibold leading-none ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-      {trend.label}
-    </p>
-    {trend.subtitle && (
-      <p className={`truncate text-[11px] mt-1 ${subtitleColor}`}>
-        {trend.subtitle}
-      </p>
-    )}
-  </div>
-  <div className="flex items-center gap-2 justify-self-end">
-    {volumeLabel && (
-      <span
-        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-          theme === 'dark' ? 'bg-white/10 text-gray-200' : 'bg-gray-100 text-gray-600'
-        }`}
-      >
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-current" />
-        {t('app.trending_volume', { count: volumeLabel })}
-      </span>
-    )}
-    {(trend.url || changeLabel) && (
-      <span
-        className={`flex items-center gap-1 text-xs font-medium ${
-          changeLabel
-            ? trend.change && trend.change > 0
-              ? 'text-emerald-500'
-              : 'text-amber-500'
-            : theme === 'dark'
-            ? 'text-gray-500'
-            : 'text-gray-400'
-        }`}
-      >
-        {changeLabel ?? <ExternalLink className="w-3.5 h-3.5" />}
-      </span>
-    )}
-    <ArrowUpRight
-      className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${
-        theme === 'dark'
-          ? 'text-gray-500 group-hover:text-gray-300 group-hover:translate-x-1'
-          : 'text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1'
-      }`}
-    />
-  </div>
-</motion.button>
+                      <motion.button
+                        key={trend.id}
+                        type="button"
+                        onClick={() => handleSelect(trend)}
+                        layout
+                        whileHover={{ scale: 0.995, y: -1 }}
+                        whileTap={{ scale: 0.985 }}
+                        transition={{ type: 'spring', stiffness: 340, damping: 24, mass: 0.9 }}
+                        className={`group grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl px-3 py-2.5 transition-all duration-200 cursor-pointer ${theme === 'dark'
+                            ? 'bg-white/[0.045] hover:bg-white/[0.08]'
+                            : 'bg-white hover:bg-gray-50'
+                          }`}
+                      >
+                        <span
+                          style={rankStyle}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold"
+                        >
+                          {trend.rank}
+                        </span>
+                        <div className="min-w-0 text-left">
+                          <p className={`truncate text-sm font-semibold leading-none ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                            {trend.label}
+                          </p>
+                          {trend.subtitle && (
+                            <p className={`truncate text-[11px] mt-1 ${subtitleColor}`}>
+                              {trend.subtitle}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 justify-self-end">
+                          {volumeLabel && (
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${theme === 'dark' ? 'bg-white/10 text-gray-200' : 'bg-gray-100 text-gray-600'
+                                }`}
+                            >
+                              <span className="inline-block h-1.5 w-1.5 rounded-full bg-current" />
+                              {t('app.trending_volume', { count: volumeLabel })}
+                            </span>
+                          )}
+                          {(trend.url || changeLabel) && (
+                            <span
+                              className={`flex items-center gap-1 text-xs font-medium ${changeLabel
+                                  ? trend.change && trend.change > 0
+                                    ? 'text-emerald-500'
+                                    : 'text-amber-500'
+                                  : theme === 'dark'
+                                    ? 'text-gray-500'
+                                    : 'text-gray-400'
+                                }`}
+                            >
+                              {changeLabel ?? <ExternalLink className="w-3.5 h-3.5" />}
+                            </span>
+                          )}
+                          <ArrowUpRight
+                            className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${theme === 'dark'
+                                ? 'text-gray-500 group-hover:text-gray-300 group-hover:translate-x-1'
+                                : 'text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1'
+                              }`}
+                          />
+                        </div>
+                      </motion.button>
                     );
                   })}
                 </motion.div>
@@ -474,11 +463,10 @@ const cardBackground =
                 <button
                   type="button"
                   onClick={() => setIsExpanded((prev) => !prev)}
-                  className={`ml-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                    theme === 'dark'
+                  className={`ml-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${theme === 'dark'
                       ? 'bg-white/10 text-gray-200 hover:bg-white/15'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   {isExpanded ? t('app.trending_show_less', { defaultValue: 'Show less' }) : t('app.trending_show_more', { count: hiddenCount, defaultValue: `Show ${hiddenCount} more` })}
                   <ArrowUpRight className={`w-3.5 h-3.5 ${isExpanded ? 'rotate-45' : ''}`} />
@@ -488,9 +476,8 @@ const cardBackground =
 
             {!loading && trends.length === 0 && (
               <div
-                className={`rounded-2xl p-6 text-center text-sm ${
-                  theme === 'dark' ? 'bg-white/[0.05] text-gray-400' : 'bg-gray-100/60 text-gray-500'
-                }`}
+                className={`rounded-2xl p-6 text-center text-sm ${theme === 'dark' ? 'bg-white/[0.05] text-gray-400' : 'bg-gray-100/60 text-gray-500'
+                  }`}
               >
                 {t('app.trending_empty')}
               </div>
@@ -520,11 +507,10 @@ const cardBackground =
             raw: {},
             rank: 0,
           })}
-          className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-            theme === 'dark'
+          className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${theme === 'dark'
               ? 'bg-white/10 text-white hover:bg-white/15'
               : 'bg-gray-900 text-white hover:bg-gray-800'
-          }`}
+            }`}
         >
           <Search className="w-4 h-4" />
           {t('app.trending_view_more')}

@@ -371,35 +371,26 @@ const Post: React.FC<PostProps> = ({
   // Memoize post ID and key engagement data to prevent unnecessary updates
   const postIdRef = useRef<string>(postProp.public_id);
   const userIdRef = useRef<string | undefined>(user?.id);
-  const engagementsRef = useRef<string>(JSON.stringify(postProp.engagements));
-  const postEngagementsRef = useRef<string>(JSON.stringify(postProp.engagements || {}));
+  const engagementsRef = useRef<any>(postProp.engagements);
+  const postEngagementsRef = useRef<any>(postProp.engagements);
   const childrenRef = useRef<ApiPost[] | undefined>(postProp.children);
   const postPropRef = useRef<ApiPost>(postProp);
 
 
   // Helper function to update engagement states from post data
-  // Not using useCallback to avoid dependency issues
+  // Keep it stable and only update when values actually change.
   const updateEngagementStates = (postData: ApiPost) => {
-    console.log("updateEngagementStates called", {
-      hasEngagements: !!postData.engagements,
-      hasUserId: !!user?.id,
-      userId: user?.id,
-      engagementDetails: postData.engagements?.engagement_details
-    });
-
     if (!postData.engagements || !user?.id) {
       // No user logged in or no engagements, reset all states
-      console.log("Resetting all engagement states - no engagements or user");
-      setIsLiked(false);
-      setIsDisliked(false);
-      setIsBanana(false);
-      setIsBookmarked(false);
-      setHasTipped(false);
+      setIsLiked((prev) => (prev ? false : prev));
+      setIsDisliked((prev) => (prev ? false : prev));
+      setIsBanana((prev) => (prev ? false : prev));
+      setIsBookmarked((prev) => (prev ? false : prev));
+      setHasTipped((prev) => (prev ? false : prev));
       return;
     }
 
     const userId = user.id;
-    console.log("Checking engagements for userId:", userId);
 
     if (postData.engagements.engagement_details && Array.isArray(postData.engagements.engagement_details)) {
       // Check engagement_details for user's interactions
@@ -407,8 +398,6 @@ const Post: React.FC<PostProps> = ({
       const userEngagements = postData.engagements.engagement_details.filter(
         detail => detail && detail.engager_id === userId
       );
-
-      console.log("User engagements found:", userEngagements.map(e => e.kind));
 
       // Check for each interaction type
       // Backend returns like_received/dislike_received when user gives like/dislike
@@ -423,66 +412,37 @@ const Post: React.FC<PostProps> = ({
       const isBookmarkedValue = userEngagements.some(e => e.kind === 'bookmark');
       const hasTippedValue = userEngagements.some(e => e.kind === 'tip');
 
-      console.log("Setting states:", {
-        isLiked: isLikedValue,
-        isDisliked: isDislikedValue,
-        isBanana: isBananaValue,
-        isBookmarked: isBookmarkedValue,
-        hasTipped: hasTippedValue
-      });
-
-      setIsLiked(isLikedValue);
-      setIsDisliked(isDislikedValue);
-      setIsBanana(isBananaValue);
-      setIsBookmarked(isBookmarkedValue);
-      setHasTipped(hasTippedValue);
+      setIsLiked((prev) => (prev === isLikedValue ? prev : isLikedValue));
+      setIsDisliked((prev) => (prev === isDislikedValue ? prev : isDislikedValue));
+      setIsBanana((prev) => (prev === isBananaValue ? prev : isBananaValue));
+      setIsBookmarked((prev) => (prev === isBookmarkedValue ? prev : isBookmarkedValue));
+      setHasTipped((prev) => (prev === hasTippedValue ? prev : hasTippedValue));
     } else {
       // Fallback: reset all states if engagement_details is not available
       // This ensures we don't show stale states
-      console.log("No engagement_details array, resetting states");
-      setIsLiked(false);
-      setIsDisliked(false);
-      setIsBanana(false);
-      setIsBookmarked(false);
-      setHasTipped(false);
+      setIsLiked((prev) => (prev ? false : prev));
+      setIsDisliked((prev) => (prev ? false : prev));
+      setIsBanana((prev) => (prev ? false : prev));
+      setIsBookmarked((prev) => (prev ? false : prev));
+      setHasTipped((prev) => (prev ? false : prev));
     }
   };
 
-  // Update post when prop changes - only if post ID, user ID, or engagement data actually changed
+  // Update post when prop changes - only if identity/engagements changed
   useEffect(() => {
-    console.log("useEffect [postProp, user?.id] triggered", {
-      postId: postProp.public_id,
-      userId: user?.id,
-      hasEngagements: !!postProp.engagements
-    });
-
-    // Always update ref to latest postProp
-    postPropRef.current = postProp;
-
     const postIdChanged = postProp.public_id !== postIdRef.current;
     const userIdChanged = user?.id !== userIdRef.current;
-    const engagementsChanged = JSON.stringify(postProp.engagements) !== engagementsRef.current;
-    const childrenChanged = JSON.stringify(postProp.children) !== JSON.stringify(childrenRef.current);
-
-    console.log("Change detection:", {
-      postIdChanged,
-      userIdChanged,
-      engagementsChanged,
-      childrenChanged
-    });
+    const engagementsChanged = postProp.engagements !== engagementsRef.current;
+    const childrenChanged = postProp.children !== childrenRef.current;
 
     if (postIdChanged) {
       postIdRef.current = postProp.public_id;
     }
 
-    // Always sync post state with postProp to ensure latest data
-    setPost(prevPost => {
-      // Only update if post ID changed or if engagements changed
-      if (postIdChanged || JSON.stringify(prevPost.engagements) !== JSON.stringify(postProp.engagements)) {
-        return postProp;
-      }
-      return prevPost;
-    });
+    // Sync post state with postProp only when needed
+    if (postIdChanged || engagementsChanged || postProp !== postPropRef.current) {
+      setPost(postProp);
+    }
 
     if (childrenChanged) {
       childrenRef.current = postProp.children;
@@ -490,47 +450,33 @@ const Post: React.FC<PostProps> = ({
       setChildren(postProp.children || []);
     }
 
-    // Always update engagement states - call on every render to ensure sync
+    // Update engagement states when user or engagements change
     if (userIdChanged) {
       userIdRef.current = user?.id;
     }
 
     if (engagementsChanged) {
-      engagementsRef.current = JSON.stringify(postProp.engagements);
+      engagementsRef.current = postProp.engagements;
     }
 
-    // Always update engagement states from postProp (not just when changed)
-    // This ensures states are synced on initial load and after prop updates
-    console.log("Calling updateEngagementStates from postProp useEffect");
-    updateEngagementStates(postProp);
+    if (engagementsChanged || userIdChanged || postIdChanged) {
+      updateEngagementStates(postProp);
+    }
+
+    // Always update ref to latest postProp at the end
+    postPropRef.current = postProp;
   }, [postProp, user?.id]);
 
   // Also update engagement states when post state changes (after API calls)
   useEffect(() => {
-    console.log("useEffect [post.engagements, user?.id] triggered", {
-      hasEngagements: !!post.engagements,
-      userId: user?.id,
-      postId: post.public_id
-    });
+    const engagementsChanged = post.engagements !== postEngagementsRef.current;
 
-    // Always update engagement states when post.engagements or user changes
-    // This ensures states are synced after API calls
-    const engagementsString = post.engagements ? JSON.stringify(post.engagements) : '';
-    const engagementsChanged = engagementsString !== postEngagementsRef.current;
-
-    if (engagementsChanged || !postEngagementsRef.current) {
-      postEngagementsRef.current = engagementsString;
-      engagementsRef.current = engagementsString;
-      console.log("Calling updateEngagementStates from post state useEffect");
+    if (engagementsChanged || user?.id !== userIdRef.current) {
       updateEngagementStates(post);
+      postEngagementsRef.current = post.engagements;
+      userIdRef.current = user?.id;
     }
   }, [post.engagements, user?.id, post.public_id]);
-
-  // Ensure engagement states are updated on initial mount
-  useEffect(() => {
-    console.log("Initial mount useEffect - calling updateEngagementStates");
-    updateEngagementStates(post);
-  }, []); // Only run once on mount
 
   // Initialize selected poll choices from votes when post loads
   useEffect(() => {

@@ -47,17 +47,17 @@ import {
   useState,
 } from 'react';
 
-import brokenImage from '../../../images/image-broken.svg';
+import brokenImage from '../../../../images/image-broken.svg';
 import EmojisPlugin from '../plugins/EmojisPlugin';
 import KeywordsPlugin from '../plugins/KeywordsPlugin';
 import LinkPlugin from '../plugins/LinkPlugin';
 import MentionsPlugin from '../plugins/MentionsPlugin';
 import TreeViewPlugin from '../plugins/TreeViewPlugin';
 import {$isCaptionEditorEmpty, $isImageNode} from './ImageNode';
-import { useSettings } from '../../../contexts/SettingsContext';
-import { useSharedHistoryContext } from '../../../contexts/SharedHistoryContext';
 import ImageResizer from '../ui/ImageResizer';
 import ContentEditable from '../ui/ContentEditable';
+import { useSharedHistoryContext } from '../../../../contexts/SharedHistoryContext';
+import { useSettings } from '../../../../contexts/SettingsContext';
 
 type ImageStatus =
   | {error: true}

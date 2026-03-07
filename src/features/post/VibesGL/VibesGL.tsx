@@ -24,12 +24,6 @@ const VibesGL: React.FC = () => {
 
     const vibes = useMemo(() => state.vibes ?? [], [state.vibes]);
     const [isMuted, setIsMuted] = useState(false);
-
-
-
-    useEffect(() => {
-        console.log('MutedDegisti', isMuted)
-    }, [isMuted])
     // ------------------------------------------------------------
     // FETCH FONKSİYONU (HER ŞEYDEN ÖNCE TANIMLI OLMALI)
     // ------------------------------------------------------------
@@ -38,7 +32,7 @@ const VibesGL: React.FC = () => {
             try {
                 setIsLoading(true);
 
-                const currentCursor = loadMore ? state.vibesCursor?.toString || "" : "";
+                const currentCursor = loadMore ? (state.vibesCursor?.toString?.() || "") : "";
 
                 const response = await api.fetchVibes({
                     limit: 10,
@@ -145,7 +139,7 @@ const VibesGL: React.FC = () => {
     // ------------------------------------------------------------
     useEffect(() => {
         fetchVibesFromAPI(false);
-    }, []);
+    }, [fetchVibesFromAPI]);
 
     const [isMediaLoading, setIsMediaLoading] = useState(false);
 

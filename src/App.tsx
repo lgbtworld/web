@@ -607,21 +607,19 @@ function AppContent() {
                             const Icon = item.icon;
                             const isActive = activeScreen === item.id;
                             return (
-                              <motion.button
-                                key={item.id}
-                                onClick={() => navigate(item.path || '/')}
-                                whileHover={{ x: 2 }}
-                                whileTap={{ scale: 0.99 }}
-                                className={`w-full relative rounded-xl px-3 py-2.5 border transition-all flex items-center justify-between ${theme === 'dark'
-                                  ? 'border-gray-800/80 bg-transparent hover:bg-gray-800/45'
-                                  : 'border-black/[0.06] bg-transparent hover:bg-black/[0.03]'
-                                  } ${isActive
-                                    ? (theme === 'dark'
-                                      ? 'ring-1 ring-gray-600/60 bg-gray-800/55'
-                                      : 'ring-1 ring-black/15 bg-black/[0.03]')
-                                    : ''
-                                  }`}
-                              >
+                            <button
+                              key={item.id}
+                              onClick={() => navigate(item.path || '/')}
+                              className={`w-full relative rounded-xl px-3 py-2.5 border transition-all flex items-center justify-between ${theme === 'dark'
+                                ? 'border-gray-800/80 bg-transparent hover:bg-gray-800/45'
+                                : 'border-black/[0.06] bg-transparent hover:bg-black/[0.03]'
+                                } ${isActive
+                                  ? (theme === 'dark'
+                                    ? 'ring-1 ring-gray-600/60 bg-gray-800/55'
+                                    : 'ring-1 ring-black/15 bg-black/[0.03]')
+                                  : ''
+                                }`}
+                            >
                                 <div className="flex items-center gap-2.5 min-w-0">
                                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${item.accent} text-white`}>
                                     <Icon className="w-4 h-4" />
@@ -631,7 +629,7 @@ function AppContent() {
                                   </p>
                                 </div>
                                 <ChevronRight className={`w-4 h-4 shrink-0 ${theme === 'dark' ? 'text-white/45' : 'text-black/45'}`} />
-                              </motion.button>
+                              </button>
                             );
                           })}
                         </div>
@@ -781,16 +779,12 @@ function AppContent() {
                     >
                       {/* Active Background */}
                       {isActive && (
-                        <motion.div
-                          layoutId="activeNavBg"
-                          style={{
-                            zIndex: -1,
-                          }}
+                        <div
+                          style={{ zIndex: -1 }}
                           className={`absolute inset-0 rounded-2xl ${theme === 'dark'
                             ? 'bg-gray-50/[0.08]'
                             : 'bg-gray-950/[0.06]'
                             }`}
-                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                         />
                       )}
 
@@ -1005,16 +999,12 @@ function AppContent() {
                         {mobileNavItems.map((item, index) => {
                           const isActive = activeScreen === item.id;
                           return (
-                            <motion.button
+                            <button
                               key={item.id}
                               onClick={() => {
                                 navigateByNavId(item.id);
                                 closeMobileMenus();
                               }}
-                              initial={{ opacity: 0, y: 8 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.1 + index * 0.04, duration: 0.2 }}
-                              whileTap={{ scale: 0.99 }}
                               className={`w-full rounded-xl px-3 py-2.5 border transition-all flex items-center justify-between ${theme === 'dark'
                                 ? 'border-gray-800/80 hover:bg-gray-800/45'
                                 : 'border-black/[0.08] hover:bg-black/[0.03]'
@@ -1024,7 +1014,6 @@ function AppContent() {
                                     : 'ring-1 ring-black/15 bg-black/[0.03]')
                                   : ''
                                 }`}
-                              style={{ willChange: 'transform, opacity' }}
                             >
                               <div className="flex items-center gap-2.5 min-w-0">
                                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br ${item.accent} text-white`}>
@@ -1035,7 +1024,7 @@ function AppContent() {
                                 </span>
                               </div>
                               <ChevronRight className={`w-4 h-4 shrink-0 ${theme === 'dark' ? 'text-white/45' : 'text-black/45'}`} />
-                            </motion.button>
+                            </button>
                           );
                         })}
                       </div>

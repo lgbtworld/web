@@ -830,7 +830,6 @@ const MatchScreen: React.FC = () => {
       </AnimatePresence>
 
       <Container>
-        <div className='w-full'>
       {profiles.length === 0 ? (
         <div className="flex items-center justify-center p-4 h-[100dvh] min-h-[60dvh] md:min-h-[75dvh]">
           <div className={`rounded-3xl flex flex-col gap-2 h-[100dvh] justify-center items-center p-8 mb-6 text-center ${theme === 'dark' 
@@ -841,14 +840,12 @@ const MatchScreen: React.FC = () => {
             <p className={`text-base font-semibold mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
             {t('match.no_profiles') || 'No profiles to show right now. Come back soon!'}
             </p>
-            <motion.button
+            <button
               className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all ${
                 theme === 'dark'
                   ? 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
                   : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-300'
               }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               onClick={async () => {
                 try {
                   setIsLoading(true);
@@ -873,7 +870,7 @@ const MatchScreen: React.FC = () => {
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
               <span>{t('match.refresh') || 'Refresh'}</span>
-            </motion.button>
+            </button>
           </div>
         </div>
       ) : (
@@ -1236,7 +1233,6 @@ const MatchScreen: React.FC = () => {
       </motion.div>
       </>
       )}
-        </div>
 
       {/* History Section - Side by side on desktop, stacked on mobile */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 px-4 pb-6">

@@ -47,7 +47,7 @@ import {
   useState,
 } from 'react';
 
-import brokenImage from '../../../../images/image-broken.svg';
+const brokenImage = '/images/image-broken.svg';
 import EmojisPlugin from '../plugins/EmojisPlugin';
 import KeywordsPlugin from '../plugins/KeywordsPlugin';
 import LinkPlugin from '../plugins/LinkPlugin';

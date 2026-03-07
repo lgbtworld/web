@@ -8,7 +8,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Post from '../features/post/Post';
 import Media from '../features/media/Media';
 import { api } from '../services/api';
-import { Actions } from '../services/actions';
 import { useTranslation } from 'react-i18next';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
@@ -1322,13 +1321,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
 
     setIsUpdatingPassword(true);
     try {
-      await api.call(Actions.CMD_USER_UPDATE_PASSWORD, {
-        method: "POST",
-        body: {
-          current_password: current,
-          new_password: next,
-          new_password_confirmation: confirm,
-        },
+      await api.updatePassword({
+        current_password: current,
+        new_password: next,
+        new_password_confirmation: confirm,
       });
 
       setPasswordMessage({
@@ -2014,16 +2010,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
           : field === 'sexual_orientation' ? 'sexual_orientation_id'
             : 'sexual_role_id';
 
-        response = await api.call(Actions.CMD_USER_UPDATE_IDENTIFY, {
-          method: "POST",
-          body: { [bodyKey]: attributeId },
-        });
+        response = await api.updateIdentify({ [bodyKey]: attributeId });
       } else {
         // Use CMD_USER_UPDATE_ATTRIBUTE for regular attributes
-        response = await api.call(Actions.CMD_USER_UPDATE_ATTRIBUTE, {
-          method: "POST",
-          body: { attribute_id: attributeId },
-        });
+        response = await api.updateAttribute({ attribute_id: attributeId });
       }
 
       // Update auth context - always update if authenticated
@@ -2253,10 +2243,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         }
       } else {
         // Update via API using CMD_USER_UPDATE_INTEREST
-        response = await api.call(Actions.CMD_USER_UPDATE_INTEREST, {
-          method: "POST",
-          body: { interest_id: itemId },
-        });
+        response = await api.updateInterest({ interest_id: itemId });
       }
 
       // Update auth context - use response if available, otherwise use local state
@@ -2470,10 +2457,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         }
       } else {
         // Update via API using CMD_USER_UPDATE_FANTASY
-        response = await api.call(Actions.CMD_USER_UPDATE_FANTASY, {
-          method: "POST",
-          body: { fantasy_id: fantasyId },
-        });
+        response = await api.updateFantasy({ fantasy_id: fantasyId });
       }
 
       // Update auth context - use response if available, otherwise use local state
@@ -2643,10 +2627,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
 
       // Immediately upload the image using CMD_USER_UPLOAD_AVATAR
       try {
-        const response = await api.call(Actions.CMD_USER_UPLOAD_AVATAR, {
-          method: "POST",
-          body: { avatar: file },
-        });
+        const response = await api.uploadAvatar({ avatar: file });
 
         // Update local state and auth context with full user object from API response
         if (response?.user) {
@@ -2681,10 +2662,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
 
       // Immediately upload the image using CMD_USER_UPLOAD_COVER
       try {
-        const response = await api.call(Actions.CMD_USER_UPLOAD_COVER, {
-          method: "POST",
-          body: { cover: file },
-        });
+        const response = await api.uploadCover({ cover: file });
 
         // Update local state and auth context with full user object from API response
         if (response?.user) {
@@ -2885,10 +2863,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         const requestBody = { nickname: username };
         console.log('ProfileScreen - Request body:', requestBody);
 
-        const response = await api.call(Actions.USER_FETCH_PROFILE, {
-          method: "POST",
-          body: requestBody,
-        });
+        const response = await api.fetchProfileByNickname(username);
 
         console.log('ProfileScreen - API response:', response);
 
@@ -2951,33 +2926,24 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
 
         if (activeTab === 'posts') {
           // Fetch user posts
-          response = await api.call(Actions.CMD_USER_POSTS, {
-            method: "POST",
-            body: {
-              user_id: user?.public_id,
-              limit: 20,
-              cursor: ""
-            },
+          response = await api.fetchUserPosts({
+            user_id: user?.public_id,
+            limit: 20,
+            cursor: ""
           });
         } else if (activeTab === 'replies') {
           // Fetch user replies
-          response = await api.call(Actions.CMD_USER_POST_REPLIES, {
-            method: "POST",
-            body: {
-              user_id: user?.public_id,
-              limit: 20,
-              cursor: ""
-            },
+          response = await api.fetchUserPostReplies({
+            user_id: user?.public_id,
+            limit: 20,
+            cursor: ""
           });
         } else if (activeTab === 'likes') {
           // Fetch user liked posts
-          response = await api.call(Actions.CMD_USER_POST_LIKES, {
-            method: "POST",
-            body: {
-              user_id: user?.public_id,
-              limit: 20,
-              cursor: ""
-            },
+          response = await api.fetchUserPostLikes({
+            user_id: user?.public_id,
+            limit: 20,
+            cursor: ""
           });
         }
 
@@ -3014,13 +2980,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         setMediasLoading(true);
         setError(null);
 
-        const response = await api.call(Actions.CMD_USER_POST_MEDIA, {
-          method: "POST",
-          body: {
-            user_id: user?.public_id,
-            limit: 50,
-            cursor: ""
-          },
+        const response = await api.fetchUserPostMedia({
+          user_id: user?.public_id,
+          limit: 50,
+          cursor: ""
         });
 
         // Set medias from API response
@@ -3082,11 +3045,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     setUser((prevUser) => (prevUser ? withAdjustedFollowerCount(prevUser, followerDelta) : prevUser));
 
     try {
-      const followResponse = await api.call(Actions.CMD_USER_TOGGLE_FOLLOW, {
-        method: 'POST',
-        body: {
-          followee_id: user.public_id,
-        },
+      const followResponse = await api.toggleFollow({
+        followee_id: user.public_id,
       });
 
       const responseUser =
@@ -3115,7 +3075,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     }
 
     try {
-      const chatResponse = await api.call<{
+      const chatResponse = await api.createChat([profile.id], 'private') as {
         chat: {
           id: string;
           type: string;
@@ -3129,13 +3089,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
           }>;
         };
         success: boolean;
-      }>(Actions.CMD_CHAT_CREATE, {
-        method: "POST",
-        body: {
-          type: 'private',
-          participant_ids: [profile.id],
-        },
-      });
+      };
 
       const chatId = chatResponse?.chat?.id;
 

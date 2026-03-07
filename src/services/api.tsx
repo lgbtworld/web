@@ -220,6 +220,185 @@ export class ApiService {
     });
   }
 
+  async fetchProfileByNickname(nickname: string) {
+    return this.call(Actions.USER_FETCH_PROFILE, {
+      method: "POST",
+      body: { nickname },
+    });
+  }
+
+  // Matches
+  async fetchMatchUnseen(limit: number = 100) {
+    return this.call(Actions.CMD_MATCH_GET_UNSEEN, {
+      method: "POST",
+      body: { limit },
+    });
+  }
+
+  async createMatch(publicId: number, reaction: string) {
+    return this.call(Actions.CMD_MATCH_CREATE, {
+      method: "POST",
+      body: { public_id: publicId, reaction },
+    });
+  }
+
+  async fetchMatchedProfiles(limit: number = 20, cursor: string | null = null) {
+    return this.call(Actions.CMD_MATCH_FETCH_MATCHED, {
+      method: "POST",
+      body: { limit, cursor },
+    });
+  }
+
+  async fetchLikedProfiles(limit: number = 20, cursor: string | null = null) {
+    return this.call(Actions.CMD_MATCH_FETCH_LIKED, {
+      method: "POST",
+      body: { limit, cursor },
+    });
+  }
+
+  async fetchPassedProfiles(limit: number = 20, cursor: string | null = null) {
+    return this.call(Actions.CMD_MATCH_FETCH_PASSED, {
+      method: "POST",
+      body: { limit, cursor },
+    });
+  }
+
+  async createChat(participantIds: string[], type: string = "private") {
+    return this.call(Actions.CMD_CHAT_CREATE, {
+      method: "POST",
+      body: { type, participant_ids: participantIds },
+    });
+  }
+
+  // Nearby
+  async fetchNearbyUsers(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_FETCH_NEARBY_USERS, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  // Messages
+  async fetchChats() {
+    return this.call(Actions.CMD_FETCH_CHATS, {
+      method: "POST",
+      body: {},
+    });
+  }
+
+  async fetchMessages(chatId: string) {
+    return this.call(Actions.CMD_FETCH_MESSAGES, {
+      method: "POST",
+      body: { chat_id: chatId },
+    });
+  }
+
+  async sendMessage(payload: Record<string, any>) {
+    return this.call(Actions.CMD_SEND_MESSAGE, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async sendTyping(chatId: string) {
+    return this.call(Actions.CMD_TYPING, {
+      method: "POST",
+      body: { chat_id: chatId },
+    });
+  }
+
+  // Profile updates & uploads
+  async updatePassword(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_UPDATE_PASSWORD, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async updateIdentify(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_UPDATE_IDENTIFY, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async updateAttribute(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_UPDATE_ATTRIBUTE, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async updateInterest(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_UPDATE_INTEREST, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async updateFantasy(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_UPDATE_FANTASY, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async uploadAvatar(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_UPLOAD_AVATAR, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async uploadCover(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_UPLOAD_COVER, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async fetchUserPosts(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_POSTS, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async fetchUserPostReplies(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_POST_REPLIES, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async fetchUserPostLikes(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_POST_LIKES, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async fetchUserPostMedia(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_POST_MEDIA, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async toggleFollow(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_TOGGLE_FOLLOW, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async fetchEngagements(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_FETCH_ENGAGEMENTS, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
   async getUserInfo() {
     return this.call(Actions.CMD_AUTH_USER_INFO, {
       method: "POST",

@@ -5,7 +5,6 @@ import { useSettings } from '../contexts/SettingsContext';
 import { UserCard } from '../features/profile/UserCard';
 import { AnimatePresence, motion } from 'framer-motion';
 import { api } from '../services/api';
-import { Actions } from '../services/actions';
 import { useTranslation } from 'react-i18next';
 
 import { useAtom } from 'jotai';
@@ -58,10 +57,7 @@ const NearbyScreen: React.FC = () => {
         longitude: lng
       };
 
-      const response = await api.call(Actions.CMD_USER_FETCH_NEARBY_USERS, {
-        method: "POST",
-        body: payload,
-      });
+      const response = await api.fetchNearbyUsers(payload);
 
       setState((prevState: any) => {
         // If refreshing or map moved, we replace the list. Otherwise we append.

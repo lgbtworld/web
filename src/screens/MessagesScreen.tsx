@@ -711,10 +711,7 @@ const MessagesScreen: React.FC = () => {
 
       try {
         setIsLoadingChats(true);
-        const response = await api.call<any>(Actions.CMD_FETCH_CHATS, {
-          method: "POST",
-          body: {},
-        });
+        const response = await api.fetchChats();
 
 
         if (response?.chats && Array.isArray(response.chats)) {
@@ -971,12 +968,7 @@ const MessagesScreen: React.FC = () => {
       } else {
         setIsLoadingMessages(true);
       }
-      const response = await api.call<any>(Actions.CMD_FETCH_MESSAGES, {
-        method: "POST",
-        body: {
-          chat_id: realChatId,
-        },
-      });
+      const response = await api.fetchMessages(realChatId);
       if (response?.messages && Array.isArray(response.messages)) {
         const mappedMessages = response.messages.map((msg: any) => {
           // Determine if message is from current user
@@ -1345,7 +1337,12 @@ const MessagesScreen: React.FC = () => {
 
     // Send message to API
     try {
-      const response = await api.call<{
+      const response = await api.sendMessage({
+        chat_id: realChatId, // Use real chat ID from backend
+        content: messageText,
+        images: imagesToSend.length > 0 ? imagesToSend : undefined,
+        videos: videosToSend.length > 0 ? videosToSend : undefined,
+      }) as {
         message_id?: string;
         id?: string;
         message?: {
@@ -1368,15 +1365,7 @@ const MessagesScreen: React.FC = () => {
             };
           }>;
         };
-      }>(Actions.CMD_SEND_MESSAGE, {
-        method: "POST",
-        body: {
-          chat_id: realChatId, // Use real chat ID from backend
-          content: messageText,
-          images: imagesToSend.length > 0 ? imagesToSend : undefined,
-          videos: videosToSend.length > 0 ? videosToSend : undefined,
-        },
-      });
+      };
 
       const resolvedMessage = response?.message;
 
@@ -1621,12 +1610,7 @@ const MessagesScreen: React.FC = () => {
   const handleTypingIndicator = async (chatId: string) => {
     try {
       console.log('Sending typing indicator for chat:', chatId);
-      const response = await api.call(Actions.CMD_TYPING, {
-        method: "POST",
-        body: {
-          chat_id: chatId,
-        },
-      });
+      const response = await api.sendTyping(chatId);
       console.log('Typing indicator sent successfully:', response);
       lastTypingSentRef.current = Date.now();
     } catch (error) {

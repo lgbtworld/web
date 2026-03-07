@@ -9,7 +9,6 @@ import { useApp } from '../contexts/AppContext';
 import { useTranslation } from 'react-i18next';
 import Container from '../components/ui/Container';
 import { api } from '../services/api';
-import { Actions } from '../services/actions';
 import { getSafeImageURLEx } from '../helpers/helpers';
 import AuthWizard from '../features/auth/AuthWizard';
 
@@ -83,10 +82,7 @@ const ProfileEngagementsScreen: React.FC = () => {
 
     setLoadingProfile(true);
     try {
-      const response = await api.call(Actions.USER_FETCH_PROFILE, {
-        method: 'POST',
-        body: { nickname: username },
-      });
+      const response = await api.fetchProfileByNickname(username);
 
       const userData = (response?.user || response) ?? null;
 
@@ -137,10 +133,7 @@ const ProfileEngagementsScreen: React.FC = () => {
           body.cursor = nextCursor;
         }
 
-        const response = await api.call(Actions.CMD_USER_FETCH_ENGAGEMENTS, {
-          method: 'POST',
-          body,
-        });
+        const response = await api.fetchEngagements(body);
 
         // API returns engagements array, not users array
         const engagementsArray = Array.isArray(response?.engagements)

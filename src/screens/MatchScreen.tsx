@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import Container from '../components/ui/Container';
 import ProfileScreen from './ProfileScreen';
 import { api } from '../services/api';
-import { Actions } from '../services/actions';
 import { getSafeImageURL, getSafeImageURLEx } from '../helpers/helpers';
 
 interface Fantasy {
@@ -187,10 +186,7 @@ const MatchScreen: React.FC = () => {
     const fetchProfiles = async () => {
       try {
         setIsLoading(true);
-        const response = await api.call<{ users: ApiUser[] } | ApiUser[]>(Actions.CMD_MATCH_GET_UNSEEN, {
-          method: "POST",
-          body: { limit: 100 },
-        });
+        const response = await api.fetchMatchUnseen(100);
         
         // Handle both array and object response formats
         let apiUsers: ApiUser[] = [];
@@ -345,13 +341,7 @@ const MatchScreen: React.FC = () => {
 
     // Call API to create match/reaction
     try {
-      const response = await api.call<MatchResponse>(Actions.CMD_MATCH_CREATE, {
-        method: "POST",
-        body: {
-          public_id: currentProfile.public_id,
-          reaction: reaction,
-        },
-      });
+      const response = await api.createMatch(currentProfile.public_id, reaction) as MatchResponse;
 
       console.log('🔍 Match API response:', JSON.stringify(response, null, 2));
 
@@ -519,13 +509,7 @@ const MatchScreen: React.FC = () => {
   const fetchMatchedProfiles = useCallback(async (limit: number = 20) => {
     try {
       setIsLoadingMatches(true);
-      const response = await api.call<{ users: ApiUser[]; cursor: string | null }>(Actions.CMD_MATCH_FETCH_MATCHED, {
-        method: "POST",
-        body: {
-          cursor: null,
-          limit: limit,
-        },
-      });
+      const response = await api.fetchMatchedProfiles(limit, null) as { users: ApiUser[]; cursor: string | null };
       
       if (response && response.users) {
         const mappedMatches = response.users.map(mapApiUserToProfile);
@@ -542,13 +526,7 @@ const MatchScreen: React.FC = () => {
   const fetchLikedProfiles = useCallback(async (limit: number = 20) => {
     try {
       setIsLoadingLiked(true);
-      const response = await api.call<{ users: ApiUser[]; cursor: string | null }>(Actions.CMD_MATCH_FETCH_LIKED, {
-        method: "POST",
-        body: {
-          cursor: null,
-          limit: limit,
-        },
-      });
+      const response = await api.fetchLikedProfiles(limit, null) as { users: ApiUser[]; cursor: string | null };
       
       if (response && response.users) {
         const mappedLiked = response.users.map(mapApiUserToProfile);
@@ -565,13 +543,7 @@ const MatchScreen: React.FC = () => {
   const fetchPassedProfiles = useCallback(async (limit: number = 20) => {
     try {
       setIsLoadingPassed(true);
-      const response = await api.call<{ users: ApiUser[]; cursor: string | null }>(Actions.CMD_MATCH_FETCH_PASSED, {
-        method: "POST",
-        body: {
-          cursor: null,
-          limit: limit,
-        },
-      });
+      const response = await api.fetchPassedProfiles(limit, null) as { users: ApiUser[]; cursor: string | null };
       
       if (response && response.users) {
         const mappedPassed = response.users.map(mapApiUserToProfile);
@@ -624,7 +596,7 @@ const MatchScreen: React.FC = () => {
 
     try {
       // Create chat via API
-      const chatResponse = await api.call<{ 
+      const chatResponse = await api.createChat([profile.id], 'private') as { 
         chat: { 
           id: string;
           type: string;
@@ -638,13 +610,7 @@ const MatchScreen: React.FC = () => {
           }>;
         };
         success: boolean;
-      }>(Actions.CMD_CHAT_CREATE, {
-        method: "POST",
-        body: {
-          type: 'private',
-          participant_ids: [profile.id],
-        },
-      });
+      };
 
       const chatId = chatResponse?.chat?.id;
       
@@ -867,52 +833,47 @@ const MatchScreen: React.FC = () => {
         <div className='w-full'>
       {profiles.length === 0 ? (
         <div className="flex items-center justify-center p-4 h-[100dvh] min-h-[60dvh] md:min-h-[75dvh]">
-          <div className="text-center">
-            <div className={`rounded-3xl flex flex-col gap-2 h-[100dvh] justify-center items-center p-8 mb-6 ${theme === 'dark' 
-              ? 'bg-white/5' 
-              : 'bg-gray-50'
-            }`}>
-              <Heart className={`w-16 h-16 mx-auto mb-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
-              <p className={`text-base font-semibold mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-              {t('match.no_profiles') || 'No profiles to show right now. Come back soon!'}
-              </p>
-              <motion.button
-                className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all ${
-                  theme === 'dark'
-                    ? 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
-                    : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-300'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={async () => {
-                  try {
-                    setIsLoading(true);
-                    const response = await api.call<{ users: ApiUser[] } | ApiUser[]>(Actions.CMD_MATCH_GET_UNSEEN, {
-                      method: "POST",
-                      body: { limit: 100 },
-                    });
-                    
-                    let apiUsers: ApiUser[] = [];
-                    if (Array.isArray(response)) {
-                      apiUsers = response;
-                    } else if (response && typeof response === 'object' && 'users' in response) {
-                      apiUsers = response.users;
-                    }
-                    
-                    const mappedProfiles = apiUsers.map(mapApiUserToProfile);
-                    setProfiles(mappedProfiles);
-                  } catch (error) {
-                    console.error('Error fetching profiles:', error);
-                  } finally {
-                    setIsLoading(false);
+          <div className={`rounded-3xl flex flex-col gap-2 h-[100dvh] justify-center items-center p-8 mb-6 text-center ${theme === 'dark' 
+            ? 'bg-white/5' 
+            : 'bg-gray-50'
+          }`}>
+            <Heart className={`w-16 h-16 mx-auto mb-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+            <p className={`text-base font-semibold mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+            {t('match.no_profiles') || 'No profiles to show right now. Come back soon!'}
+            </p>
+            <motion.button
+              className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all ${
+                theme === 'dark'
+                  ? 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
+                  : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-300'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={async () => {
+                try {
+                  setIsLoading(true);
+                    const response = await api.fetchMatchUnseen(100);
+                  
+                  let apiUsers: ApiUser[] = [];
+                  if (Array.isArray(response)) {
+                    apiUsers = response;
+                  } else if (response && typeof response === 'object' && 'users' in response) {
+                    apiUsers = response.users;
                   }
-                }}
-                disabled={isLoading}
-              >
-                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                <span>{t('match.refresh') || 'Refresh'}</span>
-              </motion.button>
-            </div>
+                  
+                  const mappedProfiles = apiUsers.map(mapApiUserToProfile);
+                  setProfiles(mappedProfiles);
+                } catch (error) {
+                  console.error('Error fetching profiles:', error);
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>{t('match.refresh') || 'Refresh'}</span>
+            </motion.button>
           </div>
         </div>
       ) : (

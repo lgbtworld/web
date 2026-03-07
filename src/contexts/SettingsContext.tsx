@@ -6,7 +6,7 @@
  *
  */
 
-import type {JSX} from 'react';
+import type { JSX } from 'react';
 
 import * as React from 'react';
 import {
@@ -56,11 +56,14 @@ export const SettingsContext = ({
   const [showBottomBar, setShowBottomBar] = useState(true);
 
   const setOption = useCallback((setting: SettingName, value: boolean) => {
-    setSettings((options) => ({
-      ...options,
-      [setting]: value,
-    }));
-    setURLParam(setting, value);
+    setSettings((options) => {
+      const newSettings = {
+        ...options,
+        [setting]: value,
+      };
+      localStorage.setItem('appSettings', JSON.stringify(newSettings));
+      return newSettings;
+    });
   }, []);
 
   const setViewMode = useCallback((mode: ViewMode) => {
@@ -68,16 +71,25 @@ export const SettingsContext = ({
     localStorage.setItem('viewMode', mode);
   }, []);
 
-  // Load viewMode from localStorage on mount
+  // Load settings from localStorage on mount
   React.useEffect(() => {
+    const savedSettings = localStorage.getItem('appSettings');
+    if (savedSettings) {
+      try {
+        setSettings(JSON.parse(savedSettings));
+      } catch (e) {
+        console.error('Failed to parse settings from localStorage', e);
+      }
+    }
+
     const savedViewMode = localStorage.getItem('viewMode') as ViewMode | null;
-    if (savedViewMode && ['grid', 'list', 'card', 'map'].includes(savedViewMode)) {
+    if (savedViewMode && ['grid', 'list', 'card', 'map', 'bubble', 'dome'].includes(savedViewMode)) {
       setViewModeState(savedViewMode);
     }
   }, []);
 
   const contextValue = useMemo(() => {
-    return {setOption, settings, viewMode, setViewMode, showBottomBar, setShowBottomBar};
+    return { setOption, settings, viewMode, setViewMode, showBottomBar, setShowBottomBar };
   }, [setOption, settings, viewMode, setViewMode, showBottomBar]);
 
   return <Context.Provider value={contextValue}>{children}</Context.Provider>;
@@ -86,15 +98,3 @@ export const SettingsContext = ({
 export const useSettings = (): SettingsContextShape => {
   return useContext(Context);
 };
-
-function setURLParam(param: SettingName, value: null | boolean) {
-  const url = new URL(window.location.href);
-  const params = new URLSearchParams(url.search);
-  if (value !== DEFAULT_SETTINGS[param]) {
-    params.set(param, String(value));
-  } else {
-    params.delete(param);
-  }
-  url.search = params.toString();
-  window.history.pushState(null, '', url.toString());
-}

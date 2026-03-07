@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Calendar, MapPin, Link, MoreHorizontal, Heart, Baby, Cigarette, Wine, Ruler, PawPrint, Church, GraduationCap, Eye, EyeOff, Lock, Palette, Accessibility, Paintbrush, RulerDimensionLine, Vegan, PersonStanding, Sparkles, Drama, Banana, Save, Camera, Image as ImageIcon, ChevronRight, Check, HeartHandshake, AlertTriangle, FileText, MessageCircle, Panda, Ghost, Rainbow, Transgender, Rabbit, ChevronLeft, ChevronDown, LocateFixed, UserCircle, Clock, Smile, HeartPulse, Bubbles, Leaf, Fingerprint, Wallet } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Link, MoreHorizontal, Settings, Heart, Baby, Cigarette, Wine, Ruler, PawPrint, Church, GraduationCap, Eye, EyeOff, Lock, Palette, Accessibility, Paintbrush, RulerDimensionLine, Vegan, PersonStanding, Sparkles, Drama, Banana, Save, Camera, Image as ImageIcon, ChevronRight, Check, HeartHandshake, AlertTriangle, FileText, MessageCircle, Panda, Ghost, Rainbow, Transgender, Rabbit, ChevronLeft, ChevronDown, LocateFixed, UserCircle, Clock, Smile, HeartPulse, Bubbles, Leaf, Fingerprint, Wallet } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
@@ -1506,8 +1506,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
     if (isOwnProfile && authUser) {
       return getSafeImageURLEx((authUser as any).public_id, (authUser as any).avatar, "icon")
     }
-    if (user) {        
-        return getSafeImageURLEx((user as any).public_id, (user as any).avatar, "icon")
+    if (user) {
+      return getSafeImageURLEx((user as any).public_id, (user as any).avatar, "icon")
     }
   };
 
@@ -1516,7 +1516,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
       return getSafeImageURLEx((authUser as any).public_id, (authUser as any).avatar, "large")
 
     } else if (user) {
-        return getSafeImageURLEx((user as any).public_id, (user as any).avatar, "large")
+      return getSafeImageURLEx((user as any).public_id, (user as any).avatar, "large")
     }
   };
 
@@ -3290,9 +3290,15 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     {user.posts_count} {t('profile.posts')}
                   </p>
                 </div>
-                <button className={`p-2 rounded-full transition-colors ${theme === 'dark' ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'
-                  }`}>
-                  <MoreHorizontal className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+                <button
+                  onClick={() => isOwnProfile ? navigate('/settings') : undefined}
+                  className={`p-2 rounded-full transition-colors ${theme === 'dark' ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'
+                    }`}>
+                  {isOwnProfile ? (
+                    <Settings className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+                  ) : (
+                    <MoreHorizontal className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+                  )}
                 </button>
               </>
             )}
@@ -4882,42 +4888,42 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
 
             {/* Tabs - Sticky */}
             {isAuthenticated && (
-            <div className={`sticky z-20 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'} backdrop-blur-sm ${theme === 'dark' ? 'bg-gray-950/95' : 'bg-white/95'}`} style={{ top: inline || isEmbed ? '0' : `${headerHeight}px` }}>
-              <div className="flex relative">
-                {[
-                  { id: 'profile', label: t('profile.profile_tab') },
-                  { id: 'posts', label: t('profile.posts_tab') },
-                  { id: 'replies', label: t('profile.replies_tab') },
-                  { id: 'media', label: t('profile.media_tab') },
-                  { id: 'likes', label: t('profile.likes_tab') },
-                ].map((tab) => (
-                  <motion.button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex-1 py-4 font-bold text-sm relative transition-colors ${activeTab === tab.id
-                      ? theme === 'dark' ? 'text-white' : 'text-black'
-                      : theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'
-                      }`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <span className="relative z-10">{tab.label}</span>
-                    {activeTab === tab.id && (
-                      <motion.div
-                        className={`absolute bottom-0 left-0 right-0 h-1 rounded-t-full ${theme === 'dark' ? 'bg-white' : 'bg-black'}`}
-                        layoutId="profileViewTabIndicator"
-                        transition={{
-                          type: "spring",
-                          stiffness: 380,
-                          damping: 30,
-                          mass: 0.8
-                        }}
-                      />
-                    )}
-                  </motion.button>
-                ))}
+              <div className={`sticky z-20 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'} backdrop-blur-sm ${theme === 'dark' ? 'bg-gray-950/95' : 'bg-white/95'}`} style={{ top: inline || isEmbed ? '0' : `${headerHeight}px` }}>
+                <div className="flex relative">
+                  {[
+                    { id: 'profile', label: t('profile.profile_tab') },
+                    { id: 'posts', label: t('profile.posts_tab') },
+                    { id: 'replies', label: t('profile.replies_tab') },
+                    { id: 'media', label: t('profile.media_tab') },
+                    { id: 'likes', label: t('profile.likes_tab') },
+                  ].map((tab) => (
+                    <motion.button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`flex-1 py-4 font-bold text-sm relative transition-colors ${activeTab === tab.id
+                        ? theme === 'dark' ? 'text-white' : 'text-black'
+                        : theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'
+                        }`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <span className="relative z-10">{tab.label}</span>
+                      {activeTab === tab.id && (
+                        <motion.div
+                          className={`absolute bottom-0 left-0 right-0 h-1 rounded-t-full ${theme === 'dark' ? 'bg-white' : 'bg-black'}`}
+                          layoutId="profileViewTabIndicator"
+                          transition={{
+                            type: "spring",
+                            stiffness: 380,
+                            damping: 30,
+                            mass: 0.8
+                          }}
+                        />
+                      )}
+                    </motion.button>
+                  ))}
+                </div>
               </div>
-            </div>
             )}
 
             <div className='w-full min-h-[100dvh]'>
@@ -4937,8 +4943,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                   <button
                     onClick={() => setShowAuthWizard(true)}
                     className={`px-8 py-3 rounded-xl font-bold text-sm transition-all transform active:scale-95 ${theme === 'dark'
-                        ? 'bg-white text-black hover:bg-gray-200'
-                        : 'bg-black text-white hover:bg-gray-800'
+                      ? 'bg-white text-black hover:bg-gray-200'
+                      : 'bg-black text-white hover:bg-gray-800'
                       }`}
                   >
                     {t('auth.sign_in')}
@@ -4946,664 +4952,664 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                 </div>
               ) : (
                 <>
-              {/* Profile */}
-              {activeTab === 'profile' && (
-                <div className="px-4 py-6 space-y-10">
-                  {/* Attributes Section */}
-                  <div className="w-full">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className={`text-[22px] font-bold tracking-[-0.022em] leading-none ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-                        {t('profile.attributes')}
-                      </h2>
-                      <span className={`text-[13px] font-semibold ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                        {(() => {
-                          const userToCheck = (isOwnProfile && isAuthenticated && authUser) ? authUser : user;
-                          let filledCount = 0;
+                  {/* Profile */}
+                  {activeTab === 'profile' && (
+                    <div className="px-4 py-6 space-y-10">
+                      {/* Attributes Section */}
+                      <div className="w-full">
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className={`text-[22px] font-bold tracking-[-0.022em] leading-none ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                            {t('profile.attributes')}
+                          </h2>
+                          <span className={`text-[13px] font-semibold ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                            {(() => {
+                              const userToCheck = (isOwnProfile && isAuthenticated && authUser) ? authUser : user;
+                              let filledCount = 0;
 
-                          USER_ATTRIBUTES.forEach((attr) => {
-                            const options = fieldOptions[attr.field] || [];
+                              USER_ATTRIBUTES.forEach((attr) => {
+                                const options = fieldOptions[attr.field] || [];
+                                const usePreferencesFlags = options.some(opt => opt.bit_index !== undefined);
+
+                                if (usePreferencesFlags) {
+                                  // Check preferences_flags
+                                  const selectedOptions = options.filter(opt =>
+                                    opt.bit_index !== undefined && isBitSet(preferencesFlags, opt.bit_index)
+                                  );
+                                  if (selectedOptions.length > 0) {
+                                    filledCount++;
+                                  }
+                                } else if (attr.field === 'gender_identity') {
+                                  const genderIdentities = (userToCheck as any)?.gender_identities || (userToCheck as any)?.sexual_identities?.gender_identities;
+                                  const genderIdentity = genderIdentities?.[0] || (userToCheck as any)?.gender_identity;
+                                  if (genderIdentity?.name) {
+                                    filledCount++;
+                                  }
+                                } else if (attr.field === 'sexual_orientation') {
+                                  const sexualOrientations = (userToCheck as any)?.sexual_orientations || (userToCheck as any)?.sexual_identities?.sexual_orientations;
+                                  const sexualOrientation = sexualOrientations?.[0] || (userToCheck as any)?.sexual_orientation;
+                                  if (sexualOrientation?.name) {
+                                    filledCount++;
+                                  }
+                                } else if (attr.field === 'sex_role') {
+                                  const sexRole = (userToCheck as any)?.sexual_role || (userToCheck as any)?.sex_role || (userToCheck as any)?.sexual_identities?.sex_role;
+                                  if (sexRole?.name) {
+                                    filledCount++;
+                                  }
+                                } else {
+                                  const ua = userToCheck?.user_attributes?.find((u: any) => u.category_type === attr.field);
+                                  if (ua?.attribute?.name) {
+                                    filledCount++;
+                                  } else if (attr.field === 'relationship_status' && userToCheck?.relationship_status) {
+                                    filledCount++;
+                                  }
+                                }
+                              });
+
+                              return filledCount;
+                            })()} / {USER_ATTRIBUTES.length}
+                          </span>
+                        </div>
+                        <div className={`rounded-[18px] overflow-hidden ${theme === 'dark'
+                          ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
+                          : 'bg-white backdrop-blur-xl border border-black/[0.06]'
+                          }`}>
+                          {USER_ATTRIBUTES.map((item, index) => {
+                            // Get display value - use authUser if viewing own profile in edit context, otherwise use user
+                            const userToCheck = (isOwnProfile && isAuthenticated && authUser) ? authUser : user;
+                            let displayValue = '';
+                            let hasValue = false;
+
+                            // Get options for this field
+                            const options = fieldOptions[item.field] || [];
                             const usePreferencesFlags = options.some(opt => opt.bit_index !== undefined);
+                            const allowMultiple = fieldAllowMultiple[item.field] || false;
+                            let selectedOptions: Array<{ id: string; name: string; display_order: number; bit_index?: number; allow_multiple?: boolean }> = [];
 
+                            // First check if using preferences_flags with bit_index
                             if (usePreferencesFlags) {
-                              // Check preferences_flags
-                              const selectedOptions = options.filter(opt =>
+                              // Find selected options from preferences_flags
+                              selectedOptions = options.filter(opt =>
                                 opt.bit_index !== undefined && isBitSet(preferencesFlags, opt.bit_index)
                               );
+
                               if (selectedOptions.length > 0) {
-                                filledCount++;
+                                if (allowMultiple) {
+                                  // Multiple selection: show all selected options
+                                  displayValue = selectedOptions.map(opt => opt.name).join(', ');
+                                } else {
+                                  // Single selection
+                                  displayValue = selectedOptions[0].name;
+                                }
+                                hasValue = true;
                               }
-                            } else if (attr.field === 'gender_identity') {
+                            } else if (item.field === 'gender_identity') {
+                              // Fallback to old structure
+                              // Check both structures: direct array or nested in sexual_identities
                               const genderIdentities = (userToCheck as any)?.gender_identities || (userToCheck as any)?.sexual_identities?.gender_identities;
                               const genderIdentity = genderIdentities?.[0] || (userToCheck as any)?.gender_identity;
                               if (genderIdentity?.name) {
-                                filledCount++;
+                                displayValue = genderIdentity.name[defaultLanguage] ||
+                                  genderIdentity.name.en ||
+                                  Object.values(genderIdentity.name)[0] || '';
+                                hasValue = !!displayValue;
                               }
-                            } else if (attr.field === 'sexual_orientation') {
+                            } else if (item.field === 'sexual_orientation') {
+                              // Fallback to old structure
+                              // Check both structures: direct array or nested in sexual_identities
                               const sexualOrientations = (userToCheck as any)?.sexual_orientations || (userToCheck as any)?.sexual_identities?.sexual_orientations;
                               const sexualOrientation = sexualOrientations?.[0] || (userToCheck as any)?.sexual_orientation;
                               if (sexualOrientation?.name) {
-                                filledCount++;
+                                displayValue = sexualOrientation.name[defaultLanguage] ||
+                                  sexualOrientation.name.en ||
+                                  Object.values(sexualOrientation.name)[0] || '';
+                                hasValue = !!displayValue;
                               }
-                            } else if (attr.field === 'sex_role') {
+                            } else if (item.field === 'sex_role') {
+                              // Fallback to old structure
+                              // Check multiple structures: sexual_role, sex_role, or nested in sexual_identities
                               const sexRole = (userToCheck as any)?.sexual_role || (userToCheck as any)?.sex_role || (userToCheck as any)?.sexual_identities?.sex_role;
                               if (sexRole?.name) {
-                                filledCount++;
+                                displayValue = sexRole.name[defaultLanguage] ||
+                                  sexRole.name.en ||
+                                  Object.values(sexRole.name)[0] || '';
+                                hasValue = !!displayValue;
                               }
                             } else {
-                              const ua = userToCheck?.user_attributes?.find((u: any) => u.category_type === attr.field);
-                              if (ua?.attribute?.name) {
-                                filledCount++;
-                              } else if (attr.field === 'relationship_status' && userToCheck?.relationship_status) {
-                                filledCount++;
-                              }
-                            }
-                          });
-
-                          return filledCount;
-                        })()} / {USER_ATTRIBUTES.length}
-                      </span>
-                    </div>
-                    <div className={`rounded-[18px] overflow-hidden ${theme === 'dark'
-                      ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
-                      : 'bg-white backdrop-blur-xl border border-black/[0.06]'
-                      }`}>
-                      {USER_ATTRIBUTES.map((item, index) => {
-                        // Get display value - use authUser if viewing own profile in edit context, otherwise use user
-                        const userToCheck = (isOwnProfile && isAuthenticated && authUser) ? authUser : user;
-                        let displayValue = '';
-                        let hasValue = false;
-
-                        // Get options for this field
-                        const options = fieldOptions[item.field] || [];
-                        const usePreferencesFlags = options.some(opt => opt.bit_index !== undefined);
-                        const allowMultiple = fieldAllowMultiple[item.field] || false;
-                        let selectedOptions: Array<{ id: string; name: string; display_order: number; bit_index?: number; allow_multiple?: boolean }> = [];
-
-                        // First check if using preferences_flags with bit_index
-                        if (usePreferencesFlags) {
-                          // Find selected options from preferences_flags
-                          selectedOptions = options.filter(opt =>
-                            opt.bit_index !== undefined && isBitSet(preferencesFlags, opt.bit_index)
-                          );
-
-                          if (selectedOptions.length > 0) {
-                            if (allowMultiple) {
-                              // Multiple selection: show all selected options
-                              displayValue = selectedOptions.map(opt => opt.name).join(', ');
-                            } else {
-                              // Single selection
-                              displayValue = selectedOptions[0].name;
-                            }
-                            hasValue = true;
-                          }
-                        } else if (item.field === 'gender_identity') {
-                          // Fallback to old structure
-                          // Check both structures: direct array or nested in sexual_identities
-                          const genderIdentities = (userToCheck as any)?.gender_identities || (userToCheck as any)?.sexual_identities?.gender_identities;
-                          const genderIdentity = genderIdentities?.[0] || (userToCheck as any)?.gender_identity;
-                          if (genderIdentity?.name) {
-                            displayValue = genderIdentity.name[defaultLanguage] ||
-                              genderIdentity.name.en ||
-                              Object.values(genderIdentity.name)[0] || '';
-                            hasValue = !!displayValue;
-                          }
-                        } else if (item.field === 'sexual_orientation') {
-                          // Fallback to old structure
-                          // Check both structures: direct array or nested in sexual_identities
-                          const sexualOrientations = (userToCheck as any)?.sexual_orientations || (userToCheck as any)?.sexual_identities?.sexual_orientations;
-                          const sexualOrientation = sexualOrientations?.[0] || (userToCheck as any)?.sexual_orientation;
-                          if (sexualOrientation?.name) {
-                            displayValue = sexualOrientation.name[defaultLanguage] ||
-                              sexualOrientation.name.en ||
-                              Object.values(sexualOrientation.name)[0] || '';
-                            hasValue = !!displayValue;
-                          }
-                        } else if (item.field === 'sex_role') {
-                          // Fallback to old structure
-                          // Check multiple structures: sexual_role, sex_role, or nested in sexual_identities
-                          const sexRole = (userToCheck as any)?.sexual_role || (userToCheck as any)?.sex_role || (userToCheck as any)?.sexual_identities?.sex_role;
-                          if (sexRole?.name) {
-                            displayValue = sexRole.name[defaultLanguage] ||
-                              sexRole.name.en ||
-                              Object.values(sexRole.name)[0] || '';
-                            hasValue = !!displayValue;
-                          }
-                        } else {
-                          // Regular attribute from user_attributes (fallback to old structure)
-                          const currentUserAttribute = userToCheck?.user_attributes?.find(
-                            (ua: any) => ua.category_type === item.field
-                          );
-
-                          if (currentUserAttribute?.attribute?.name) {
-                            displayValue = currentUserAttribute.attribute.name[defaultLanguage] ||
-                              currentUserAttribute.attribute.name.en ||
-                              Object.values(currentUserAttribute.attribute.name)[0] || '';
-                            hasValue = !!displayValue;
-                          }
-
-                          if (item.field === 'relationship_status' && !hasValue) {
-                            displayValue = userToCheck?.relationship_status || '';
-                            hasValue = !!displayValue;
-                          }
-                        }
-
-                        if (!hasValue) {
-                          displayValue = t('profile.select_option');
-                        }
-
-                        const isLast = index === USER_ATTRIBUTES.length - 1;
-
-                        const isMultipleSelection = allowMultiple && usePreferencesFlags && selectedOptions.length > 1;
-
-                        return (
-                          <div
-                            key={item.field}
-                            className={`group ${isMultipleSelection ? 'flex-col items-start' : 'flex items-center justify-between'} px-4 py-3 transition-all duration-200 ${!isLast ? `border-b ${theme === 'dark' ? 'border-white/[0.06]' : 'border-black/[0.04]'}` : ''
-                              } ${theme === 'dark' ? 'hover:bg-white/[0.03] active:bg-white/[0.05]' : 'hover:bg-black/[0.02] active:bg-black/[0.03]'}`}
-                          >
-                            <div className="flex items-center gap-3 min-w-0 flex-1 w-full">
-                              <div className={`p-2.5 rounded-[10px] transition-all duration-200 flex-shrink-0 ${theme === 'dark'
-                                ? 'bg-white/[0.08] group-hover:bg-white/[0.12]'
-                                : 'bg-black/[0.04] group-hover:bg-black/[0.06]'
-                                }`}>
-                                <item.icon className={`w-7 h-7 ${theme === 'dark' ? 'text-white/90' : 'text-black/90'}`} />
-                              </div>
-                              <span className={`text-[15px] font-medium tracking-[-0.011em] ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-                                {item.label}
-                              </span>
-                            </div>
-                            <div className={`flex items-center gap-2 ${isMultipleSelection ? 'w-full mt-2 ml-11' : 'flex-shrink-0'}`}>
-                              {!hasValue && (
-                                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${theme === 'dark' ? 'bg-yellow-400/80' : 'bg-yellow-500/80'}`} />
-                              )}
-                              {isMultipleSelection ? (
-                                <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
-                                  {selectedOptions.map((opt) => (
-                                    <span
-                                      key={opt.id}
-                                      className={`inline-flex items-center px-2.5 py-1 text-[12px] font-medium tracking-[-0.006em] rounded-full ${theme === 'dark'
-                                        ? 'bg-white/[0.08] text-gray-300'
-                                        : 'bg-black/[0.04] text-gray-700'
-                                        }`}
-                                    >
-                                      {opt.name}
-                                    </span>
-                                  ))}
-                                </div>
-                              ) : (
-                                <span className={`text-[13px] font-medium tracking-[-0.006em] ${isMultipleSelection ? 'break-words' : 'whitespace-nowrap'} ${hasValue
-                                  ? (theme === 'dark' ? 'text-gray-400' : 'text-gray-500')
-                                  : (theme === 'dark' ? 'text-yellow-400/90' : 'text-yellow-600/90')
-                                  }`}>
-                                  {displayValue}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Fantasies Section */}
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className={`text-[22px] font-bold tracking-[-0.022em] leading-none ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-                        {t('profile.fantasies')}
-                      </h2>
-                      {(() => {
-                        // Count fantasies from preferences_flags or fallback to old structure
-                        const totalCount = Object.values(userSelectedFantasiesByCategory).reduce((sum, items) => sum + items.length, 0);
-                        const fallbackCount = (() => {
-                          const fantasiesSource = (isOwnProfile && isAuthenticated && authUser) ? (authUser as any).fantasies : user?.fantasies;
-                          return fantasiesSource?.length || 0;
-                        })();
-                        const displayCount = totalCount > 0 ? totalCount : fallbackCount;
-                        if (displayCount > 0) {
-                          return (
-                            <span className={`text-[13px] font-semibold ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                              {displayCount}
-                            </span>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
-                    {(() => {
-                      // Use preferences_flags data first, fallback to old structure
-                      const hasPreferencesData = Object.keys(userSelectedFantasiesByCategory).length > 0;
-
-                      if (hasPreferencesData) {
-                        // Use new preferences_flags structure
-                        return (
-                          <div className="space-y-3">
-                            {Object.entries(userSelectedFantasiesByCategory).map(([categorySlug, categoryFantasies]) => {
-                              // Get category name from fantasyCategories
-                              const category = fantasyCategories.find(c => c.id === categorySlug);
-                              const categoryName = category?.name || categorySlug;
-
-                              return (
-                                <div
-                                  key={categorySlug}
-                                  className={`rounded-[18px] overflow-hidden ${theme === 'dark'
-                                    ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
-                                    : 'bg-white backdrop-blur-xl border border-black/[0.06]'
-                                    }`}
-                                >
-                                  <div className={`px-4 py-2.5 border-b ${theme === 'dark' ? 'border-white/[0.06]' : 'border-black/[0.04]'}`}>
-                                    <h3 className={`text-[11px] font-bold uppercase tracking-[0.08em] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                      {categoryName}
-                                    </h3>
-                                  </div>
-                                  <div className="p-3.5 flex flex-wrap gap-2">
-                                    {categoryFantasies.map((fantasy) => (
-                                      <span
-                                        key={fantasy.id}
-                                        className={`px-4 py-2 text-[14px] font-medium tracking-[-0.006em] rounded-full transition-all duration-200 cursor-default ${theme === 'dark'
-                                          ? 'bg-white/[0.08] text-gray-200 hover:bg-white/[0.12] active:scale-[0.98]'
-                                          : 'bg-black/[0.04] text-gray-800 hover:bg-black/[0.06] active:scale-[0.98]'
-                                          }`}
-                                      >
-                                        {fantasy.name}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
+                              // Regular attribute from user_attributes (fallback to old structure)
+                              const currentUserAttribute = userToCheck?.user_attributes?.find(
+                                (ua: any) => ua.category_type === item.field
                               );
-                            })}
-                          </div>
-                        );
-                      }
 
-                      // Fallback to old structure
-                      const fantasiesSource = (isOwnProfile && isAuthenticated && authUser) ? (authUser as any).fantasies : user?.fantasies;
-                      if (fantasiesSource && fantasiesSource.length > 0) {
-                        // Group fantasies by category slug
-                        const fantasiesByCategory: Record<string, typeof fantasiesSource> = {};
-                        fantasiesSource.forEach((f: any) => {
-                          const categorySlug = f.fantasy?.slug || 'other';
-                          if (!fantasiesByCategory[categorySlug]) {
-                            fantasiesByCategory[categorySlug] = [];
-                          }
-                          fantasiesByCategory[categorySlug].push(f);
-                        });
+                              if (currentUserAttribute?.attribute?.name) {
+                                displayValue = currentUserAttribute.attribute.name[defaultLanguage] ||
+                                  currentUserAttribute.attribute.name.en ||
+                                  Object.values(currentUserAttribute.attribute.name)[0] || '';
+                                hasValue = !!displayValue;
+                              }
 
-                        return (
-                          <div className="space-y-3">
-                            {Object.entries(fantasiesByCategory).map(([categorySlug, categoryFantasies]) => {
-                              // Get category name from the first fantasy in this group
-                              const firstFantasy = categoryFantasies[0]?.fantasy;
-                              const categoryName = firstFantasy?.category?.[defaultLanguage] ||
-                                firstFantasy?.category?.en ||
-                                (firstFantasy?.category ? Object.values(firstFantasy.category)[0] : null) ||
-                                categorySlug;
-                              return (
-                                <div
-                                  key={categorySlug}
-                                  className={`rounded-[18px] overflow-hidden ${theme === 'dark'
-                                    ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
-                                    : 'bg-white backdrop-blur-xl border border-black/[0.06]'
-                                    }`}
-                                >
-                                  <div className={`px-4 py-2.5 border-b ${theme === 'dark' ? 'border-white/[0.06]' : 'border-black/[0.04]'}`}>
-                                    <h3 className={`text-[11px] font-bold uppercase tracking-[0.08em] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                      {categoryName}
-                                    </h3>
+                              if (item.field === 'relationship_status' && !hasValue) {
+                                displayValue = userToCheck?.relationship_status || '';
+                                hasValue = !!displayValue;
+                              }
+                            }
+
+                            if (!hasValue) {
+                              displayValue = t('profile.select_option');
+                            }
+
+                            const isLast = index === USER_ATTRIBUTES.length - 1;
+
+                            const isMultipleSelection = allowMultiple && usePreferencesFlags && selectedOptions.length > 1;
+
+                            return (
+                              <div
+                                key={item.field}
+                                className={`group ${isMultipleSelection ? 'flex-col items-start' : 'flex items-center justify-between'} px-4 py-3 transition-all duration-200 ${!isLast ? `border-b ${theme === 'dark' ? 'border-white/[0.06]' : 'border-black/[0.04]'}` : ''
+                                  } ${theme === 'dark' ? 'hover:bg-white/[0.03] active:bg-white/[0.05]' : 'hover:bg-black/[0.02] active:bg-black/[0.03]'}`}
+                              >
+                                <div className="flex items-center gap-3 min-w-0 flex-1 w-full">
+                                  <div className={`p-2.5 rounded-[10px] transition-all duration-200 flex-shrink-0 ${theme === 'dark'
+                                    ? 'bg-white/[0.08] group-hover:bg-white/[0.12]'
+                                    : 'bg-black/[0.04] group-hover:bg-black/[0.06]'
+                                    }`}>
+                                    <item.icon className={`w-7 h-7 ${theme === 'dark' ? 'text-white/90' : 'text-black/90'}`} />
                                   </div>
-                                  <div className="p-3.5 flex flex-wrap gap-2">
-                                    {categoryFantasies.map((f: any) => {
-                                      const label = f.fantasy?.label?.[defaultLanguage] ||
-                                        f.fantasy?.label?.en ||
-                                        Object.values(f.fantasy?.label || {})[0] ||
-                                        `Fantasy ${f.fantasy_id || f.id}`;
-                                      return (
+                                  <span className={`text-[15px] font-medium tracking-[-0.011em] ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                                    {item.label}
+                                  </span>
+                                </div>
+                                <div className={`flex items-center gap-2 ${isMultipleSelection ? 'w-full mt-2 ml-11' : 'flex-shrink-0'}`}>
+                                  {!hasValue && (
+                                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${theme === 'dark' ? 'bg-yellow-400/80' : 'bg-yellow-500/80'}`} />
+                                  )}
+                                  {isMultipleSelection ? (
+                                    <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
+                                      {selectedOptions.map((opt) => (
                                         <span
-                                          key={f.id || f.fantasy_id}
-                                          className={`px-4 py-2 text-[14px] font-medium tracking-[-0.006em] rounded-full transition-all duration-200 cursor-default ${theme === 'dark'
-                                            ? 'bg-white/[0.08] text-gray-200 hover:bg-white/[0.12] active:scale-[0.98]'
-                                            : 'bg-black/[0.04] text-gray-800 hover:bg-black/[0.06] active:scale-[0.98]'
+                                          key={opt.id}
+                                          className={`inline-flex items-center px-2.5 py-1 text-[12px] font-medium tracking-[-0.006em] rounded-full ${theme === 'dark'
+                                            ? 'bg-white/[0.08] text-gray-300'
+                                            : 'bg-black/[0.04] text-gray-700'
                                             }`}
                                         >
-                                          {label}
+                                          {opt.name}
                                         </span>
-                                      );
-                                    })}
-                                  </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <span className={`text-[13px] font-medium tracking-[-0.006em] ${isMultipleSelection ? 'break-words' : 'whitespace-nowrap'} ${hasValue
+                                      ? (theme === 'dark' ? 'text-gray-400' : 'text-gray-500')
+                                      : (theme === 'dark' ? 'text-yellow-400/90' : 'text-yellow-600/90')
+                                      }`}>
+                                      {displayValue}
+                                    </span>
+                                  )}
                                 </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      }
-
-                      // No fantasies
-                      return (
-                        <div className={`text-center py-16 rounded-[18px] ${theme === 'dark'
-                          ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
-                          : 'bg-white/95 backdrop-blur-xl border border-black/[0.06]'
-                          }`}>
-                          <div className={`w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center ${theme === 'dark' ? 'bg-white/[0.08]' : 'bg-black/[0.04]'}`}>
-                            <Sparkles className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
-                          </div>
-                          <p className={`text-[15px] font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('profile.no_fantasies_added')}</p>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })()}
-                  </div>
+                      </div>
 
-                  {/* Interests Section */}
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className={`text-[22px] font-bold tracking-[-0.022em] leading-none ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-                        {t('profile.interests')}
-                      </h2>
-                      {(() => {
-                        // Count interests from preferences_flags or fallback to old structure
-                        const totalCount = Object.values(userSelectedInterestsByCategory).reduce((sum, items) => sum + items.length, 0);
-                        const fallbackCount = (() => {
+                      {/* Fantasies Section */}
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className={`text-[22px] font-bold tracking-[-0.022em] leading-none ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                            {t('profile.fantasies')}
+                          </h2>
+                          {(() => {
+                            // Count fantasies from preferences_flags or fallback to old structure
+                            const totalCount = Object.values(userSelectedFantasiesByCategory).reduce((sum, items) => sum + items.length, 0);
+                            const fallbackCount = (() => {
+                              const fantasiesSource = (isOwnProfile && isAuthenticated && authUser) ? (authUser as any).fantasies : user?.fantasies;
+                              return fantasiesSource?.length || 0;
+                            })();
+                            const displayCount = totalCount > 0 ? totalCount : fallbackCount;
+                            if (displayCount > 0) {
+                              return (
+                                <span className={`text-[13px] font-semibold ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                  {displayCount}
+                                </span>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                        {(() => {
+                          // Use preferences_flags data first, fallback to old structure
+                          const hasPreferencesData = Object.keys(userSelectedFantasiesByCategory).length > 0;
+
+                          if (hasPreferencesData) {
+                            // Use new preferences_flags structure
+                            return (
+                              <div className="space-y-3">
+                                {Object.entries(userSelectedFantasiesByCategory).map(([categorySlug, categoryFantasies]) => {
+                                  // Get category name from fantasyCategories
+                                  const category = fantasyCategories.find(c => c.id === categorySlug);
+                                  const categoryName = category?.name || categorySlug;
+
+                                  return (
+                                    <div
+                                      key={categorySlug}
+                                      className={`rounded-[18px] overflow-hidden ${theme === 'dark'
+                                        ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
+                                        : 'bg-white backdrop-blur-xl border border-black/[0.06]'
+                                        }`}
+                                    >
+                                      <div className={`px-4 py-2.5 border-b ${theme === 'dark' ? 'border-white/[0.06]' : 'border-black/[0.04]'}`}>
+                                        <h3 className={`text-[11px] font-bold uppercase tracking-[0.08em] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                          {categoryName}
+                                        </h3>
+                                      </div>
+                                      <div className="p-3.5 flex flex-wrap gap-2">
+                                        {categoryFantasies.map((fantasy) => (
+                                          <span
+                                            key={fantasy.id}
+                                            className={`px-4 py-2 text-[14px] font-medium tracking-[-0.006em] rounded-full transition-all duration-200 cursor-default ${theme === 'dark'
+                                              ? 'bg-white/[0.08] text-gray-200 hover:bg-white/[0.12] active:scale-[0.98]'
+                                              : 'bg-black/[0.04] text-gray-800 hover:bg-black/[0.06] active:scale-[0.98]'
+                                              }`}
+                                          >
+                                            {fantasy.name}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          }
+
+                          // Fallback to old structure
+                          const fantasiesSource = (isOwnProfile && isAuthenticated && authUser) ? (authUser as any).fantasies : user?.fantasies;
+                          if (fantasiesSource && fantasiesSource.length > 0) {
+                            // Group fantasies by category slug
+                            const fantasiesByCategory: Record<string, typeof fantasiesSource> = {};
+                            fantasiesSource.forEach((f: any) => {
+                              const categorySlug = f.fantasy?.slug || 'other';
+                              if (!fantasiesByCategory[categorySlug]) {
+                                fantasiesByCategory[categorySlug] = [];
+                              }
+                              fantasiesByCategory[categorySlug].push(f);
+                            });
+
+                            return (
+                              <div className="space-y-3">
+                                {Object.entries(fantasiesByCategory).map(([categorySlug, categoryFantasies]) => {
+                                  // Get category name from the first fantasy in this group
+                                  const firstFantasy = categoryFantasies[0]?.fantasy;
+                                  const categoryName = firstFantasy?.category?.[defaultLanguage] ||
+                                    firstFantasy?.category?.en ||
+                                    (firstFantasy?.category ? Object.values(firstFantasy.category)[0] : null) ||
+                                    categorySlug;
+                                  return (
+                                    <div
+                                      key={categorySlug}
+                                      className={`rounded-[18px] overflow-hidden ${theme === 'dark'
+                                        ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
+                                        : 'bg-white backdrop-blur-xl border border-black/[0.06]'
+                                        }`}
+                                    >
+                                      <div className={`px-4 py-2.5 border-b ${theme === 'dark' ? 'border-white/[0.06]' : 'border-black/[0.04]'}`}>
+                                        <h3 className={`text-[11px] font-bold uppercase tracking-[0.08em] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                          {categoryName}
+                                        </h3>
+                                      </div>
+                                      <div className="p-3.5 flex flex-wrap gap-2">
+                                        {categoryFantasies.map((f: any) => {
+                                          const label = f.fantasy?.label?.[defaultLanguage] ||
+                                            f.fantasy?.label?.en ||
+                                            Object.values(f.fantasy?.label || {})[0] ||
+                                            `Fantasy ${f.fantasy_id || f.id}`;
+                                          return (
+                                            <span
+                                              key={f.id || f.fantasy_id}
+                                              className={`px-4 py-2 text-[14px] font-medium tracking-[-0.006em] rounded-full transition-all duration-200 cursor-default ${theme === 'dark'
+                                                ? 'bg-white/[0.08] text-gray-200 hover:bg-white/[0.12] active:scale-[0.98]'
+                                                : 'bg-black/[0.04] text-gray-800 hover:bg-black/[0.06] active:scale-[0.98]'
+                                                }`}
+                                            >
+                                              {label}
+                                            </span>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          }
+
+                          // No fantasies
+                          return (
+                            <div className={`text-center py-16 rounded-[18px] ${theme === 'dark'
+                              ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
+                              : 'bg-white/95 backdrop-blur-xl border border-black/[0.06]'
+                              }`}>
+                              <div className={`w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center ${theme === 'dark' ? 'bg-white/[0.08]' : 'bg-black/[0.04]'}`}>
+                                <Sparkles className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                              </div>
+                              <p className={`text-[15px] font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('profile.no_fantasies_added')}</p>
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Interests Section */}
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className={`text-[22px] font-bold tracking-[-0.022em] leading-none ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                            {t('profile.interests')}
+                          </h2>
+                          {(() => {
+                            // Count interests from preferences_flags or fallback to old structure
+                            const totalCount = Object.values(userSelectedInterestsByCategory).reduce((sum, items) => sum + items.length, 0);
+                            const fallbackCount = (() => {
+                              const interestsSource = (isOwnProfile && isAuthenticated && authUser && (authUser as any).interests)
+                                ? (authUser as any).interests
+                                : user?.interests;
+                              return interestsSource?.length || 0;
+                            })();
+                            const displayCount = totalCount > 0 ? totalCount : fallbackCount;
+                            if (displayCount > 0) {
+                              return (
+                                <span className={`text-[13px] font-semibold ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                  {displayCount}
+                                </span>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                        {(() => {
+                          // Use preferences_flags data first, fallback to old structure
+                          const hasPreferencesData = Object.keys(userSelectedInterestsByCategory).length > 0;
+
+                          if (hasPreferencesData) {
+                            // Use new preferences_flags structure
+                            return (
+                              <div className="space-y-3">
+                                {Object.entries(userSelectedInterestsByCategory).map(([categoryId, categoryInterests]) => {
+                                  // Get category name from interestCategories
+                                  const category = interestCategories.find(c => c.id === categoryId);
+                                  const categoryName = category?.name || categoryId;
+
+                                  return (
+                                    <div
+                                      key={categoryId}
+                                      className={`rounded-[18px] overflow-hidden ${theme === 'dark'
+                                        ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
+                                        : 'bg-white backdrop-blur-xl border border-black/[0.06]'
+                                        }`}
+                                    >
+                                      <div className={`px-4 py-2.5 border-b ${theme === 'dark' ? 'border-white/[0.06]' : 'border-black/[0.04]'}`}>
+                                        <h3 className={`text-[11px] font-bold uppercase tracking-[0.08em] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                          {categoryName}
+                                        </h3>
+                                      </div>
+                                      <div className="p-3.5 flex flex-wrap gap-2">
+                                        {categoryInterests.map((item) => (
+                                          <span
+                                            key={item.id}
+                                            className={`inline-flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium tracking-[-0.006em] rounded-full transition-all duration-200 cursor-default ${theme === 'dark'
+                                              ? 'bg-white/[0.08] text-gray-200 hover:bg-white/[0.12] active:scale-[0.98]'
+                                              : 'bg-black/[0.04] text-gray-800 hover:bg-black/[0.06] active:scale-[0.98]'
+                                              }`}
+                                          >
+                                            {item.emoji && <span className="text-[15px] leading-none">{item.emoji}</span>}
+                                            <span>{item.name}</span>
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          }
+
+                          // Fallback to old structure
                           const interestsSource = (isOwnProfile && isAuthenticated && authUser && (authUser as any).interests)
                             ? (authUser as any).interests
                             : user?.interests;
-                          return interestsSource?.length || 0;
-                        })();
-                        const displayCount = totalCount > 0 ? totalCount : fallbackCount;
-                        if (displayCount > 0) {
-                          return (
-                            <span className={`text-[13px] font-semibold ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                              {displayCount}
-                            </span>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
-                    {(() => {
-                      // Use preferences_flags data first, fallback to old structure
-                      const hasPreferencesData = Object.keys(userSelectedInterestsByCategory).length > 0;
 
-                      if (hasPreferencesData) {
-                        // Use new preferences_flags structure
-                        return (
-                          <div className="space-y-3">
-                            {Object.entries(userSelectedInterestsByCategory).map(([categoryId, categoryInterests]) => {
-                              // Get category name from interestCategories
-                              const category = interestCategories.find(c => c.id === categoryId);
-                              const categoryName = category?.name || categoryId;
+                          if (interestsSource && interestsSource.length > 0) {
+                            // Group interests by category
+                            const interestsByCategory: Record<string, Array<{ id: string; name: string; emoji?: string; categoryId: string; categoryName: string }>> = {};
 
-                              return (
-                                <div
-                                  key={categoryId}
-                                  className={`rounded-[18px] overflow-hidden ${theme === 'dark'
-                                    ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
-                                    : 'bg-white backdrop-blur-xl border border-black/[0.06]'
-                                    }`}
-                                >
-                                  <div className={`px-4 py-2.5 border-b ${theme === 'dark' ? 'border-white/[0.06]' : 'border-black/[0.04]'}`}>
-                                    <h3 className={`text-[11px] font-bold uppercase tracking-[0.08em] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                      {categoryName}
-                                    </h3>
-                                  </div>
-                                  <div className="p-3.5 flex flex-wrap gap-2">
-                                    {categoryInterests.map((item) => (
-                                      <span
-                                        key={item.id}
-                                        className={`inline-flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium tracking-[-0.006em] rounded-full transition-all duration-200 cursor-default ${theme === 'dark'
-                                          ? 'bg-white/[0.08] text-gray-200 hover:bg-white/[0.12] active:scale-[0.98]'
-                                          : 'bg-black/[0.04] text-gray-800 hover:bg-black/[0.06] active:scale-[0.98]'
-                                          }`}
-                                      >
-                                        {item.emoji && <span className="text-[15px] leading-none">{item.emoji}</span>}
-                                        <span>{item.name}</span>
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      }
+                            interestsSource.forEach((interest: any) => {
+                              if (typeof interest === 'object' && interest !== null && interest.interest_item) {
+                                const itemName = interest.interest_item.name[defaultLanguage] ||
+                                  interest.interest_item.name.en ||
+                                  Object.values(interest.interest_item.name)[0] ||
+                                  `Interest ${interest.interest_item.id}`;
 
-                      // Fallback to old structure
-                      const interestsSource = (isOwnProfile && isAuthenticated && authUser && (authUser as any).interests)
-                        ? (authUser as any).interests
-                        : user?.interests;
+                                const categoryId = interest.interest_item.interest_id || interest.interest_item.interest?.id || 'other';
+                                const categoryName = interest.interest_item.interest?.name?.[defaultLanguage] ||
+                                  interest.interest_item.interest?.name?.en ||
+                                  (interest.interest_item.interest?.name ? Object.values(interest.interest_item.interest.name)[0] : null) ||
+                                  'Other';
 
-                      if (interestsSource && interestsSource.length > 0) {
-                        // Group interests by category
-                        const interestsByCategory: Record<string, Array<{ id: string; name: string; emoji?: string; categoryId: string; categoryName: string }>> = {};
+                                if (!interestsByCategory[categoryId]) {
+                                  interestsByCategory[categoryId] = [];
+                                }
 
-                        interestsSource.forEach((interest: any) => {
-                          if (typeof interest === 'object' && interest !== null && interest.interest_item) {
-                            const itemName = interest.interest_item.name[defaultLanguage] ||
-                              interest.interest_item.name.en ||
-                              Object.values(interest.interest_item.name)[0] ||
-                              `Interest ${interest.interest_item.id}`;
+                                interestsByCategory[categoryId].push({
+                                  id: interest.interest_item.id || interest.id,
+                                  name: itemName,
+                                  emoji: interest.interest_item.emoji,
+                                  categoryId,
+                                  categoryName,
+                                });
+                              } else {
+                                const interestNameById: Record<number, string> = {
+                                  247: '3D printing',
+                                  175: 'Acting',
+                                  21: 'Action films',
+                                  253: 'Adventure',
+                                  125: 'Afrobeats',
+                                  88: 'Animal lover',
+                                  228: 'Badminton',
+                                  229: 'Graduate degree or higher',
+                                  221: 'Exercising',
+                                  136: 'Sci-fi books',
+                                  25: 'Sci-fi films',
+                                };
 
-                            const categoryId = interest.interest_item.interest_id || interest.interest_item.interest?.id || 'other';
-                            const categoryName = interest.interest_item.interest?.name?.[defaultLanguage] ||
-                              interest.interest_item.interest?.name?.en ||
-                              (interest.interest_item.interest?.name ? Object.values(interest.interest_item.interest.name)[0] : null) ||
-                              'Other';
+                                const categoryId = 'uncategorized';
+                                if (!interestsByCategory[categoryId]) {
+                                  interestsByCategory[categoryId] = [];
+                                }
 
-                            if (!interestsByCategory[categoryId]) {
-                              interestsByCategory[categoryId] = [];
-                            }
-
-                            interestsByCategory[categoryId].push({
-                              id: interest.interest_item.id || interest.id,
-                              name: itemName,
-                              emoji: interest.interest_item.emoji,
-                              categoryId,
-                              categoryName,
+                                interestsByCategory[categoryId].push({
+                                  id: String(interest),
+                                  name: typeof interest === 'number' ? (interestNameById[interest] || `Interest #${interest}`) : String(interest),
+                                  emoji: undefined,
+                                  categoryId,
+                                  categoryName: 'Other',
+                                });
+                              }
                             });
-                          } else {
-                            const interestNameById: Record<number, string> = {
-                              247: '3D printing',
-                              175: 'Acting',
-                              21: 'Action films',
-                              253: 'Adventure',
-                              125: 'Afrobeats',
-                              88: 'Animal lover',
-                              228: 'Badminton',
-                              229: 'Graduate degree or higher',
-                              221: 'Exercising',
-                              136: 'Sci-fi books',
-                              25: 'Sci-fi films',
-                            };
 
-                            const categoryId = 'uncategorized';
-                            if (!interestsByCategory[categoryId]) {
-                              interestsByCategory[categoryId] = [];
-                            }
-
-                            interestsByCategory[categoryId].push({
-                              id: String(interest),
-                              name: typeof interest === 'number' ? (interestNameById[interest] || `Interest #${interest}`) : String(interest),
-                              emoji: undefined,
-                              categoryId,
-                              categoryName: 'Other',
-                            });
+                            return (
+                              <div className="space-y-3">
+                                {Object.entries(interestsByCategory).map(([categoryId, categoryInterests]) => {
+                                  const categoryName = categoryInterests[0]?.categoryName || 'Other';
+                                  return (
+                                    <div
+                                      key={categoryId}
+                                      className={`rounded-[18px] overflow-hidden ${theme === 'dark'
+                                        ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
+                                        : 'bg-white backdrop-blur-xl border border-black/[0.06]'
+                                        }`}
+                                    >
+                                      <div className={`px-4 py-2.5 border-b ${theme === 'dark' ? 'border-white/[0.06]' : 'border-black/[0.04]'}`}>
+                                        <h3 className={`text-[11px] font-bold uppercase tracking-[0.08em] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                          {categoryName}
+                                        </h3>
+                                      </div>
+                                      <div className="p-3.5 flex flex-wrap gap-2">
+                                        {categoryInterests.map((item) => (
+                                          <span
+                                            key={item.id}
+                                            className={`inline-flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium tracking-[-0.006em] rounded-full transition-all duration-200 cursor-default ${theme === 'dark'
+                                              ? 'bg-white/[0.08] text-gray-200 hover:bg-white/[0.12] active:scale-[0.98]'
+                                              : 'bg-black/[0.04] text-gray-800 hover:bg-black/[0.06] active:scale-[0.98]'
+                                              }`}
+                                          >
+                                            {item.emoji && <span className="text-[15px] leading-none">{item.emoji}</span>}
+                                            <span>{item.name}</span>
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
                           }
-                        });
 
-                        return (
-                          <div className="space-y-3">
-                            {Object.entries(interestsByCategory).map(([categoryId, categoryInterests]) => {
-                              const categoryName = categoryInterests[0]?.categoryName || 'Other';
-                              return (
-                                <div
-                                  key={categoryId}
-                                  className={`rounded-[18px] overflow-hidden ${theme === 'dark'
-                                    ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
-                                    : 'bg-white backdrop-blur-xl border border-black/[0.06]'
-                                    }`}
-                                >
-                                  <div className={`px-4 py-2.5 border-b ${theme === 'dark' ? 'border-white/[0.06]' : 'border-black/[0.04]'}`}>
-                                    <h3 className={`text-[11px] font-bold uppercase tracking-[0.08em] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                      {categoryName}
-                                    </h3>
-                                  </div>
-                                  <div className="p-3.5 flex flex-wrap gap-2">
-                                    {categoryInterests.map((item) => (
-                                      <span
-                                        key={item.id}
-                                        className={`inline-flex items-center gap-1.5 px-4 py-2 text-[14px] font-medium tracking-[-0.006em] rounded-full transition-all duration-200 cursor-default ${theme === 'dark'
-                                          ? 'bg-white/[0.08] text-gray-200 hover:bg-white/[0.12] active:scale-[0.98]'
-                                          : 'bg-black/[0.04] text-gray-800 hover:bg-black/[0.06] active:scale-[0.98]'
-                                          }`}
-                                      >
-                                        {item.emoji && <span className="text-[15px] leading-none">{item.emoji}</span>}
-                                        <span>{item.name}</span>
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      }
+                          // No interests
+                          return (
+                            <div className={`text-center py-16 rounded-[18px] ${theme === 'dark'
+                              ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
+                              : 'bg-white/95 backdrop-blur-xl border border-black/[0.06]'
+                              }`}>
+                              <div className={`w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center ${theme === 'dark' ? 'bg-white/[0.08]' : 'bg-black/[0.04]'}`}>
+                                <Heart className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                              </div>
+                              <p className={`text-[15px] font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('profile.no_interests_added')}</p>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  )}
 
-                      // No interests
-                      return (
-                        <div className={`text-center py-16 rounded-[18px] ${theme === 'dark'
-                          ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
-                          : 'bg-white/95 backdrop-blur-xl border border-black/[0.06]'
-                          }`}>
-                          <div className={`w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center ${theme === 'dark' ? 'bg-white/[0.08]' : 'bg-black/[0.04]'}`}>
-                            <Heart className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                  {/* Posts / Media Masonry / Likes */}
+                  <div className={activeTab === 'profile' ? 'hidden' : ''}>
+                    {activeTab === 'media' ? (
+                      // Media Masonry Grid
+                      <>
+                        {mediasLoading ? (
+                          <div className="flex items-center justify-center py-16">
+                            <div className="flex flex-col items-center gap-4">
+                              <div className={`w-12 h-12 border-4 ${theme === 'dark' ? 'border-gray-900 border-t-white' : 'border-gray-200 border-t-black'} rounded-full animate-spin`} />
+                              <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {t('profile.loading_media')}
+                              </p>
+                            </div>
                           </div>
-                          <p className={`text-[15px] font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('profile.no_interests_added')}</p>
-                        </div>
-                      );
-                    })()}
+                        ) : medias.length === 0 ? (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                            className="flex items-center justify-center py-20"
+                          >
+                            <div className="flex flex-col items-center gap-4 max-w-sm mx-auto px-4">
+                              <div className={`w-20 h-20 rounded-full flex items-center justify-center ${theme === 'dark'
+                                ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 border border-white/[0.06]'
+                                : 'bg-gradient-to-br from-gray-50 to-white border border-black/[0.06]'
+                                }`}>
+                                <ImageIcon className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
+                              </div>
+                              <div className="text-center">
+                                <h3 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                                  {t('profile.no_media_yet')}
+                                </h3>
+                                <p className={`text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-gray-600'}`}>
+                                  {isOwnProfile && t('profile.media_appear_here')}
+                                  {!isOwnProfile && `@${user.username} ${t('profile.no_media_from_user')}`}
+                                </p>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <div className="p-4">
+                            <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-2 sm:gap-3">
+                              {medias.map((media) => (
+                                <Media key={media.id} media={media} />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      // Regular Posts / Replies / Likes
+                      <>
+                        {postsLoading ? (
+                          <div className="flex items-center justify-center py-16">
+                            <div className="flex flex-col items-center gap-4">
+                              <div className={`w-12 h-12 border-4 ${theme === 'dark' ? 'border-gray-900 border-t-white' : 'border-gray-200 border-t-black'} rounded-full animate-spin`} />
+                              <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {activeTab === 'posts' && t('profile.loading_posts')}
+                                {activeTab === 'replies' && t('profile.loading_replies')}
+                                {activeTab === 'likes' && t('profile.loading_likes')}
+                              </p>
+                            </div>
+                          </div>
+                        ) : posts.length === 0 ? (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                            className="flex items-center justify-center py-20"
+                          >
+                            <div className="flex flex-col items-center gap-4 max-w-sm mx-auto px-4">
+                              <div className={`w-20 h-20 rounded-full flex items-center justify-center ${theme === 'dark'
+                                ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 border border-white/[0.06]'
+                                : 'bg-gradient-to-br from-gray-50 to-white border border-black/[0.06]'
+                                }`}>
+                                {activeTab === 'posts' && (
+                                  <FileText className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
+                                )}
+                                {activeTab === 'replies' && (
+                                  <MessageCircle className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
+                                )}
+                                {activeTab === 'likes' && (
+                                  <Heart className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
+                                )}
+                              </div>
+                              <div className="text-center">
+                                <h3 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                                  {activeTab === 'posts' && t('profile.no_posts_yet')}
+                                  {activeTab === 'replies' && t('profile.no_replies_yet')}
+                                  {activeTab === 'likes' && t('profile.no_likes_yet')}
+                                </h3>
+                                <p className={`text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-gray-600'}`}>
+                                  {activeTab === 'posts' && isOwnProfile && t('profile.share_thoughts')}
+                                  {activeTab === 'posts' && !isOwnProfile && `@${user.username} ${t('profile.no_posts_from_user')}`}
+                                  {activeTab === 'replies' && isOwnProfile && t('profile.replies_appear_here')}
+                                  {activeTab === 'replies' && !isOwnProfile && `@${user.username} ${t('profile.no_replies_from_user')}`}
+                                  {activeTab === 'likes' && isOwnProfile && t('profile.likes_appear_here')}
+                                  {activeTab === 'likes' && !isOwnProfile && `@${user.username} ${t('profile.no_likes_from_user')}`}
+                                </p>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ) : (
+                          posts.map((post, index) => (
+                            <motion.div
+                              key={post.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                              className={`${theme === 'dark' ? 'bg-black' : 'bg-white'}`}
+                            >
+                              <Post
+                                post={post as any}
+                                onPostClick={(postId, username) => navigate(`/${username}/status/${postId}`)}
+                                onProfileClick={(username) => navigate(`/${username}`)}
+                              />
+                            </motion.div>
+                          ))
+                        )}
+                      </>
+                    )}
                   </div>
-                </div>
-              )}
-
-              {/* Posts / Media Masonry / Likes */}
-              <div className={activeTab === 'profile' ? 'hidden' : ''}>
-                {activeTab === 'media' ? (
-                  // Media Masonry Grid
-                  <>
-                    {mediasLoading ? (
-                      <div className="flex items-center justify-center py-16">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className={`w-12 h-12 border-4 ${theme === 'dark' ? 'border-gray-900 border-t-white' : 'border-gray-200 border-t-black'} rounded-full animate-spin`} />
-                          <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {t('profile.loading_media')}
-                          </p>
-                        </div>
-                      </div>
-                    ) : medias.length === 0 ? (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3 }}
-                        className="flex items-center justify-center py-20"
-                      >
-                        <div className="flex flex-col items-center gap-4 max-w-sm mx-auto px-4">
-                          <div className={`w-20 h-20 rounded-full flex items-center justify-center ${theme === 'dark'
-                            ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 border border-white/[0.06]'
-                            : 'bg-gradient-to-br from-gray-50 to-white border border-black/[0.06]'
-                            }`}>
-                            <ImageIcon className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
-                          </div>
-                          <div className="text-center">
-                            <h3 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-                              {t('profile.no_media_yet')}
-                            </h3>
-                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-gray-600'}`}>
-                              {isOwnProfile && t('profile.media_appear_here')}
-                              {!isOwnProfile && `@${user.username} ${t('profile.no_media_from_user')}`}
-                            </p>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ) : (
-                      <div className="p-4">
-                        <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-2 sm:gap-3">
-                          {medias.map((media) => (
-                            <Media key={media.id} media={media} />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  // Regular Posts / Replies / Likes
-                  <>
-                    {postsLoading ? (
-                      <div className="flex items-center justify-center py-16">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className={`w-12 h-12 border-4 ${theme === 'dark' ? 'border-gray-900 border-t-white' : 'border-gray-200 border-t-black'} rounded-full animate-spin`} />
-                          <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {activeTab === 'posts' && t('profile.loading_posts')}
-                            {activeTab === 'replies' && t('profile.loading_replies')}
-                            {activeTab === 'likes' && t('profile.loading_likes')}
-                          </p>
-                        </div>
-                      </div>
-                    ) : posts.length === 0 ? (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3 }}
-                        className="flex items-center justify-center py-20"
-                      >
-                        <div className="flex flex-col items-center gap-4 max-w-sm mx-auto px-4">
-                          <div className={`w-20 h-20 rounded-full flex items-center justify-center ${theme === 'dark'
-                            ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 border border-white/[0.06]'
-                            : 'bg-gradient-to-br from-gray-50 to-white border border-black/[0.06]'
-                            }`}>
-                            {activeTab === 'posts' && (
-                              <FileText className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
-                            )}
-                            {activeTab === 'replies' && (
-                              <MessageCircle className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
-                            )}
-                            {activeTab === 'likes' && (
-                              <Heart className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
-                            )}
-                          </div>
-                          <div className="text-center">
-                            <h3 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-                              {activeTab === 'posts' && t('profile.no_posts_yet')}
-                              {activeTab === 'replies' && t('profile.no_replies_yet')}
-                              {activeTab === 'likes' && t('profile.no_likes_yet')}
-                            </h3>
-                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-gray-600'}`}>
-                              {activeTab === 'posts' && isOwnProfile && t('profile.share_thoughts')}
-                              {activeTab === 'posts' && !isOwnProfile && `@${user.username} ${t('profile.no_posts_from_user')}`}
-                              {activeTab === 'replies' && isOwnProfile && t('profile.replies_appear_here')}
-                              {activeTab === 'replies' && !isOwnProfile && `@${user.username} ${t('profile.no_replies_from_user')}`}
-                              {activeTab === 'likes' && isOwnProfile && t('profile.likes_appear_here')}
-                              {activeTab === 'likes' && !isOwnProfile && `@${user.username} ${t('profile.no_likes_from_user')}`}
-                            </p>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ) : (
-                      posts.map((post, index) => (
-                        <motion.div
-                          key={post.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className={`${theme === 'dark' ? 'bg-black' : 'bg-white'}`}
-                        >
-                          <Post
-                            post={post as any}
-                            onPostClick={(postId, username) => navigate(`/${username}/status/${postId}`)}
-                            onProfileClick={(username) => navigate(`/${username}`)}
-                          />
-                        </motion.div>
-                      ))
-                    )}
-                  </>
-                )}
-                </div>
                 </>
               )}
             </div>

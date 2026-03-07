@@ -215,7 +215,8 @@
       "search": "Ara",
       "match": "Eşleşme",
       "referrals": "Referanslar",
-      "checkin": "Check-In"
+      "checkin": "Check-In",
+      "settings": "Ayarlar"
     },
     "sidebar": {
       "primary": "Keşfet",
@@ -502,5 +503,33 @@
     "work_type": "Çalışma",
     "date": "Tarih",
     "clear_search": "Aramayı Temizle"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "notifications": {
+      "title": "Bildirim Ayarları",
+      "push": "Anlık Bildirimler",
+      "email": "E-posta Bildirimleri",
+      "messages": "Yeni Mesajlar",
+      "matches": "Yeni Eşleşmeler"
+    },
+    "content": {
+      "title": "İçerik Ayarları",
+      "blur_photos": "Fotoğrafları Blurlu Göster",
+      "blur_description": "Potansiyel hassas içerikleri blurlu göstererek gizliliğinizi koruyun."
+    },
+    "account": {
+      "title": "Hesap Ayarları",
+      "delete_title": "Profili Sil",
+      "delete_description": "Profilinizi sildiğinizde tüm verileriniz kalıcı olarak kaldırılacaktır.",
+      "delete_button": "Hesabı Kalıcı Olarak Sil",
+      "delete_confirm_title": "Hesabı Silmek İstediğinize Emin Misiniz?",
+      "delete_confirm_message": "Bu işlem geri alınamaz. Tüm eşleşmeleriniz, mesajlarınız ve profil verileriniz silinecektir."
+    },
+    "general": {
+      "title": "Genel",
+      "dark_mode": "Karanlık Mod",
+      "language": "Dil"
+    }
   }
 }

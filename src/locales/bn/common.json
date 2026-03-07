@@ -215,7 +215,8 @@
       "search": "অনুসন্ধান",
       "match": "ম্যাচ",
       "referrals": "Referrals",
-      "checkin": "Check-In"
+      "checkin": "Check-In",
+      "settings": "Settings"
     },
     "sidebar": {
       "primary": "Discover",
@@ -458,5 +459,33 @@
     "work_type": "Work Type",
     "date": "Date",
     "clear_search": "Clear Search"
+  },
+  "settings": {
+    "title": "Settings",
+    "notifications": {
+      "title": "Notification Settings",
+      "push": "Push Notifications",
+      "email": "Email Notifications",
+      "messages": "New Messages",
+      "matches": "New Matches"
+    },
+    "content": {
+      "title": "Content Settings",
+      "blur_photos": "Blur Sensitive Photos",
+      "blur_description": "Protect your privacy by blurring potentially sensitive content."
+    },
+    "account": {
+      "title": "Account Settings",
+      "delete_title": "Delete Profile",
+      "delete_description": "When you delete your profile, all your data will be permanently removed.",
+      "delete_button": "Permanently Delete Account",
+      "delete_confirm_title": "Are You Sure You Want to Delete Your Account?",
+      "delete_confirm_message": "This action cannot be undone. All your matches, messages, and profile data will be deleted."
+    },
+    "general": {
+      "title": "General",
+      "dark_mode": "Dark Mode",
+      "language": "Language"
+    }
   }
 }

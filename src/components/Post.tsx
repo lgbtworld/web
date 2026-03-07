@@ -4,20 +4,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
+import { useSettings } from '../contexts/SettingsContext';
 import PostReply from './PostReply';
 import VideoPlayer from './VideoPlayer';
 import ReportButton from './ReportButton';
 import ShareButton from './ShareButton';
 import TipButton from './TipButton';
 import { api } from '../services/api';
-import { $generateHtmlFromNodes } from '@lexical/html';
-import { CLEAR_HISTORY_COMMAND, createEditor } from 'lexical';
+import { CLEAR_HISTORY_COMMAND } from 'lexical';
 import L from 'leaflet';
 
-import {HashtagNode} from '@lexical/hashtag';
-import {HeadingNode, QuoteNode} from '@lexical/rich-text';
-import {ListNode, ListItemNode} from '@lexical/list';
-import {LinkNode, AutoLinkNode} from '@lexical/link';
+import { HashtagNode } from '@lexical/hashtag';
+import { HeadingNode, QuoteNode } from '@lexical/rich-text';
+import { ListNode, ListItemNode } from '@lexical/list';
+import { LinkNode, AutoLinkNode } from '@lexical/link';
 import { MentionNode } from './Lexical/nodes/MentionNode';
 import { getLocalizedContent, getSafeImageURL, getSafeImageURLEx } from '../helpers/helpers';
 import { ImageNode } from './Lexical/nodes/ImageNode';
@@ -287,20 +287,20 @@ const PostContentEditor = React.memo(({ content }: { content: string }) => {
   const [editor] = useLexicalComposerContext();
   const contentRef = useRef<string>(content);
   const isInitializedRef = useRef<boolean>(false);
-  const { data: appData, defaultLanguage } = useApp();
+  // const { data: appData, defaultLanguage } = useApp();
 
   useEffect(() => {
     // Only update if content actually changed
     if (contentRef.current === content && isInitializedRef.current) {
       return;
     }
-    
+
     if (!content) {
       return;
     }
-    
+
     contentRef.current = content;
-    
+
     // Defer editor state update to avoid flushSync during React rendering
     // Use queueMicrotask to schedule after current render cycle
     queueMicrotask(() => {
@@ -360,13 +360,14 @@ const Post: React.FC<PostProps> = ({
   const { theme } = useTheme();
   const { user } = useAuth();
   const { data: appData, defaultLanguage } = useApp();
+  const { settings } = useSettings();
   const [html, setHtml] = useState('');
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const eventMapRef = useRef<HTMLDivElement>(null);
   const eventMapInstanceRef = useRef<L.Map | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  
+
   // Memoize post ID and key engagement data to prevent unnecessary updates
   const postIdRef = useRef<string>(postProp.public_id);
   const userIdRef = useRef<string | undefined>(user?.id);
@@ -375,7 +376,7 @@ const Post: React.FC<PostProps> = ({
   const childrenRef = useRef<ApiPost[] | undefined>(postProp.children);
   const postPropRef = useRef<ApiPost>(postProp);
 
-  
+
   // Helper function to update engagement states from post data
   // Not using useCallback to avoid dependency issues
   const updateEngagementStates = (postData: ApiPost) => {
@@ -385,7 +386,7 @@ const Post: React.FC<PostProps> = ({
       userId: user?.id,
       engagementDetails: postData.engagements?.engagement_details
     });
-    
+
     if (!postData.engagements || !user?.id) {
       // No user logged in or no engagements, reset all states
       console.log("Resetting all engagement states - no engagements or user");
@@ -399,29 +400,29 @@ const Post: React.FC<PostProps> = ({
 
     const userId = user.id;
     console.log("Checking engagements for userId:", userId);
-    
+
     if (postData.engagements.engagement_details && Array.isArray(postData.engagements.engagement_details)) {
       // Check engagement_details for user's interactions
       // engager_id is the user who performed the engagement
       const userEngagements = postData.engagements.engagement_details.filter(
         detail => detail && detail.engager_id === userId
       );
-      
+
       console.log("User engagements found:", userEngagements.map(e => e.kind));
-      
+
       // Check for each interaction type
       // Backend returns like_received/dislike_received when user gives like/dislike
       // Also check for like_given/dislike_given for compatibility
-      const isLikedValue = userEngagements.some(e => 
+      const isLikedValue = userEngagements.some(e =>
         e.kind === 'like_given' || e.kind === 'like_received'
       );
-      const isDislikedValue = userEngagements.some(e => 
+      const isDislikedValue = userEngagements.some(e =>
         e.kind === 'dislike_given' || e.kind === 'dislike_received'
       );
       const isBananaValue = userEngagements.some(e => e.kind === 'banana');
       const isBookmarkedValue = userEngagements.some(e => e.kind === 'bookmark');
       const hasTippedValue = userEngagements.some(e => e.kind === 'tip');
-      
+
       console.log("Setting states:", {
         isLiked: isLikedValue,
         isDisliked: isDislikedValue,
@@ -429,7 +430,7 @@ const Post: React.FC<PostProps> = ({
         isBookmarked: isBookmarkedValue,
         hasTipped: hasTippedValue
       });
-      
+
       setIsLiked(isLikedValue);
       setIsDisliked(isDislikedValue);
       setIsBanana(isBananaValue);
@@ -446,7 +447,7 @@ const Post: React.FC<PostProps> = ({
       setHasTipped(false);
     }
   };
-  
+
   // Update post when prop changes - only if post ID, user ID, or engagement data actually changed
   useEffect(() => {
     console.log("useEffect [postProp, user?.id] triggered", {
@@ -454,26 +455,26 @@ const Post: React.FC<PostProps> = ({
       userId: user?.id,
       hasEngagements: !!postProp.engagements
     });
-    
+
     // Always update ref to latest postProp
     postPropRef.current = postProp;
-    
+
     const postIdChanged = postProp.public_id !== postIdRef.current;
     const userIdChanged = user?.id !== userIdRef.current;
     const engagementsChanged = JSON.stringify(postProp.engagements) !== engagementsRef.current;
     const childrenChanged = JSON.stringify(postProp.children) !== JSON.stringify(childrenRef.current);
-    
+
     console.log("Change detection:", {
       postIdChanged,
       userIdChanged,
       engagementsChanged,
       childrenChanged
     });
-    
+
     if (postIdChanged) {
       postIdRef.current = postProp.public_id;
     }
-    
+
     // Always sync post state with postProp to ensure latest data
     setPost(prevPost => {
       // Only update if post ID changed or if engagements changed
@@ -482,22 +483,22 @@ const Post: React.FC<PostProps> = ({
       }
       return prevPost;
     });
-    
+
     if (childrenChanged) {
       childrenRef.current = postProp.children;
       // Always update children state, even if empty array
       setChildren(postProp.children || []);
     }
-    
+
     // Always update engagement states - call on every render to ensure sync
-      if (userIdChanged) {
-        userIdRef.current = user?.id;
-      }
-      
-      if (engagementsChanged) {
-        engagementsRef.current = JSON.stringify(postProp.engagements);
-      }
-      
+    if (userIdChanged) {
+      userIdRef.current = user?.id;
+    }
+
+    if (engagementsChanged) {
+      engagementsRef.current = JSON.stringify(postProp.engagements);
+    }
+
     // Always update engagement states from postProp (not just when changed)
     // This ensures states are synced on initial load and after prop updates
     console.log("Calling updateEngagementStates from postProp useEffect");
@@ -511,12 +512,12 @@ const Post: React.FC<PostProps> = ({
       userId: user?.id,
       postId: post.public_id
     });
-    
+
     // Always update engagement states when post.engagements or user changes
     // This ensures states are synced after API calls
     const engagementsString = post.engagements ? JSON.stringify(post.engagements) : '';
     const engagementsChanged = engagementsString !== postEngagementsRef.current;
-    
+
     if (engagementsChanged || !postEngagementsRef.current) {
       postEngagementsRef.current = engagementsString;
       engagementsRef.current = engagementsString;
@@ -534,12 +535,12 @@ const Post: React.FC<PostProps> = ({
   // Initialize selected poll choices from votes when post loads
   useEffect(() => {
     if (!post.poll || !user?.id) return;
-    
+
     const initialChoices: Record<string, string[]> = {};
-    
+
     post.poll.forEach((poll) => {
       if (!poll.choices) return;
-      
+
       const userVotes: string[] = [];
       poll.choices.forEach((choice) => {
         if (choice.votes && Array.isArray(choice.votes)) {
@@ -549,12 +550,12 @@ const Post: React.FC<PostProps> = ({
           }
         }
       });
-      
+
       if (userVotes.length > 0) {
         initialChoices[poll.id] = userVotes;
       }
     });
-    
+
     if (Object.keys(initialChoices).length > 0) {
       setSelectedPollChoices(initialChoices);
     }
@@ -571,7 +572,7 @@ const Post: React.FC<PostProps> = ({
   const editorConfig = useMemo(() => ({
     namespace: "CoolVibesEditorEx",
     editable: true,
-    nodes:[HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode,MentionNode,ImageNode,YouTubeNode,TweetNode,MetadataNode],
+    nodes: [HashtagNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, MentionNode, ImageNode, YouTubeNode, TweetNode, MetadataNode],
     theme: {
       paragraph: `relative m-0 w-full mb-2 text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`,
       heading: {
@@ -595,9 +596,9 @@ const Post: React.FC<PostProps> = ({
         underline: "underline",
         strikethrough: "line-through",
       },
-       image: 'editor-image',
-       hashtag: "hashtag inline-block bg-[linear-gradient(to_right,_#d04b36,_#e36511,_#ffba00,_#00b180,_#147aab,_#675997)]  bg-clip-text text-transparent  font-semibold hover:underline cursor-pointer",
-       mention:"mention font-semibold  font-md inline-block bg-[linear-gradient(to_right,_#d04b36,_#e36511,_#ffba00,_#00b180,_#147aab,_#675997)]  bg-clip-text text-transparent  font-semibold hover:underline cursor-pointer"
+      image: 'editor-image',
+      hashtag: "hashtag inline-block bg-[linear-gradient(to_right,_#d04b36,_#e36511,_#ffba00,_#00b180,_#147aab,_#675997)]  bg-clip-text text-transparent  font-semibold hover:underline cursor-pointer",
+      mention: "mention font-semibold  font-md inline-block bg-[linear-gradient(to_right,_#d04b36,_#e36511,_#ffba00,_#00b180,_#147aab,_#675997)]  bg-clip-text text-transparent  font-semibold hover:underline cursor-pointer"
     },
     onError(error: Error) {
       console.error("Lexical Error:", error);
@@ -869,7 +870,7 @@ const Post: React.FC<PostProps> = ({
       setLoadingChildren(false);
       return;
     }
-    
+
     // Only fetch if loadChildren is true and post doesn't have children
     if (loadChildren && post.public_id) {
       setLoadingChildren(true);
@@ -906,7 +907,7 @@ const Post: React.FC<PostProps> = ({
 
   const authorAvatarUrl = useMemo(() => {
     const avatar = (post.author as any)?.avatar;
-     return getSafeImageURLEx(post.author.public_id, avatar, 'thumbnail')
+    return getSafeImageURLEx(post.author.public_id, avatar, 'thumbnail')
   }, [post.author]);
 
   // Helper function to format timestamp
@@ -990,17 +991,17 @@ const Post: React.FC<PostProps> = ({
   const handlePollVote = async (pollId: string, choiceId: string, pollKind: 'single' | 'multiple' | 'ranked' | 'weighted', maxSelectable: number, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Prevent post click
-    
+
     // Get current state before updating
     const currentChoices = selectedPollChoices[pollId] || [];
     const choiceIndex = currentChoices.indexOf(choiceId);
     const isSelecting = choiceIndex === -1;
-    
+
     // Update state
     setSelectedPollChoices(prev => {
       const currentChoices = prev[pollId] || [];
       const choiceIndex = currentChoices.indexOf(choiceId);
-      
+
       if (pollKind === 'single') {
         // Single choice: Toggle - if already selected, deselect; otherwise replace
         if (choiceIndex !== -1) {
@@ -1011,7 +1012,7 @@ const Post: React.FC<PostProps> = ({
         } else {
           // Select (replace existing)
           return {
-      ...prev,
+            ...prev,
             [pollId]: [choiceId]
           };
         }
@@ -1042,7 +1043,7 @@ const Post: React.FC<PostProps> = ({
         }
       }
     });
-    
+
     // Send vote to API (both selecting and deselecting)
     setIsPollRefreshing(true);
     try {
@@ -1050,13 +1051,13 @@ const Post: React.FC<PostProps> = ({
       // For deselecting, we don't send rank/weight
       const rank = isSelecting && pollKind === 'ranked' ? currentChoices.length : undefined;
       const weight = isSelecting && pollKind === 'weighted' ? 1 : undefined;
-      
+
       await api.handleVote({
         choice_id: choiceId,
         rank: rank,
         weight: weight,
       });
-      
+
       // Reload post to get updated vote counts
       if (post.public_id) {
         try {
@@ -1152,18 +1153,18 @@ const Post: React.FC<PostProps> = ({
     e.preventDefault();
     e.stopPropagation();
     if (isLiking) return;
-    
+
     setIsLiking(true);
     const wasLiked = isLiked;
     const wasDisliked = isDisliked;
-    
+
     // If currently disliked, remove dislike first
     if (wasDisliked) {
       setIsDisliked(false);
     }
-    
+
     setIsLiked(!isLiked);
-    
+
     try {
       await api.handlePostLike(post.public_id);
       console.log("Like API call successful, fetching updated post");
@@ -1198,18 +1199,18 @@ const Post: React.FC<PostProps> = ({
     e.preventDefault();
     e.stopPropagation();
     if (isDisliking) return;
-    
+
     setIsDisliking(true);
     const wasDisliked = isDisliked;
     const wasLiked = isLiked;
-    
+
     // If currently liked, remove like first
     if (wasLiked) {
       setIsLiked(false);
     }
-    
+
     setIsDisliked(!isDisliked);
-    
+
     try {
       await api.handlePostDislike(post.public_id);
       // Refresh post to get updated engagement counts
@@ -1242,12 +1243,12 @@ const Post: React.FC<PostProps> = ({
     e.preventDefault();
     e.stopPropagation();
     if (isBananaing) return;
-    
+
     setIsBananaing(true);
     const wasBanana = isBanana;
-    
+
     setIsBanana(!isBanana);
-    
+
     try {
       await api.handlePostBanana(post.public_id);
       // Refresh post to get updated engagement counts
@@ -1279,11 +1280,11 @@ const Post: React.FC<PostProps> = ({
     e.preventDefault();
     e.stopPropagation();
     if (isBookmarking) return;
-    
+
     setIsBookmarking(true);
     const wasBookmarked = isBookmarked;
     setIsBookmarked(!isBookmarked);
-    
+
     try {
       await api.handlePostAddToBookmarks(post.public_id);
       // Refresh post to get updated engagement counts
@@ -1321,10 +1322,10 @@ const Post: React.FC<PostProps> = ({
   const handleDeletePost = async () => {
     if (isDeleting) return;
     if (!user || user.id !== post.author_id) return;
-    
+
     setIsDeleting(true);
     setDeleteError(null);
-    
+
     try {
       await api.handlePostDelete(post.public_id);
       // Success - close modal and refresh
@@ -1446,8 +1447,8 @@ const Post: React.FC<PostProps> = ({
         <div className={`absolute inset-0 rounded-2xl ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-gray-200'
           }`}>
           <div className={`absolute inset-0 rounded-2xl shimmer-animation ${theme === 'dark'
-              ? 'bg-gradient-to-r from-gray-900/30 via-gray-800/50 to-gray-900/30'
-              : 'bg-gradient-to-r from-gray-200 via-gray-300/50 to-gray-200'
+            ? 'bg-gradient-to-r from-gray-900/30 via-gray-800/50 to-gray-900/30'
+            : 'bg-gradient-to-r from-gray-200 via-gray-300/50 to-gray-200'
             }`}
             style={{
               backgroundSize: '200% 100%'
@@ -1457,7 +1458,7 @@ const Post: React.FC<PostProps> = ({
     </>
   );
 
-  
+
   const tipCountValue = Number(post.engagements?.counts?.tip_count ?? 0);
   const tipCount = Number.isFinite(tipCountValue) ? tipCountValue : 0;
   const tipAmountRaw = post.engagements?.counts?.tip_amount;
@@ -1469,64 +1470,64 @@ const Post: React.FC<PostProps> = ({
     setTipAmountDisplay(tipAmount);
   }, [tipCount, tipAmount]);
 
- 
-  
+
+
 
   return (
     <>
-<motion.div
-className={`
+      <motion.div
+        className={`
   overflow-hidden border-b transition-all duration-300 ease-out
   ${theme === "dark"
-    ? "bg-gray-950 border-gray-900 hover:bg-gray-900/50"
-    : "bg-white border-gray-200/50 hover:bg-gray-50"}
+            ? "bg-gray-950 border-gray-900 hover:bg-gray-900/50"
+            : "bg-white border-gray-200/50 hover:bg-gray-50"}
   ${onPostClick ? 'cursor-pointer' : ''}
 `}
-onClick={(e) => {
-  // Only trigger if clicking on non-interactive elements
-  // Interactive elements (buttons, links, etc.) should use stopPropagation
-  if (onPostClick) {
-    const target = e.target as HTMLElement;
-    // Check if click is on an interactive element or its children
-    const isInteractive = target.closest('button, a, input, select, textarea, [role="button"], [data-interactive="true"], [data-no-post-click="true"]');
-    // Also check if the click originated from an interactive element
-    const clickedElement = e.target as HTMLElement;
-    const isClickOnInteractive = clickedElement.tagName === 'BUTTON' || 
-                                 clickedElement.tagName === 'A' || 
-                                 clickedElement.closest('button') !== null ||
-                                 clickedElement.closest('a') !== null ||
-                                 clickedElement.closest('[role="button"]') !== null ||
-                                 clickedElement.closest('[data-no-post-click="true"]') !== null;
-    
-    // Additional check: if the event was already stopped, don't trigger
-    if (e.isPropagationStopped()) {
-      return;
-    }
-    
-    if (!isInteractive && !isClickOnInteractive) {
-      onPostClick(post.public_id, post.author.username);
-    }
-  }
-}}
-onTapStart={(e) => {
-  // Prevent whileTap animation if clicking on interactive elements
-  const target = e.target as HTMLElement;
-  const isInteractive = target.closest('button, a, input, select, textarea, [role="button"], [data-no-post-click="true"]');
-  if (isInteractive) {
-    e.stopPropagation();
-  }
-}}
-onTapCancel={(e) => {
-  // Prevent whileTap animation if clicking on interactive elements
-  const target = e.target as HTMLElement;
-  const isInteractive = target.closest('button, a, input, select, textarea, [role="button"], [data-no-post-click="true"]');
-  if (isInteractive) {
-    e.stopPropagation();
-  }
-}}
-whileTap={onPostClick ? { scale: 0.98, opacity: 0.95 } : undefined}
-transition={{ duration: 0.15 }}
->
+        onClick={(e) => {
+          // Only trigger if clicking on non-interactive elements
+          // Interactive elements (buttons, links, etc.) should use stopPropagation
+          if (onPostClick) {
+            const target = e.target as HTMLElement;
+            // Check if click is on an interactive element or its children
+            const isInteractive = target.closest('button, a, input, select, textarea, [role="button"], [data-interactive="true"], [data-no-post-click="true"]');
+            // Also check if the click originated from an interactive element
+            const clickedElement = e.target as HTMLElement;
+            const isClickOnInteractive = clickedElement.tagName === 'BUTTON' ||
+              clickedElement.tagName === 'A' ||
+              clickedElement.closest('button') !== null ||
+              clickedElement.closest('a') !== null ||
+              clickedElement.closest('[role="button"]') !== null ||
+              clickedElement.closest('[data-no-post-click="true"]') !== null;
+
+            // Additional check: if the event was already stopped, don't trigger
+            if (e.isPropagationStopped()) {
+              return;
+            }
+
+            if (!isInteractive && !isClickOnInteractive) {
+              onPostClick(post.public_id, post.author.username);
+            }
+          }
+        }}
+        onTapStart={(e) => {
+          // Prevent whileTap animation if clicking on interactive elements
+          const target = e.target as HTMLElement;
+          const isInteractive = target.closest('button, a, input, select, textarea, [role="button"], [data-no-post-click="true"]');
+          if (isInteractive) {
+            e.stopPropagation();
+          }
+        }}
+        onTapCancel={(e) => {
+          // Prevent whileTap animation if clicking on interactive elements
+          const target = e.target as HTMLElement;
+          const isInteractive = target.closest('button, a, input, select, textarea, [role="button"], [data-no-post-click="true"]');
+          if (isInteractive) {
+            e.stopPropagation();
+          }
+        }}
+        whileTap={onPostClick ? { scale: 0.98, opacity: 0.95 } : undefined}
+        transition={{ duration: 0.15 }}
+      >
         {/* Post Header */}
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -1539,11 +1540,10 @@ transition={{ duration: 0.15 }}
               onMouseDown={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 overflow-hidden border ${
-                theme === 'dark'
-                  ? 'bg-gray-900/30 hover:bg-gray-900/50 border-gray-900'
-                  : 'bg-white hover:bg-gray-100 border-gray-200/50'
-              }`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 overflow-hidden border ${theme === 'dark'
+                ? 'bg-gray-900/30 hover:bg-gray-900/50 border-gray-900'
+                : 'bg-white hover:bg-gray-100 border-gray-200/50'
+                }`}
               aria-label={`${post.author.displayname}'s profile`}
             >
               {authorAvatarUrl && !authorAvatarFailed ? (
@@ -1610,11 +1610,10 @@ transition={{ duration: 0.15 }}
                   onPointerDown={(e) => e.stopPropagation()}
                   onTapStart={(e) => e.stopPropagation()}
                   whileTap={{ scale: 0.9 }}
-                  className={`p-2 rounded-full transition-colors duration-200 ${
-                    theme === 'dark'
-                      ? 'hover:bg-gray-900/50 text-gray-400 hover:text-white'
-                      : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
-                  }`}
+                  className={`p-2 rounded-full transition-colors duration-200 ${theme === 'dark'
+                    ? 'hover:bg-gray-900/50 text-gray-400 hover:text-white'
+                    : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
+                    }`}
                   aria-label="Share post"
                 >
                   <Share className="w-5 h-5" />
@@ -1622,91 +1621,86 @@ transition={{ duration: 0.15 }}
               }
             />
             <div className="relative" ref={menuRef}>
-            <motion.button
-              data-no-post-click="true"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMenuOpen(!isMenuOpen);
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              onPointerDown={(e) => e.stopPropagation()}
-              onTapStart={(e) => e.stopPropagation()}
-              whileTap={{ scale: 0.9 }}
-              className={`p-2 rounded-full transition-colors duration-200 ${
-                theme === 'dark'
+              <motion.button
+                data-no-post-click="true"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMenuOpen(!isMenuOpen);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                onTapStart={(e) => e.stopPropagation()}
+                whileTap={{ scale: 0.9 }}
+                className={`p-2 rounded-full transition-colors duration-200 ${theme === 'dark'
                   ? 'hover:bg-gray-900/50 text-gray-400 hover:text-white'
                   : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
-              }`}
-              aria-label="More options"
-            >
-              <MoreVertical className="w-5 h-5" />
-            </motion.button>
-            
-            {/* Dropdown Menu */}
-            {isMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className={`absolute right-0 top-full mt-2 w-48 rounded-xl shadow-lg border z-50 ${
-                  theme === 'dark'
+                  }`}
+                aria-label="More options"
+              >
+                <MoreVertical className="w-5 h-5" />
+              </motion.button>
+
+              {/* Dropdown Menu */}
+              {isMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className={`absolute right-0 top-full mt-2 w-48 rounded-xl shadow-lg border z-50 ${theme === 'dark'
                     ? 'bg-gray-900 border-gray-800'
                     : 'bg-white border-gray-200'
-                }`}
-                onClick={(e) => e.stopPropagation()}
-                data-no-post-click="true"
-              >
-                {user && user.id === post.author_id && (
-                  <button
-                    data-no-post-click="true"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteClick();
-                    }}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    disabled={isDeleting}
-                    className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors duration-200 first:rounded-t-xl ${
-                      theme === 'dark'
-                        ? 'hover:bg-gray-800 text-red-400 hover:text-red-300'
-                        : 'hover:bg-gray-50 text-red-600 hover:text-red-700'
-                    } ${isDeleting ? 'opacity-50 cursor-wait' : ''}`}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span className="text-sm font-medium">
-                      Delete Post
-                    </span>
-                  </button>
-                )}
-                <ReportButton
-                  type="post"
-                  id={post.public_id}
-                  onModalClose={() => setIsMenuOpen(false)}
-                  onReportSuccess={() => {
-                    setIsMenuOpen(false);
-                  }}
-                  trigger={
-                    <div 
+                    }`}
+                  onClick={(e) => e.stopPropagation()}
+                  data-no-post-click="true"
+                >
+                  {user && user.id === post.author_id && (
+                    <button
                       data-no-post-click="true"
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick();
+                      }}
                       onMouseDown={(e) => e.stopPropagation()}
                       onPointerDown={(e) => e.stopPropagation()}
-                      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors duration-200 cursor-pointer ${
-                        user && user.id === post.author_id ? 'rounded-b-xl' : 'rounded-xl'
-                      } ${
-                        theme === 'dark'
-                          ? 'hover:bg-gray-800 text-gray-300 hover:text-white'
-                          : 'hover:bg-gray-50 text-gray-700 hover:text-gray-900'
-                      }`}>
-                      <Flag className="w-4 h-4" />
-                      <span className="text-sm font-medium">Report</span>
-                    </div>
-                  }
-                />
-              </motion.div>
-            )}
-          </div>
+                      disabled={isDeleting}
+                      className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors duration-200 first:rounded-t-xl ${theme === 'dark'
+                        ? 'hover:bg-gray-800 text-red-400 hover:text-red-300'
+                        : 'hover:bg-gray-50 text-red-600 hover:text-red-700'
+                        } ${isDeleting ? 'opacity-50 cursor-wait' : ''}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span className="text-sm font-medium">
+                        Delete Post
+                      </span>
+                    </button>
+                  )}
+                  <ReportButton
+                    type="post"
+                    id={post.public_id}
+                    onModalClose={() => setIsMenuOpen(false)}
+                    onReportSuccess={() => {
+                      setIsMenuOpen(false);
+                    }}
+                    trigger={
+                      <div
+                        data-no-post-click="true"
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors duration-200 cursor-pointer ${user && user.id === post.author_id ? 'rounded-b-xl' : 'rounded-xl'
+                          } ${theme === 'dark'
+                            ? 'hover:bg-gray-800 text-gray-300 hover:text-white'
+                            : 'hover:bg-gray-50 text-gray-700 hover:text-gray-900'
+                          }`}>
+                        <Flag className="w-4 h-4" />
+                        <span className="text-sm font-medium">Report</span>
+                      </div>
+                    }
+                  />
+                </motion.div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1714,39 +1708,39 @@ transition={{ duration: 0.15 }}
         <div className="px-4 py-3">
 
 
-        <LexicalComposer initialConfig={editorConfig}>
-                  <PostContentEditor content={getLocalizedContent(post.content, defaultLanguage)} />
-                  <div className="relative">
-                    <HashtagPlugin/>
-                    <ListPlugin/>
-                    <LinkPlugin/>
-                    <YouTubePlugin/>
-                    <ImagesPlugin  captionsEnabled={false}/>
-                    <NewMentionsPlugin/>
-                  
-                 
-                    <RichTextPlugin
-                  
-                      
-                    
-                      contentEditable={
-                        <ContentEditable 
-                          className="editor-input lexical-editor py-0 px-0"
-                       
-                        />
-                      }
-                      placeholder={
-                        <div className="pt-[24px] rounded-sm z-0 p-0 editor-placeholder w-full h-full text-start flex justify-start items-start">
-                          {"Loading..."}
-                        </div>
-                      }
-                      ErrorBoundary={LexicalErrorBoundary}
-                    />
-                    
+          <LexicalComposer initialConfig={editorConfig}>
+            <PostContentEditor content={getLocalizedContent(post.content, defaultLanguage)} />
+            <div className="relative">
+              <HashtagPlugin />
+              <ListPlugin />
+              <LinkPlugin />
+              <YouTubePlugin />
+              <ImagesPlugin captionsEnabled={false} />
+              <NewMentionsPlugin />
+
+
+              <RichTextPlugin
+
+
+
+                contentEditable={
+                  <ContentEditable
+                    className="editor-input lexical-editor py-0 px-0"
+
+                  />
+                }
+                placeholder={
+                  <div className="pt-[24px] rounded-sm z-0 p-0 editor-placeholder w-full h-full text-start flex justify-start items-start">
+                    {"Loading..."}
                   </div>
-                </LexicalComposer>
-                
-        
+                }
+                ErrorBoundary={LexicalErrorBoundary}
+              />
+
+            </div>
+          </LexicalComposer>
+
+
         </div>
 
         {/* Post Attachments */}
@@ -1767,23 +1761,23 @@ transition={{ duration: 0.15 }}
                 <div className="w-full space-y-4 mb-4">
                   {videoAttachments.map((attachment, index) => {
                     // Video URL'ini variants'tan al - Öncelik: high > medium > low > preview > original
-                    const videoUrl = getSafeImageURL(attachment, 'high') || 
-                                    getSafeImageURL(attachment, 'medium') || 
-                                    getSafeImageURL(attachment, 'low') || 
-                                    getSafeImageURL(attachment, 'preview') || 
-                                    getSafeImageURL(attachment, 'original') || 
-                                    attachment.file.url;
-                    
+                    const videoUrl = getSafeImageURL(attachment, 'high') ||
+                      getSafeImageURL(attachment, 'medium') ||
+                      getSafeImageURL(attachment, 'low') ||
+                      getSafeImageURL(attachment, 'preview') ||
+                      getSafeImageURL(attachment, 'original') ||
+                      attachment.file.url;
+
                     // Poster URL'ini al
                     const posterUrl = getSafeImageURL(attachment, 'poster') || '';
-                    
+
                     return (
-                    <VideoPlayer
-                      key={attachment.id || index}
+                      <VideoPlayer
+                        key={attachment.id || index}
                         src={videoUrl}
                         poster={posterUrl}
-                      className="w-full"
-                    />
+                        className="w-full"
+                      />
                     );
                   })}
                 </div>
@@ -1823,7 +1817,7 @@ transition={{ duration: 0.15 }}
                         <img
                           src={imageUrl}
                           alt="Post attachment"
-                          className={`mx-auto  rounded-2xl  max-h-[80dvh] aspect-[9/16]  cursor-pointer hover:opacity-90 transition-opacity duration-300 ${!isLoaded ? 'opacity-0' : 'opacity-100'}`}
+                          className={`mx-auto  rounded-2xl  max-h-[80dvh] aspect-[9/16]  cursor-pointer hover:opacity-90 transition-all duration-300 ${!isLoaded ? 'opacity-0' : 'opacity-100'} ${settings.blurPhotos ? 'blur-xl scale-110' : ''}`}
                           onLoad={() => handleImageLoad(imageUrl)}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1852,7 +1846,7 @@ transition={{ duration: 0.15 }}
                             <img
                               src={imageUrl}
                               alt={`Post attachment ${index + 1}`}
-                              className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-300 ${!isLoaded ? 'opacity-0' : 'opacity-100'}`}
+                              className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-all duration-300 ${!isLoaded ? 'opacity-0' : 'opacity-100'} ${settings.blurPhotos ? 'blur-xl scale-110' : ''}`}
                               onLoad={() => handleImageLoad(imageUrl)}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1885,7 +1879,7 @@ transition={{ duration: 0.15 }}
                         <img
                           src={firstImageUrl}
                           alt="Post attachment 1"
-                          className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-300 ${!firstLoaded ? 'opacity-0' : 'opacity-100'}`}
+                          className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-all duration-300 ${!firstLoaded ? 'opacity-0' : 'opacity-100'} ${settings.blurPhotos ? 'blur-xl scale-110' : ''}`}
                           onLoad={() => handleImageLoad(firstImageUrl)}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1898,7 +1892,7 @@ transition={{ duration: 0.15 }}
                         <img
                           src={secondImageUrl}
                           alt="Post attachment 2"
-                          className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-300 ${!secondLoaded ? 'opacity-0' : 'opacity-100'}`}
+                          className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-all duration-300 ${!secondLoaded ? 'opacity-0' : 'opacity-100'} ${settings.blurPhotos ? 'blur-xl scale-110' : ''}`}
                           onLoad={() => handleImageLoad(secondImageUrl)}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1911,7 +1905,7 @@ transition={{ duration: 0.15 }}
                         <img
                           src={thirdImageUrl}
                           alt="Post attachment 3"
-                          className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-300 ${!thirdLoaded ? 'opacity-0' : 'opacity-100'}`}
+                          className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-all duration-300 ${!thirdLoaded ? 'opacity-0' : 'opacity-100'} ${settings.blurPhotos ? 'blur-xl scale-110' : ''}`}
                           onLoad={() => handleImageLoad(thirdImageUrl)}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1940,7 +1934,7 @@ transition={{ duration: 0.15 }}
                             <img
                               src={imageUrl}
                               alt={`Post attachment ${index + 1}`}
-                              className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-300 ${!isLoaded ? 'opacity-0' : 'opacity-100'}`}
+                              className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-all duration-300 ${!isLoaded ? 'opacity-0' : 'opacity-100'} ${settings.blurPhotos ? 'blur-xl scale-110' : ''}`}
                               onLoad={() => handleImageLoad(imageUrl)}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1970,7 +1964,7 @@ transition={{ duration: 0.15 }}
                         <img
                           src={firstImageUrl}
                           alt="Post attachment 1"
-                          className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-300 ${!firstLoaded ? 'opacity-0' : 'opacity-100'}`}
+                          className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-all duration-300 ${!firstLoaded ? 'opacity-0' : 'opacity-100'} ${settings.blurPhotos ? 'blur-xl scale-110' : ''}`}
                           onLoad={() => handleImageLoad(firstImageUrl)}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1989,7 +1983,7 @@ transition={{ duration: 0.15 }}
                             <img
                               src={imageUrl}
                               alt={`Post attachment ${idx + 2}`}
-                              className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-300 ${!isLoaded ? 'opacity-0' : 'opacity-100'}`}
+                              className={`w-full h-full object-cover cursor-pointer hover:opacity-90 transition-all duration-300 ${!isLoaded ? 'opacity-0' : 'opacity-100'} ${settings.blurPhotos ? 'blur-xl scale-110' : ''}`}
                               onLoad={() => handleImageLoad(imageUrl)}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -2036,13 +2030,13 @@ transition={{ duration: 0.15 }}
                         heightClass = 'h-full';
                       }
 
-                      const imageUrl = getSafeImageURL(attachment,"small");
+                      const imageUrl = getSafeImageURL(attachment, "small");
                       if (!imageUrl) return null;
                       const isLoaded = loadedImages.has(imageUrl);
 
                       return (
                         <div key={index} className={`overflow-hidden rounded-2xl relative ${gridClass}`}>
-                          
+
                           {!isLoaded && <ImageShimmer className="absolute inset-0 w-full h-full" />}
                           <img
                             src={imageUrl}
@@ -2085,431 +2079,410 @@ transition={{ duration: 0.15 }}
                   exit={{ opacity: 0 }}
                   className="absolute inset-0 flex items-center justify-center"
                   style={{
-                    background: theme === 'dark' 
-                      ? 'rgba(0, 0, 0, 0.3)' 
+                    background: theme === 'dark'
+                      ? 'rgba(0, 0, 0, 0.3)'
                       : 'rgba(255, 255, 255, 0.5)'
                   }}
                 >
                   <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className={`px-4 py-2 rounded-full flex items-center gap-2 text-xs font-semibold shadow-lg ${
-                      theme === 'dark'
-                        ? 'bg-gray-950/80 text-white border border-gray-900'
-                        : 'bg-white/90 text-gray-700 border border-gray-300'
-                    }`}
+                    className={`px-4 py-2 rounded-full flex items-center gap-2 text-xs font-semibold shadow-lg ${theme === 'dark'
+                      ? 'bg-gray-950/80 text-white border border-gray-900'
+                      : 'bg-white/90 text-gray-700 border border-gray-300'
+                      }`}
                   >
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Refreshing poll results...
                   </motion.div>
                 </motion.div>
               )}
-              <div className={`space-y-3 transition-opacity duration-300 ${isPollRefreshing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-              {post.poll.map((poll) => {
-                const pollKind = poll.kind || 'single';
-                const maxSelectable = poll.max_selectable || 1;
-                const selectedChoices = selectedPollChoices[poll.id] || [];
-                const hasSelectedChoices = selectedChoices.length > 0;
-                const isAtMax = selectedChoices.length >= maxSelectable;
-                const isSingleChoice = pollKind === 'single';
-                const isMultipleChoice = pollKind === 'multiple' || pollKind === 'ranked' || pollKind === 'weighted';
+              <div className={`space-y-3 transition-all duration-300 ${isPollRefreshing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                {post.poll.map((poll) => {
+                  const pollKind = poll.kind || 'single';
+                  const maxSelectable = poll.max_selectable || 1;
+                  const selectedChoices = selectedPollChoices[poll.id] || [];
+                  const hasSelectedChoices = selectedChoices.length > 0;
+                  const isAtMax = selectedChoices.length >= maxSelectable;
+                  const isSingleChoice = pollKind === 'single';
+                  const isMultipleChoice = pollKind === 'multiple' || pollKind === 'ranked' || pollKind === 'weighted';
 
-                // Poll kind labels
-                const pollKindLabels = {
-                  single: { label: 'Single Choice', icon: CircleCheck, color: 'blue' },
-                  multiple: { label: 'Multiple Choice', icon: CheckSquare, color: 'purple' },
-                  ranked: { label: 'Ranked', icon: ListOrdered, color: 'orange' },
-                  weighted: { label: 'Weighted', icon: Scale, color: 'green' }
-                };
+                  // Poll kind labels
+                  const pollKindLabels = {
+                    single: { label: 'Single Choice', icon: CircleCheck, color: 'blue' },
+                    multiple: { label: 'Multiple Choice', icon: CheckSquare, color: 'purple' },
+                    ranked: { label: 'Ranked', icon: ListOrdered, color: 'orange' },
+                    weighted: { label: 'Weighted', icon: Scale, color: 'green' }
+                  };
 
-                const kindInfo = pollKindLabels[pollKind] || pollKindLabels.single;
-                const KindIcon = kindInfo.icon;
+                  const kindInfo = pollKindLabels[pollKind] || pollKindLabels.single;
+                  const KindIcon = kindInfo.icon;
 
-                return (
-                  <motion.div
-                    key={poll.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, layout: { duration: 0.3 } }}
-                    className={`overflow-hidden ${
-                      theme === 'dark'
+                  return (
+                    <motion.div
+                      key={poll.id}
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, layout: { duration: 0.3 } }}
+                      className={`overflow-hidden ${theme === 'dark'
                         ? 'bg-gray-900/30 border-t border-b border-gray-900'
                         : 'bg-white border-t border-b border-gray-200/50'
-                    }`}
-                    style={{ willChange: 'auto' }}
-                  >
-                    {/* Compact Poll Header */}
-                    <div className={`px-3 py-2.5 border-b ${
-                      theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'
-                    }`}>
-                      <div className="flex items-center justify-between gap-2.5">
-                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                            theme === 'dark'
+                        }`}
+                      style={{ willChange: 'auto' }}
+                    >
+                      {/* Compact Poll Header */}
+                      <div className={`px-3 py-2.5 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'
+                        }`}>
+                        <div className="flex items-center justify-between gap-2.5">
+                          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${theme === 'dark'
                               ? 'bg-gray-900/50 border border-gray-900'
                               : 'bg-gray-100 border border-gray-200/50'
-                          }`}>
-                            <BarChart3 className={`w-4 h-4 ${
-                              theme === 'dark' ? 'text-white/90' : 'text-gray-700'
-                            }`} />
-                    </div>
-                          <h4 className={`font-semibold text-sm tracking-tight ${
-                            theme === 'dark' ? 'text-white' : 'text-gray-900'
-                      }`}>
-                      {getLocalizedContent(poll.question, defaultLanguage)}                    </h4>
-                  </div>
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${
-                            kindInfo.color === 'blue'
+                              }`}>
+                              <BarChart3 className={`w-4 h-4 ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'
+                                }`} />
+                            </div>
+                            <h4 className={`font-semibold text-sm tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+                              }`}>
+                              {getLocalizedContent(poll.question, defaultLanguage)}                    </h4>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${kindInfo.color === 'blue'
                               ? theme === 'dark'
                                 ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                                 : 'bg-blue-50 text-blue-600 border border-blue-200/50'
                               : kindInfo.color === 'purple'
-                              ? theme === 'dark'
-                                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                                : 'bg-purple-50 text-purple-600 border border-purple-200/50'
-                              : kindInfo.color === 'orange'
-                              ? theme === 'dark'
-                                ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                                : 'bg-orange-50 text-orange-600 border border-orange-200/50'
-                              : theme === 'dark'
-                              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                              : 'bg-green-50 text-green-600 border border-green-200/50'
-                          }`}>
-                            <KindIcon className="w-2.5 h-2.5" />
-                            {kindInfo.label}
-                          </span>
-                          {isMultipleChoice && (
-                            <span className={`text-[10px] font-medium ${
-                              theme === 'dark' ? 'text-white/50' : 'text-gray-500'
-                            }`}>
-                              Up to {maxSelectable}
+                                ? theme === 'dark'
+                                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                                  : 'bg-purple-50 text-purple-600 border border-purple-200/50'
+                                : kindInfo.color === 'orange'
+                                  ? theme === 'dark'
+                                    ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                                    : 'bg-orange-50 text-orange-600 border border-orange-200/50'
+                                  : theme === 'dark'
+                                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                    : 'bg-green-50 text-green-600 border border-green-200/50'
+                              }`}>
+                              <KindIcon className="w-2.5 h-2.5" />
+                              {kindInfo.label}
                             </span>
-                          )}
+                            {isMultipleChoice && (
+                              <span className={`text-[10px] font-medium ${theme === 'dark' ? 'text-white/50' : 'text-gray-500'
+                                }`}>
+                                Up to {maxSelectable}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Compact Poll Choices */}
-                    <div className="w-full">
-                      {poll.choices && Array.isArray(poll.choices) && poll.choices.length > 0 ? (() => {
-                        const sortedChoices = [...poll.choices].sort((a, b) => {
-                          // Sort by display_order if available, otherwise maintain original order
-                          const orderA = a.display_order ?? 999;
-                          const orderB = b.display_order ?? 999;
-                          return orderA - orderB;
-                        });
-                        
-                        return sortedChoices.map((choice, choiceIndex) => {
-                          const percentage = getChoicePercentage(choice.vote_count, poll);
-                          const isSelected = selectedChoices.includes(choice.id);
-                          const canSelect = !isAtMax || isSelected;
-                          const isDisabled = !canSelect && hasSelectedChoices && !isSelected;
-                          const rankPosition = isSingleChoice ? null : selectedChoices.indexOf(choice.id) + 1;
-                          const isLastChoice = choiceIndex === sortedChoices.length - 1;
+                      {/* Compact Poll Choices */}
+                      <div className="w-full">
+                        {poll.choices && Array.isArray(poll.choices) && poll.choices.length > 0 ? (() => {
+                          const sortedChoices = [...poll.choices].sort((a, b) => {
+                            // Sort by display_order if available, otherwise maintain original order
+                            const orderA = a.display_order ?? 999;
+                            const orderB = b.display_order ?? 999;
+                            return orderA - orderB;
+                          });
 
-                          const choiceStateClasses = (() => {
-                            const isPressing = pressingChoiceId === choice.id;
+                          return sortedChoices.map((choice, choiceIndex) => {
+                            const percentage = getChoicePercentage(choice.vote_count, poll);
+                            const isSelected = selectedChoices.includes(choice.id);
+                            const canSelect = !isAtMax || isSelected;
+                            const isDisabled = !canSelect && hasSelectedChoices && !isSelected;
+                            const rankPosition = isSingleChoice ? null : selectedChoices.indexOf(choice.id) + 1;
+                            const isLastChoice = choiceIndex === sortedChoices.length - 1;
 
-                            if (theme === 'dark') {
+                            const choiceStateClasses = (() => {
+                              const isPressing = pressingChoiceId === choice.id;
+
+                              if (theme === 'dark') {
+                                if (isSelected) {
+                                  const base = 'bg-gray-900/50 shadow-[0_8px_26px_rgba(0,0,0,0.3)] cursor-pointer hover:bg-gray-900/70 hover:shadow-[0_10px_28px_rgba(0,0,0,0.4)]';
+                                  return isPressing ? `${base} bg-gray-900/70 shadow-[0_12px_32px_rgba(0,0,0,0.5)]` : base;
+                                }
+                                if (isDisabled) {
+                                  return 'bg-gray-900/20 opacity-45 cursor-not-allowed';
+                                }
+                                const base = 'bg-gray-900/30 hover:bg-gray-900/50 hover:shadow-[0_6px_18px_rgba(0,0,0,0.2)] cursor-pointer transition-all duration-200';
+                                return isPressing ? `${base} bg-gray-900/50 shadow-[0_10px_26px_rgba(0,0,0,0.3)]` : base;
+                              }
+
                               if (isSelected) {
-                                const base = 'bg-gray-900/50 shadow-[0_8px_26px_rgba(0,0,0,0.3)] cursor-pointer hover:bg-gray-900/70 hover:shadow-[0_10px_28px_rgba(0,0,0,0.4)]';
-                                return isPressing ? `${base} bg-gray-900/70 shadow-[0_12px_32px_rgba(0,0,0,0.5)]` : base;
+                                const base = 'bg-gray-100 shadow-sm cursor-pointer hover:bg-gray-50 hover:shadow-md';
+                                return isPressing ? `${base} bg-gray-200 shadow-lg` : base;
                               }
                               if (isDisabled) {
-                                return 'bg-gray-900/20 opacity-45 cursor-not-allowed';
+                                return 'bg-gray-50 opacity-45 cursor-not-allowed';
                               }
-                              const base = 'bg-gray-900/30 hover:bg-gray-900/50 hover:shadow-[0_6px_18px_rgba(0,0,0,0.2)] cursor-pointer transition-all duration-200';
-                              return isPressing ? `${base} bg-gray-900/50 shadow-[0_10px_26px_rgba(0,0,0,0.3)]` : base;
-                            }
+                              const base = 'bg-white hover:bg-gray-50 hover:shadow-[0_8px_22px_rgba(15,23,42,0.08)] cursor-pointer transition-all duration-200';
+                              return isPressing ? `${base} bg-gray-100 shadow-md` : base;
+                            })();
 
-                            if (isSelected) {
-                              const base = 'bg-gray-100 shadow-sm cursor-pointer hover:bg-gray-50 hover:shadow-md';
-                              return isPressing ? `${base} bg-gray-200 shadow-lg` : base;
-                            }
-                            if (isDisabled) {
-                              return 'bg-gray-50 opacity-45 cursor-not-allowed';
-                            }
-                            const base = 'bg-white hover:bg-gray-50 hover:shadow-[0_8px_22px_rgba(15,23,42,0.08)] cursor-pointer transition-all duration-200';
-                            return isPressing ? `${base} bg-gray-100 shadow-md` : base;
-                          })();
+                            // Dotted border-bottom classes - zarif ve profesyonel
+                            const borderBottomClass = isLastChoice
+                              ? ''
+                              : theme === 'dark'
+                                ? 'border-b border-dotted border-gray-900'
+                                : 'border-b border-dotted border-gray-200/60';
 
-                          // Dotted border-bottom classes - zarif ve profesyonel
-                          const borderBottomClass = isLastChoice 
-                            ? '' 
-                            : theme === 'dark'
-                              ? 'border-b border-dotted border-gray-900'
-                              : 'border-b border-dotted border-gray-200/60';
-
-                        return (
-                          <motion.div
-                            key={choice.id}
-                            data-no-post-click="true"
-                            initial={{ opacity: 0, x: -5 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: choiceIndex * 0.03, duration: 0.2 }}
-                            className={`relative px-4 py-3.5 transition-all duration-200 ${choiceStateClasses} ${borderBottomClass}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!isDisabled) {
-                                handlePollVote(poll.id, choice.id, pollKind, maxSelectable, e);
-                              }
-                            }}
-                            onMouseDown={(e) => e.stopPropagation()}
-                            onPointerDown={(e) => e.stopPropagation()}
-                            whileTap={
-                              !isDisabled
-                                ? {
-                                    scale: 0.98,
-                                    opacity: 0.92,
-                                    filter: theme === 'dark' ? 'brightness(1.02)' : 'brightness(0.98)',
-                                  }
-                                : undefined
-                            }
-                            onTapStart={(e) => {
-                              e.stopPropagation();
-                              if (!isDisabled) {
-                                setPressingChoiceId(choice.id);
-                              }
-                            }}
-                            onTapCancel={() => setPressingChoiceId(prev => (prev === choice.id ? null : prev))}
-                            onTap={() => setPressingChoiceId(null)}
-                            onPointerUp={() => setPressingChoiceId(prev => (prev === choice.id ? null : prev))}
-                            onPointerLeave={() => setPressingChoiceId(prev => (prev === choice.id ? null : prev))}
-                          >
-                            {/* Compact Selection Indicator */}
-                            {isSelected && (
+                            return (
                               <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                                className={`absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                                  theme === 'dark'
-                                    ? 'bg-white text-black shadow-lg'
-                                    : 'bg-black text-white shadow-lg'
-                                }`}
+                                key={choice.id}
+                                data-no-post-click="true"
+                                initial={{ opacity: 0, x: -5 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: choiceIndex * 0.03, duration: 0.2 }}
+                                className={`relative px-4 py-3.5 transition-all duration-200 ${choiceStateClasses} ${borderBottomClass}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!isDisabled) {
+                                    handlePollVote(poll.id, choice.id, pollKind, maxSelectable, e);
+                                  }
+                                }}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onPointerDown={(e) => e.stopPropagation()}
+                                whileTap={
+                                  !isDisabled
+                                    ? {
+                                      scale: 0.98,
+                                      opacity: 0.92,
+                                      filter: theme === 'dark' ? 'brightness(1.02)' : 'brightness(0.98)',
+                                    }
+                                    : undefined
+                                }
+                                onTapStart={(e) => {
+                                  e.stopPropagation();
+                                  if (!isDisabled) {
+                                    setPressingChoiceId(choice.id);
+                                  }
+                                }}
+                                onTapCancel={() => setPressingChoiceId(prev => (prev === choice.id ? null : prev))}
+                                onTap={() => setPressingChoiceId(null)}
+                                onPointerUp={() => setPressingChoiceId(prev => (prev === choice.id ? null : prev))}
+                                onPointerLeave={() => setPressingChoiceId(prev => (prev === choice.id ? null : prev))}
                               >
-                                {pollKind === 'ranked' && rankPosition ? (
-                                  <span className="text-xs font-bold">#{rankPosition}</span>
-                                ) : pollKind === 'weighted' ? (
-                                  <Scale className="w-3 h-3" />
-                                ) : (
-                                  <CircleCheck className="w-3 h-3" />
+                                {/* Compact Selection Indicator */}
+                                {isSelected && (
+                                  <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                                    className={`absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${theme === 'dark'
+                                      ? 'bg-white text-black shadow-lg'
+                                      : 'bg-black text-white shadow-lg'
+                                      }`}
+                                  >
+                                    {pollKind === 'ranked' && rankPosition ? (
+                                      <span className="text-xs font-bold">#{rankPosition}</span>
+                                    ) : pollKind === 'weighted' ? (
+                                      <Scale className="w-3 h-3" />
+                                    ) : (
+                                      <CircleCheck className="w-3 h-3" />
+                                    )}
+                                  </motion.div>
                                 )}
-                              </motion.div>
-                            )}
 
-                            {/* Choice Label with Rank */}
-                            <div className="flex justify-between items-center mb-2.5">
-                              <div className="flex items-center gap-2.5 flex-1 min-w-0 pr-10">
-                                {pollKind === 'ranked' && rankPosition && (
-                                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
-                                    theme === 'dark'
-                                      ? 'bg-white/20 text-white border border-white/30'
-                                      : 'bg-gray-900/10 text-gray-900 border border-gray-200/50'
-                                  }`}>
-                                    #{rankPosition}
-                                  </div>
-                                )}
-                                <span className={`font-medium text-sm tracking-tight leading-relaxed ${
-                                  theme === 'dark' ? 'text-white' : 'text-gray-900'
-                                }`}>
-                                  {getLocalizedContent(choice.label, defaultLanguage) || ""}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Compact Progress Bar */}
-                            <div className="relative mb-2.5" style={{ minHeight: '8px' }}>
-                              <div className={`w-full h-2 rounded-full overflow-hidden ${
-                                theme === 'dark' ? 'bg-gray-900' : 'bg-gray-200/60'
-                              }`}>
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${percentage}%` }}
-                                  transition={{ 
-                                    duration: 0.8, 
-                                    ease: [0.4, 0, 0.2, 1],
-                                    layout: { duration: 0.3 }
-                                  }}
-                                  className="h-full rounded-full"
-                                  style={{
-                                    background: getRankStyle(choiceIndex + 1).background,
-                                    willChange: 'width',
-                                    boxShadow: theme === 'dark' 
-                                      ? '0 0 8px rgba(255, 255, 255, 0.1)' 
-                                      : '0 0 8px rgba(0, 0, 0, 0.08)'
-                                  }}
-                                />
-                              </div>
-                            </div>
-
-                            {/* Compact Vote Stats */}
-                            <div className="flex items-center justify-between pt-0.5">
-                              <div className="flex items-center gap-2.5">
-                          {/* Voters Avatars */}
-                                {(() => {
-                                  // Get voters from votes array if available, otherwise use voters array
-                                  const voters = choice.votes && choice.votes.length > 0
-                                    ? choice.votes.map(vote => ({
-                                        id: vote.user_id,
-                                        username: vote.user?.username || '',
-                                        displayname: vote.user?.displayname || '',
-                                        avatar: vote.user?.avatar
-                                      }))
-                                    : choice.voters?.map(voter => ({
-                                        id: voter.id,
-                                        username: voter.username,
-                                        displayname: voter.displayname,
-                                        avatar: undefined
-                                      })) || [];
-                                  
-                                  return voters.length > 0 ? (
-                                    <div className="flex items-center">
-                                      {voters.slice(0, 5).map((voter, idx) => {
-                                        // Get avatar URL using getSafeImageURL
-                                        const avatarUrl = voter.avatar 
-                                          ? getSafeImageURL(voter.avatar, 'icon') || getSafeImageURL(voter.avatar, 'thumbnail') || getSafeImageURL(voter.avatar, 'small')
-                                          : null;
-                                        
-                                        return (
-                                <div
-                                  key={voter.id}
-                                            className={`w-5 h-5 rounded-full border overflow-hidden flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
-                                              theme === 'dark'
-                                                ? 'border-gray-900 bg-gray-900/50 text-white ring-1 ring-gray-900'
-                                                : 'border-gray-200/50 bg-white text-gray-900 ring-1 ring-gray-200/50'
-                                    }`}
-                                            style={{ marginLeft: idx === 0 ? 0 : -6 }}
-                                  title={voter.displayname}
-                                >
-                                            {avatarUrl ? (
-                                              <img
-                                                src={avatarUrl}
-                                                alt={voter.displayname}
-                                                className="w-full h-full object-cover"
-                                                onError={(e) => {
-                                                  // Fallback to initial if image fails to load
-                                                  const target = e.target as HTMLImageElement;
-                                                  target.style.display = 'none';
-                                                  const parent = target.parentElement;
-                                                  if (parent) {
-                                                    parent.innerHTML = voter.displayname.charAt(0).toUpperCase();
-                                                  }
-                                                }}
-                                              />
-                                            ) : (
-                                              voter.displayname.charAt(0).toUpperCase()
-                                            )}
-                                </div>
-                                        );
-                                      })}
-                                      {voters.length > 5 && (
-                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold ml-1 ${
-                                          theme === 'dark'
-                                            ? 'border-gray-900 bg-gray-900/50 text-white/80 ring-1 ring-gray-900'
-                                            : 'border-gray-200/50 bg-white text-gray-600 ring-1 ring-gray-200/50'
+                                {/* Choice Label with Rank */}
+                                <div className="flex justify-between items-center mb-2.5">
+                                  <div className="flex items-center gap-2.5 flex-1 min-w-0 pr-10">
+                                    {pollKind === 'ranked' && rankPosition && (
+                                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${theme === 'dark'
+                                        ? 'bg-white/20 text-white border border-white/30'
+                                        : 'bg-gray-900/10 text-gray-900 border border-gray-200/50'
                                         }`}>
-                                          +{voters.length - 5}
+                                        #{rankPosition}
+                                      </div>
+                                    )}
+                                    <span className={`font-medium text-sm tracking-tight leading-relaxed ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                      }`}>
+                                      {getLocalizedContent(choice.label, defaultLanguage) || ""}
+                                    </span>
+                                  </div>
                                 </div>
-                              )}
-                            </div>
-                                  ) : null;
-                                })()}
-                                <span className={`text-xs font-medium ${
-                                  theme === 'dark' ? 'text-white/60' : 'text-gray-500'
-                                }`}>
-                              {choice.vote_count} vote{choice.vote_count !== 1 ? 's' : ''}
-                            </span>
-                              </div>
-                              <span className={`text-sm font-bold tracking-tight ${
-                                theme === 'dark' ? 'text-white' : 'text-gray-900'
-                              }`}>
-                              {percentage}%
-                            </span>
-                          </div>
-                          </motion.div>
-                        );
-                        });
-                      })() : (
-                        <div className={`text-center py-4 ${theme === 'dark' ? 'text-white/50' : 'text-gray-500'}`}>
-                          <span className="text-xs font-medium">No choices available for this poll.</span>
-                  </div>
-                      )}
-                    </div>
 
-                    {/* Compact Selection Info */}
-                    {hasSelectedChoices && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className={`px-3 py-2 border-t ${
-                          theme === 'dark'
+                                {/* Compact Progress Bar */}
+                                <div className="relative mb-2.5" style={{ minHeight: '8px' }}>
+                                  <div className={`w-full h-2 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-200/60'
+                                    }`}>
+                                    <motion.div
+                                      initial={{ width: 0 }}
+                                      animate={{ width: `${percentage}%` }}
+                                      transition={{
+                                        duration: 0.8,
+                                        ease: [0.4, 0, 0.2, 1],
+                                        layout: { duration: 0.3 }
+                                      }}
+                                      className="h-full rounded-full"
+                                      style={{
+                                        background: getRankStyle(choiceIndex + 1).background,
+                                        willChange: 'width',
+                                        boxShadow: theme === 'dark'
+                                          ? '0 0 8px rgba(255, 255, 255, 0.1)'
+                                          : '0 0 8px rgba(0, 0, 0, 0.08)'
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Compact Vote Stats */}
+                                <div className="flex items-center justify-between pt-0.5">
+                                  <div className="flex items-center gap-2.5">
+                                    {/* Voters Avatars */}
+                                    {(() => {
+                                      // Get voters from votes array if available, otherwise use voters array
+                                      const voters = choice.votes && choice.votes.length > 0
+                                        ? choice.votes.map(vote => ({
+                                          id: vote.user_id,
+                                          username: vote.user?.username || '',
+                                          displayname: vote.user?.displayname || '',
+                                          avatar: vote.user?.avatar
+                                        }))
+                                        : choice.voters?.map(voter => ({
+                                          id: voter.id,
+                                          username: voter.username,
+                                          displayname: voter.displayname,
+                                          avatar: undefined
+                                        })) || [];
+
+                                      return voters.length > 0 ? (
+                                        <div className="flex items-center">
+                                          {voters.slice(0, 5).map((voter, idx) => {
+                                            // Get avatar URL using getSafeImageURL
+                                            const avatarUrl = voter.avatar
+                                              ? getSafeImageURL(voter.avatar, 'icon') || getSafeImageURL(voter.avatar, 'thumbnail') || getSafeImageURL(voter.avatar, 'small')
+                                              : null;
+
+                                            return (
+                                              <div
+                                                key={voter.id}
+                                                className={`w-5 h-5 rounded-full border overflow-hidden flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${theme === 'dark'
+                                                  ? 'border-gray-900 bg-gray-900/50 text-white ring-1 ring-gray-900'
+                                                  : 'border-gray-200/50 bg-white text-gray-900 ring-1 ring-gray-200/50'
+                                                  }`}
+                                                style={{ marginLeft: idx === 0 ? 0 : -6 }}
+                                                title={voter.displayname}
+                                              >
+                                                {avatarUrl ? (
+                                                  <img
+                                                    src={avatarUrl}
+                                                    alt={voter.displayname}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                      // Fallback to initial if image fails to load
+                                                      const target = e.target as HTMLImageElement;
+                                                      target.style.display = 'none';
+                                                      const parent = target.parentElement;
+                                                      if (parent) {
+                                                        parent.innerHTML = voter.displayname.charAt(0).toUpperCase();
+                                                      }
+                                                    }}
+                                                  />
+                                                ) : (
+                                                  voter.displayname.charAt(0).toUpperCase()
+                                                )}
+                                              </div>
+                                            );
+                                          })}
+                                          {voters.length > 5 && (
+                                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold ml-1 ${theme === 'dark'
+                                              ? 'border-gray-900 bg-gray-900/50 text-white/80 ring-1 ring-gray-900'
+                                              : 'border-gray-200/50 bg-white text-gray-600 ring-1 ring-gray-200/50'
+                                              }`}>
+                                              +{voters.length - 5}
+                                            </div>
+                                          )}
+                                        </div>
+                                      ) : null;
+                                    })()}
+                                    <span className={`text-xs font-medium ${theme === 'dark' ? 'text-white/60' : 'text-gray-500'
+                                      }`}>
+                                      {choice.vote_count} vote{choice.vote_count !== 1 ? 's' : ''}
+                                    </span>
+                                  </div>
+                                  <span className={`text-sm font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                    }`}>
+                                    {percentage}%
+                                  </span>
+                                </div>
+                              </motion.div>
+                            );
+                          });
+                        })() : (
+                          <div className={`text-center py-4 ${theme === 'dark' ? 'text-white/50' : 'text-gray-500'}`}>
+                            <span className="text-xs font-medium">No choices available for this poll.</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Compact Selection Info */}
+                      {hasSelectedChoices && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className={`px-3 py-2 border-t ${theme === 'dark'
                             ? 'border-gray-900 bg-gray-900/30'
                             : 'border-gray-200/50 bg-gray-50/50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <span className={`text-xs font-medium ${
-                            theme === 'dark' ? 'text-white/70' : 'text-gray-600'
-                          }`}>
-                            {isSingleChoice ? (
-                              <>Selected: <span className="font-semibold">{poll.choices?.find(c => selectedChoices.includes(c.id))?.label?.en || ''}</span></>
-                            ) : (
-                              <>
-                                Selected <span className="font-bold">{selectedChoices.length}</span> of <span className="font-bold">{maxSelectable}</span>
-                                {pollKind === 'ranked' && <span className="ml-1">(in order)</span>}
-                              </>
-                            )}
-                          </span>
-                          {isMultipleChoice && (
-                            <motion.button
-                              data-no-post-click="true"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedPollChoices(prev => {
-                                  const updated = { ...prev };
-                                  delete updated[poll.id];
-                                  return updated;
-                                });
-                              }}
-                              onMouseDown={(e) => e.stopPropagation()}
-                              onPointerDown={(e) => e.stopPropagation()}
-                              onTapStart={(e) => e.stopPropagation()}
-                              className={`text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-200 ${
-                                theme === 'dark'
+                            }`}
+                        >
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-white/70' : 'text-gray-600'
+                              }`}>
+                              {isSingleChoice ? (
+                                <>Selected: <span className="font-semibold">{poll.choices?.find(c => selectedChoices.includes(c.id))?.label?.en || ''}</span></>
+                              ) : (
+                                <>
+                                  Selected <span className="font-bold">{selectedChoices.length}</span> of <span className="font-bold">{maxSelectable}</span>
+                                  {pollKind === 'ranked' && <span className="ml-1">(in order)</span>}
+                                </>
+                              )}
+                            </span>
+                            {isMultipleChoice && (
+                              <motion.button
+                                data-no-post-click="true"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedPollChoices(prev => {
+                                    const updated = { ...prev };
+                                    delete updated[poll.id];
+                                    return updated;
+                                  });
+                                }}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onTapStart={(e) => e.stopPropagation()}
+                                className={`text-xs font-medium px-2.5 py-1 rounded-md transition-all duration-200 ${theme === 'dark'
                                   ? 'text-white/60 hover:text-white hover:bg-gray-900/50 border border-gray-900 hover:border-gray-700'
                                   : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 border border-gray-200/50 hover:border-gray-300'
-                              }`}
-                              whileHover={{ scale: 1.03 }}
-                              whileTap={{ scale: 0.97 }}
-                            >
-                              Clear
-                            </motion.button>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
+                                  }`}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                              >
+                                Clear
+                              </motion.button>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
 
-                    {/* Compact Total Votes */}
-                  {getTotalVotes(poll) > 0 && (
-                      <div className={`px-3 py-2 border-t text-center ${
-                        theme === 'dark'
+                      {/* Compact Total Votes */}
+                      {getTotalVotes(poll) > 0 && (
+                        <div className={`px-3 py-2 border-t text-center ${theme === 'dark'
                           ? 'border-gray-900 bg-gray-900/30 text-white/80'
                           : 'border-gray-200/50 bg-gray-50/50 text-gray-500'
-                      }`}>
-                        <span className={`text-xs font-medium ${
-                          theme === 'dark' ? 'text-white/50' : 'text-gray-400'
-                      }`}>
-                      {getTotalVotes(poll)} total vote{getTotalVotes(poll) !== 1 ? 's' : ''}
-                        </span>
-                    </div>
-                  )}
-                  </motion.div>
-                );
-              })}
-                </div>
+                          }`}>
+                          <span className={`text-xs font-medium ${theme === 'dark' ? 'text-white/50' : 'text-gray-400'
+                            }`}>
+                            {getTotalVotes(poll)} total vote{getTotalVotes(poll) !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
@@ -2521,36 +2494,30 @@ transition={{ duration: 0.15 }}
               initial={{ opacity: 0, y: 20, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className={`w-full overflow-hidden  ${
-                theme === 'dark'
-                  ? 'bg-gray-900/30 border-t border-b border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
-                  : 'bg-white border-t border-b border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
-              }`}
+              className={`w-full overflow-hidden  ${theme === 'dark'
+                ? 'bg-gray-900/30 border-t border-b border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
+                : 'bg-white border-t border-b border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
+                }`}
             >
               {/* Event Header */}
-              <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b ${
-                theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'
-              }`}>
+              <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'
+                }`}>
                 <div className="flex items-center justify-between gap-2 sm:gap-3">
                   <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${
-                      theme === 'dark' 
-                        ? 'bg-gray-900/30 border border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]' 
-                        : 'bg-gray-100 border border-gray-200/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)]'
-                    }`}>
-                      <Calendar className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                        theme === 'dark' ? 'text-white/90' : 'text-gray-900'
-                    }`} />
-                </div>
-                    <div className="min-w-0">
-                      <h3 className={`font-semibold text-sm sm:text-base tracking-tight truncate ${
-                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${theme === 'dark'
+                      ? 'bg-gray-900/30 border border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
+                      : 'bg-gray-100 border border-gray-200/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)]'
                       }`}>
+                      <Calendar className={`w-4 h-4 sm:w-5 sm:h-5 ${theme === 'dark' ? 'text-white/90' : 'text-gray-900'
+                        }`} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className={`font-semibold text-sm sm:text-base tracking-tight truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+                        }`}>
                         Event
                       </h3>
-                      <p className={`text-[10px] sm:text-xs font-medium tracking-wide truncate ${
-                        theme === 'dark' ? 'text-white/50' : 'text-gray-500'
-                      }`}>
+                      <p className={`text-[10px] sm:text-xs font-medium tracking-wide truncate ${theme === 'dark' ? 'text-white/50' : 'text-gray-500'
+                        }`}>
                         Plan with community
                       </p>
                     </div>
@@ -2580,12 +2547,12 @@ transition={{ duration: 0.15 }}
                 {(() => {
                   const eventKind = post.event.kind || post.event.type;
                   if (!eventKind || !appData?.event_kinds) return null;
-                  
+
                   const eventKindData = appData.event_kinds.find((ek: any) => ek.kind === eventKind);
-                  const kindLabel = eventKindData 
+                  const kindLabel = eventKindData
                     ? (eventKindData.name?.[defaultLanguage] || eventKindData.name?.en || eventKindData.kind)
                     : eventKind;
-                  
+
                   return (
                     <div className="flex items-center gap-2">
                       <Sparkles className={`w-4 h-4 ${theme === 'dark' ? 'text-white/70' : 'text-gray-600'}`} />
@@ -2603,12 +2570,12 @@ transition={{ duration: 0.15 }}
                     <div className={`text-base font-semibold ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
                       }`}>
                       {formatEventTime(post.event.start_time)}
-                  </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Event Location with Map Preview */}
-                  {post.event.location && (
+                {post.event.location && (
                   <div className="space-y-3">
                     {/* Map Preview */}
                     <div className="relative z-0 h-64 sm:h-80 overflow-hidden rounded-xl sm:rounded-2xl">
@@ -2629,26 +2596,22 @@ transition={{ duration: 0.15 }}
                         transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                         className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-1"
                       >
-                        <div className={`rounded-xl sm:rounded-2xl backdrop-blur-2xl border ${
-                          theme === 'dark'
-                            ? 'bg-gray-950/90 border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
-                            : 'bg-white/90 border-gray-200/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]'
-                        }`}>
+                        <div className={`rounded-xl sm:rounded-2xl backdrop-blur-2xl border ${theme === 'dark'
+                          ? 'bg-gray-950/90 border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
+                          : 'bg-white/90 border-gray-200/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]'
+                          }`}>
                           <div className="p-3 sm:p-4">
                             <div className="flex items-center gap-3 sm:gap-4">
-                              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${
-                                theme === 'dark' 
-                                  ? 'bg-gray-900/50 border border-gray-900' 
-                                  : 'bg-gray-100 border border-gray-200/50'
-                              }`}>
-                                <MapPin className={`w-5 h-5 sm:w-6 sm:h-6 ${
-                                  theme === 'dark' ? 'text-white/90' : 'text-gray-900'
-                                }`} />
+                              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${theme === 'dark'
+                                ? 'bg-gray-900/50 border border-gray-900'
+                                : 'bg-gray-100 border border-gray-200/50'
+                                }`}>
+                                <MapPin className={`w-5 h-5 sm:w-6 sm:h-6 ${theme === 'dark' ? 'text-white/90' : 'text-gray-900'
+                                  }`} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={`font-semibold text-sm sm:text-base tracking-tight truncate ${
-                                  theme === 'dark' ? 'text-white' : 'text-gray-900'
-                                }`}>
+                                <p className={`font-semibold text-sm sm:text-base tracking-tight truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                  }`}>
                                   {(() => {
                                     const parts = post.event.location.address.split(',');
                                     const city = parts[parts.length - 3]?.trim() || parts[0]?.trim();
@@ -2656,9 +2619,8 @@ transition={{ duration: 0.15 }}
                                     return city && country ? `${city}, ${country}` : post.event.location.address.split(',')[0];
                                   })()}
                                 </p>
-                                <p className={`text-xs sm:text-sm mt-0.5 sm:mt-1 font-medium tracking-wide truncate ${
-                                  theme === 'dark' ? 'text-white/70' : 'text-gray-500'
-                                }`}>
+                                <p className={`text-xs sm:text-sm mt-0.5 sm:mt-1 font-medium tracking-wide truncate ${theme === 'dark' ? 'text-white/70' : 'text-gray-500'
+                                  }`}>
                                   {(() => {
                                     const parts = post.event.location.address.split(',');
                                     return parts.slice(0, -2).join(', ').trim() || 'Exact location';
@@ -2682,11 +2644,10 @@ transition={{ duration: 0.15 }}
                               onMouseDown={(e) => e.stopPropagation()}
                               onPointerDown={(e) => e.stopPropagation()}
                               onTapStart={(e) => e.stopPropagation()}
-                              className={`w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                                theme === 'dark'
-                                  ? 'bg-gray-900/50 border border-gray-700 text-white hover:bg-gray-900/70 active:bg-gray-900/70'
-                                  : 'bg-gray-100 border border-gray-200/50 text-gray-900 hover:bg-gray-200 active:bg-gray-200'
-                              }`}
+                              className={`w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${theme === 'dark'
+                                ? 'bg-gray-900/50 border border-gray-700 text-white hover:bg-gray-900/70 active:bg-gray-900/70'
+                                : 'bg-gray-100 border border-gray-200/50 text-gray-900 hover:bg-gray-200 active:bg-gray-200'
+                                }`}
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                             >
@@ -2739,108 +2700,108 @@ transition={{ duration: 0.15 }}
                     <HandCoins className={`w-5 h-5 ${theme === 'dark' ? 'text-white/70' : 'text-gray-600'}`} />
                     <span className={`text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                       Paid Event: <span className="font-semibold">
-                        {post.event.price !== undefined && post.event.price !== null 
+                        {post.event.price !== undefined && post.event.price !== null
                           ? `${post.event.price} ${post.event.currency || 'USD'}`
                           : 'Price TBD'}
                       </span>
                     </span>
-                    </div>
-                  )}
-
-                  {/* Event Attendance Buttons */}
-                  <div className="flex items-center gap-2 mt-4" data-no-post-click="true" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      data-no-post-click="true"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEventStatus(eventStatus === 'going' ? null : 'going');
-                      }}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      className={`px-4 py-2 rounded-full transition-colors duration-200 ${eventStatus === 'going'
-                          ? theme === 'dark'
-                            ? 'bg-white text-black'
-                            : 'bg-black text-white'
-                          : theme === 'dark'
-                            ? 'border border-gray-700 text-white/90 hover:bg-gray-900/50'
-                            : 'border border-gray-300/60 hover:bg-gray-50'
-                        }`}
-                    >
-                      Going
-                    </button>
-                    <button
-                      data-no-post-click="true"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEventStatus(eventStatus === 'not_going' ? null : 'not_going');
-                      }}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      className={`px-4 py-2 rounded-full transition-colors duration-200 ${eventStatus === 'not_going'
-                          ? theme === 'dark'
-                            ? 'bg-white text-black'
-                            : 'bg-black text-white'
-                          : theme === 'dark'
-                            ? 'border border-gray-700 text-white/90 hover:bg-gray-900/50'
-                            : 'border border-gray-300/60 hover:bg-gray-50'
-                        }`}
-                    >
-                      Not Going
-                    </button>
-                    <button
-                      data-no-post-click="true"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEventStatus(eventStatus === 'maybe' ? null : 'maybe');
-                      }}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      className={`px-4 py-2 rounded-full transition-colors duration-200 ${eventStatus === 'maybe'
-                          ? theme === 'dark'
-                            ? 'bg-white text-black'
-                            : 'bg-black text-white'
-                          : theme === 'dark'
-                            ? 'border border-gray-700 text-white/90 hover:bg-gray-900/50'
-                            : 'border border-gray-300/60 hover:bg-gray-50'
-                        }`}
-                    >
-                      Maybe
-                    </button>
                   </div>
+                )}
 
-                  {/* Attendees */}
-                  {post.event.attendees && post.event.attendees.length > 0 && (
-                    <div className="mt-4">
-                      <div className={`text-sm mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                        }`}>
-                        Attendees ({post.event.attendees.length})
-                      </div>
-                      <div className="flex items-center -space-x-2">
-                        {post.event.attendees.slice(0, 10).map((attendee, idx) => (
-                          <div
-                            key={attendee.id}
-                            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${attendee.status === 'going'
-                                ? theme === 'dark' ? 'border-gray-900 bg-gray-900/50 text-white' : 'border-gray-900 bg-gray-100 text-gray-900'
-                                : attendee.status === 'not_going'
-                                  ? theme === 'dark' ? 'border-gray-700 bg-gray-900/30 text-white/60' : 'border-gray-400 bg-gray-200 text-gray-600'
-                                  : theme === 'dark' ? 'border-gray-700 bg-gray-900/30 text-white/80' : 'border-gray-500 bg-gray-300 text-gray-700'
-                              }`}
-                            style={{ zIndex: 10 - idx }}
-                            title={`${attendee.displayname} (${attendee.status === 'going' ? 'Going' : attendee.status === 'not_going' ? 'Not Going' : 'Maybe'})`}
-                          >
-                            {attendee.displayname.charAt(0).toUpperCase()}
-                          </div>
-                        ))}
-                        {post.event.attendees.length > 10 && (
-                          <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${theme === 'dark' ? 'border-gray-900 bg-gray-900/50 text-white/80' : 'border-gray-300 bg-gray-100 text-gray-600'
-                            }`}>
-                            +{post.event.attendees.length - 10}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                {/* Event Attendance Buttons */}
+                <div className="flex items-center gap-2 mt-4" data-no-post-click="true" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    data-no-post-click="true"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEventStatus(eventStatus === 'going' ? null : 'going');
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={`px-4 py-2 rounded-full transition-colors duration-200 ${eventStatus === 'going'
+                      ? theme === 'dark'
+                        ? 'bg-white text-black'
+                        : 'bg-black text-white'
+                      : theme === 'dark'
+                        ? 'border border-gray-700 text-white/90 hover:bg-gray-900/50'
+                        : 'border border-gray-300/60 hover:bg-gray-50'
+                      }`}
+                  >
+                    Going
+                  </button>
+                  <button
+                    data-no-post-click="true"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEventStatus(eventStatus === 'not_going' ? null : 'not_going');
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={`px-4 py-2 rounded-full transition-colors duration-200 ${eventStatus === 'not_going'
+                      ? theme === 'dark'
+                        ? 'bg-white text-black'
+                        : 'bg-black text-white'
+                      : theme === 'dark'
+                        ? 'border border-gray-700 text-white/90 hover:bg-gray-900/50'
+                        : 'border border-gray-300/60 hover:bg-gray-50'
+                      }`}
+                  >
+                    Not Going
+                  </button>
+                  <button
+                    data-no-post-click="true"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEventStatus(eventStatus === 'maybe' ? null : 'maybe');
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={`px-4 py-2 rounded-full transition-colors duration-200 ${eventStatus === 'maybe'
+                      ? theme === 'dark'
+                        ? 'bg-white text-black'
+                        : 'bg-black text-white'
+                      : theme === 'dark'
+                        ? 'border border-gray-700 text-white/90 hover:bg-gray-900/50'
+                        : 'border border-gray-300/60 hover:bg-gray-50'
+                      }`}
+                  >
+                    Maybe
+                  </button>
                 </div>
+
+                {/* Attendees */}
+                {post.event.attendees && post.event.attendees.length > 0 && (
+                  <div className="mt-4">
+                    <div className={`text-sm mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
+                      Attendees ({post.event.attendees.length})
+                    </div>
+                    <div className="flex items-center -space-x-2">
+                      {post.event.attendees.slice(0, 10).map((attendee, idx) => (
+                        <div
+                          key={attendee.id}
+                          className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${attendee.status === 'going'
+                            ? theme === 'dark' ? 'border-gray-900 bg-gray-900/50 text-white' : 'border-gray-900 bg-gray-100 text-gray-900'
+                            : attendee.status === 'not_going'
+                              ? theme === 'dark' ? 'border-gray-700 bg-gray-900/30 text-white/60' : 'border-gray-400 bg-gray-200 text-gray-600'
+                              : theme === 'dark' ? 'border-gray-700 bg-gray-900/30 text-white/80' : 'border-gray-500 bg-gray-300 text-gray-700'
+                            }`}
+                          style={{ zIndex: 10 - idx }}
+                          title={`${attendee.displayname} (${attendee.status === 'going' ? 'Going' : attendee.status === 'not_going' ? 'Not Going' : 'Maybe'})`}
+                        >
+                          {attendee.displayname.charAt(0).toUpperCase()}
+                        </div>
+                      ))}
+                      {post.event.attendees.length > 10 && (
+                        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${theme === 'dark' ? 'border-gray-900 bg-gray-900/50 text-white/80' : 'border-gray-300 bg-gray-100 text-gray-600'
+                          }`}>
+                          +{post.event.attendees.length - 10}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </motion.div>
           </div>
         )}
@@ -2854,11 +2815,10 @@ transition={{ duration: 0.15 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="mb-4 sm:mb-8"
             >
-              <div               className={`rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl ${
-                theme === 'dark'
-                  ? 'bg-gray-900/30 border border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
-                  : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
-              }`}>
+              <div className={`rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl ${theme === 'dark'
+                ? 'bg-gray-900/30 border border-gray-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'
+                : 'bg-white border border-gray-200/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]'
+                }`}>
                 {/* Map Preview */}
                 <div className="relative h-96 overflow-hidden">
                   <div
@@ -2879,26 +2839,22 @@ transition={{ duration: 0.15 }}
                     transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                     className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-1"
                   >
-                    <div className={`rounded-xl sm:rounded-2xl backdrop-blur-2xl border ${
-                      theme === 'dark'
-                        ? 'bg-gray-950/90 border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
-                        : 'bg-white/90 border-gray-200/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]'
-                    }`}>
+                    <div className={`rounded-xl sm:rounded-2xl backdrop-blur-2xl border ${theme === 'dark'
+                      ? 'bg-gray-950/90 border-gray-900 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
+                      : 'bg-white/90 border-gray-200/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]'
+                      }`}>
                       <div className="p-3 sm:p-4">
                         <div className="flex items-center gap-3 sm:gap-4">
-                          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${
-                            theme === 'dark' 
-                              ? 'bg-gray-900/50 border border-gray-900' 
-                              : 'bg-gray-100 border border-gray-200/50'
-                          }`}>
-                            <MapPin className={`w-5 h-5 sm:w-6 sm:h-6 ${
-                              theme === 'dark' ? 'text-white/90' : 'text-gray-900'
-                  }`} />
+                          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-xl flex-shrink-0 ${theme === 'dark'
+                            ? 'bg-gray-900/50 border border-gray-900'
+                            : 'bg-gray-100 border border-gray-200/50'
+                            }`}>
+                            <MapPin className={`w-5 h-5 sm:w-6 sm:h-6 ${theme === 'dark' ? 'text-white/90' : 'text-gray-900'
+                              }`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-semibold text-sm sm:text-base tracking-tight truncate ${
-                              theme === 'dark' ? 'text-white' : 'text-gray-900'
-                            }`}>
+                            <p className={`font-semibold text-sm sm:text-base tracking-tight truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+                              }`}>
                               {(() => {
                                 const parts = post.location.address.split(',');
                                 const city = parts[parts.length - 3]?.trim() || parts[0]?.trim();
@@ -2906,16 +2862,15 @@ transition={{ duration: 0.15 }}
                                 return city && country ? `${city}, ${country}` : post.location.address.split(',')[0];
                               })()}
                             </p>
-                            <p className={`text-xs sm:text-sm mt-0.5 sm:mt-1 font-medium tracking-wide truncate ${
-                              theme === 'dark' ? 'text-white/70' : 'text-gray-500'
-                            }`}>
+                            <p className={`text-xs sm:text-sm mt-0.5 sm:mt-1 font-medium tracking-wide truncate ${theme === 'dark' ? 'text-white/70' : 'text-gray-500'
+                              }`}>
                               {(() => {
                                 const parts = post.location.address.split(',');
                                 return parts.slice(0, -2).join(', ').trim() || 'Exact location';
                               })()}
                             </p>
-              </div>
-            </div>
+                          </div>
+                        </div>
                         {/* Open with Google Maps Button */}
                         <motion.button
                           data-no-post-click="true"
@@ -2932,11 +2887,10 @@ transition={{ duration: 0.15 }}
                           onMouseDown={(e) => e.stopPropagation()}
                           onPointerDown={(e) => e.stopPropagation()}
                           onTapStart={(e) => e.stopPropagation()}
-                          className={`w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                            theme === 'dark'
-                              ? 'bg-gray-900/50 border border-gray-700 text-white hover:bg-gray-900/70 active:bg-gray-900/70'
-                              : 'bg-gray-100 border border-gray-200/50 text-gray-900 hover:bg-gray-200 active:bg-gray-200'
-                          }`}
+                          className={`w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${theme === 'dark'
+                            ? 'bg-gray-900/50 border border-gray-700 text-white hover:bg-gray-900/70 active:bg-gray-900/70'
+                            : 'bg-gray-100 border border-gray-200/50 text-gray-900 hover:bg-gray-200 active:bg-gray-200'
+                            }`}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
@@ -2953,7 +2907,7 @@ transition={{ duration: 0.15 }}
         )}
 
         {/* Engagement Bar */}
-        <div 
+        <div
           className="px-4 py-2 flex items-center justify-between"
           data-no-post-click="true"
           onClick={(e) => e.stopPropagation()}
@@ -2971,8 +2925,8 @@ transition={{ duration: 0.15 }}
               disabled={isLiking}
               whileTap={{ scale: 0.9 }}
               className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${isLiked
-                  ? theme === 'dark' ? 'text-pink-500 hover:bg-pink-500/10' : 'text-pink-500 hover:bg-pink-500/10'
-                  : theme === 'dark' ? 'text-gray-400 hover:text-pink-500 hover:bg-pink-500/10' : 'text-gray-500 hover:text-pink-500 hover:bg-pink-500/10'
+                ? theme === 'dark' ? 'text-pink-500 hover:bg-pink-500/10' : 'text-pink-500 hover:bg-pink-500/10'
+                : theme === 'dark' ? 'text-gray-400 hover:text-pink-500 hover:bg-pink-500/10' : 'text-gray-500 hover:text-pink-500 hover:bg-pink-500/10'
                 } ${isLiking ? 'opacity-50 cursor-wait' : ''}`}
             >
               <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
@@ -2992,8 +2946,8 @@ transition={{ duration: 0.15 }}
               disabled={isDisliking}
               whileTap={{ scale: 0.9 }}
               className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${isDisliked
-                  ? theme === 'dark' ? 'text-purple-500 hover:bg-purple-500/10' : 'text-purple-500 hover:bg-purple-500/10'
-                  : theme === 'dark' ? 'text-gray-400 hover:text-purple-500 hover:bg-purple-500/10' : 'text-gray-500 hover:text-purple-500 hover:bg-purple-500/10'
+                ? theme === 'dark' ? 'text-purple-500 hover:bg-purple-500/10' : 'text-purple-500 hover:bg-purple-500/10'
+                : theme === 'dark' ? 'text-gray-400 hover:text-purple-500 hover:bg-purple-500/10' : 'text-gray-500 hover:text-purple-500 hover:bg-purple-500/10'
                 } ${isDisliking ? 'opacity-50 cursor-wait' : ''}`}
             >
               <HeartOff className={`w-5 h-5 ${isDisliked ? 'fill-current' : ''}`} />
@@ -3013,8 +2967,8 @@ transition={{ duration: 0.15 }}
               disabled={isBananaing}
               whileTap={{ scale: 0.9 }}
               className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${isBanana
-                  ? theme === 'dark' ? 'text-yellow-500 hover:bg-yellow-500/10' : 'text-yellow-600 hover:bg-yellow-500/10'
-                  : theme === 'dark' ? 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10' : 'text-gray-500 hover:text-yellow-500 hover:bg-yellow-500/10'
+                ? theme === 'dark' ? 'text-yellow-500 hover:bg-yellow-500/10' : 'text-yellow-600 hover:bg-yellow-500/10'
+                : theme === 'dark' ? 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10' : 'text-gray-500 hover:text-yellow-500 hover:bg-yellow-500/10'
                 } ${isBananaing ? 'opacity-50 cursor-wait' : ''}`}
             >
               <Banana className={`w-5 h-5 ${isBanana ? 'fill-current' : ''}`} />
@@ -3041,7 +2995,7 @@ transition={{ duration: 0.15 }}
                 {post.engagements?.counts?.comment_count || 0}
               </span>
             </motion.button>
-          <div 
+            <div
               data-no-post-click="true"
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
@@ -3067,27 +3021,25 @@ transition={{ duration: 0.15 }}
                     }}
                     onTapStart={(e) => e.stopPropagation()}
                     whileTap={{ scale: 0.9 }}
-                    className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${
-                      hasTipped
-                        ? theme === 'dark'
-                          ? 'text-red-400 hover:bg-red-500/10'
-                          : 'text-red-500 hover:bg-red-500/10'
-                        : theme === 'dark'
-                          ? 'text-gray-400 hover:text-red-500 hover:bg-red-500/10'
-                          : 'text-gray-500 hover:text-red-500 hover:bg-red-500/10'
-                    }`}
+                    className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${hasTipped
+                      ? theme === 'dark'
+                        ? 'text-red-400 hover:bg-red-500/10'
+                        : 'text-red-500 hover:bg-red-500/10'
+                      : theme === 'dark'
+                        ? 'text-gray-400 hover:text-red-500 hover:bg-red-500/10'
+                        : 'text-gray-500 hover:text-red-500 hover:bg-red-500/10'
+                      }`}
                   >
                     <HandCoins className={`w-5 h-5 ${hasTipped ? 'fill-current' : ''}`} />
                     <span
-                      className={`text-[11px] mt-0.5 font-medium ${
-                        hasTipped
-                          ? theme === 'dark'
-                            ? 'text-red-200'
-                            : 'text-red-700'
-                          : theme === 'dark'
-                            ? 'text-gray-300'
-                            : 'text-gray-700'
-                      }`}
+                      className={`text-[11px] mt-0.5 font-medium ${hasTipped
+                        ? theme === 'dark'
+                          ? 'text-red-200'
+                          : 'text-red-700'
+                        : theme === 'dark'
+                          ? 'text-gray-300'
+                          : 'text-gray-700'
+                        }`}
                     >
                       {tipCountDisplay > 0 || tipAmountDisplay > 0
                         ? `$${tipAmountDisplay.toFixed(2)}`
@@ -3096,7 +3048,7 @@ transition={{ duration: 0.15 }}
                   </motion.button>
                 }
               />
-            </div> 
+            </div>
           </div>
           <motion.button
             data-no-post-click="true"
@@ -3110,8 +3062,8 @@ transition={{ duration: 0.15 }}
             disabled={isBookmarking}
             whileTap={{ scale: 0.9 }}
             className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-colors duration-200 ${isBookmarked
-                ? theme === 'dark' ? 'text-yellow-500 hover:bg-yellow-500/10' : 'text-yellow-600 hover:bg-yellow-500/10'
-                : theme === 'dark' ? 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10' : 'text-gray-500 hover:text-yellow-500 hover:bg-yellow-500/10'
+              ? theme === 'dark' ? 'text-yellow-500 hover:bg-yellow-500/10' : 'text-yellow-600 hover:bg-yellow-500/10'
+              : theme === 'dark' ? 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10' : 'text-gray-500 hover:text-yellow-500 hover:bg-yellow-500/10'
               } ${isBookmarking ? 'opacity-50 cursor-wait' : ''}`}
           >
             <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
@@ -3137,10 +3089,10 @@ transition={{ duration: 0.15 }}
             if (post.public_id) {
               try {
                 const updatedPost = await api.fetchPost(post.public_id);
-                
+
                 // Update local state with new post data (includes new comment)
                 setPost(updatedPost);
-                
+
                 // Update children state if new children are present
                 if (updatedPost.children && updatedPost.children.length > 0) {
                   setChildren(updatedPost.children);
@@ -3148,12 +3100,12 @@ transition={{ duration: 0.15 }}
                   // Even if empty, update to reflect current state
                   setChildren([]);
                 }
-                
+
                 // Update parent component with new post data
                 if (onUpdatePost) {
                   onUpdatePost(updatedPost);
                 }
-                
+
                 // Also refresh parent if callback exists (for list views)
                 if (onRefreshParent) {
                   onRefreshParent();
@@ -3176,8 +3128,8 @@ transition={{ duration: 0.15 }}
       {/* Children (Replies) Section - Outside main post div */}
       {(loadChildren || showChildren) && (
         <div className={`overflow-hidden  ${theme === 'dark'
-            ? 'bg-gray-950  border-gray-900'
-            : 'bg-white border-gray-200/50'
+          ? 'bg-gray-950  border-gray-900'
+          : 'bg-white border-gray-200/50'
           }`}>
           <div className="px-4 py-0">
             {loadingChildren ? (
@@ -3239,7 +3191,7 @@ transition={{ duration: 0.15 }}
       {/* Image Gallery Modal */}
       {isGalleryOpen && imageAttachments.length > 0 && (() => {
 
-        const currentImage = getSafeImageURL(imageAttachments[selectedImageIndex],"large");
+        const currentImage = getSafeImageURL(imageAttachments[selectedImageIndex], "large");
         if (!currentImage) return null;
 
         return (
@@ -3248,18 +3200,18 @@ transition={{ duration: 0.15 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             style={{
-              backgroundImage: theme ==="dark" ? 'radial-gradient(transparent 1px, #000000 1px)' : 'radial-gradient(transparent 1px, #000000 1px)',
-             
-              backdropFilter:`blur(3px)`,
+              backgroundImage: theme === "dark" ? 'radial-gradient(transparent 1px, #000000 1px)' : 'radial-gradient(transparent 1px, #000000 1px)',
+
+              backdropFilter: `blur(3px)`,
               backgroundColor: 'transparent',
 
               backgroundSize: '2px 3px',
-              transform:"none",
+              transform: "none",
               maskImage: 'linear-gradient(#ffffff calc(100% - 20px), transparent)',
               WebkitMaskImage: 'linear-gradient(#ffffff calc(100% - 20px), transparent)', // Safari için
             }}
-         
-            
+
+
             className={`fixed inset-0 z-50 flex items-center justify-center `}
             onClick={closeGallery}
             onTouchStart={handleTouchStart}
@@ -3275,8 +3227,8 @@ transition={{ duration: 0.15 }}
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={`px-3 py-1.5 sm:px-5 sm:py-2 md:px-6 md:py-3 rounded-full backdrop-blur-xl border ${theme === 'dark'
-                      ? 'bg-gray-950/80 border-gray-900 text-white'
-                      : 'bg-white/40 border-gray-300/50 text-gray-900'
+                    ? 'bg-gray-950/80 border-gray-900 text-white'
+                    : 'bg-white/40 border-gray-300/50 text-gray-900'
                     }`}
                 >
                   <span className="text-sm sm:text-base font-semibold tracking-wide">
@@ -3293,8 +3245,8 @@ transition={{ duration: 0.15 }}
                   whileTap={{ scale: 0.9 }}
                   whileHover={{ scale: 1.05 }}
                   className={`p-2 sm:p-2.5 md:p-3 rounded-full backdrop-blur-xl border transition-all ${theme === 'dark'
-                      ? 'bg-gray-950/80 hover:bg-gray-900/90 border-gray-900 text-white'
-                      : 'bg-white/40 hover:bg-white/50 border-gray-300/50 text-gray-900'
+                    ? 'bg-gray-950/80 hover:bg-gray-900/90 border-gray-900 text-white'
+                    : 'bg-white/40 hover:bg-white/50 border-gray-300/50 text-gray-900'
                     }`}
                 >
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -3304,13 +3256,13 @@ transition={{ duration: 0.15 }}
 
             {/* Main Image Container - Centered with equal padding on all sides - Optimized for mobile */}
             <div
-              
-           
+
+
               className="relative bg-transparent w-full h-full flex items-center justify-center p-3 sm:p-6 md:p-8 lg:p-12 xl:p-16"
               onClick={(e) => e.stopPropagation()}
             >
-      
-      
+
+
 
               {/* Image wrapper - Professional constraints with equal spacing - Mobile optimized */}
               <motion.div
@@ -3325,7 +3277,7 @@ transition={{ duration: 0.15 }}
                   maxWidth: 'min(calc(100vw - 1.5rem), 1400px)',
                   maxHeight: 'min(calc(100vh - 1.5rem), 900px)'
                 }}>
-            
+
 
                   {/* Shimmer loading effect for gallery image - Facebook style */}
                   {!loadedImages.has(currentImage) && (
@@ -3338,7 +3290,7 @@ transition={{ duration: 0.15 }}
                   <img
                     src={currentImage}
                     alt={`Gallery image ${selectedImageIndex + 1} of ${imageAttachments.length}`}
-                    className={`relative max-w-full max-h-full object-cover rounded-xl sm:rounded-2xl shadow-2xl select-none transition-opacity duration-300 ${loadedImages.has(currentImage) ? 'opacity-100' : 'opacity-0'
+                    className={`relative max-w-full max-h-full object-cover rounded-xl sm:rounded-2xl shadow-2xl select-none transition-all duration-300 ${loadedImages.has(currentImage) ? 'opacity-100' : 'opacity-0'
                       }`}
                     style={{
                       filter: loadedImages.has(currentImage) ? 'drop-shadow(0 0 40px rgba(0,0,0,0.15))' : 'none'
@@ -3365,8 +3317,8 @@ transition={{ duration: 0.15 }}
                     whileTap={{ scale: 0.9 }}
                     whileHover={{ scale: 1.05 }}
                     className={`absolute left-2 sm:left-4 md:left-6 lg:left-8 z-[60] p-2.5 sm:p-3 md:p-4 rounded-full backdrop-blur-xl border transition-all ${theme === 'dark'
-                        ? 'bg-gray-950/80 hover:bg-gray-900/90 border-gray-900 text-white'
-                        : 'bg-white/40 hover:bg-white/50 border-gray-300/50 text-gray-900'
+                      ? 'bg-gray-950/80 hover:bg-gray-900/90 border-gray-900 text-white'
+                      : 'bg-white/40 hover:bg-white/50 border-gray-300/50 text-gray-900'
                       }`}
                   >
                     <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
@@ -3379,8 +3331,8 @@ transition={{ duration: 0.15 }}
                     whileTap={{ scale: 0.9 }}
                     whileHover={{ scale: 1.05 }}
                     className={`absolute right-2 sm:right-4 md:right-6 lg:right-8 z-[60] p-2.5 sm:p-3 md:p-4 rounded-full backdrop-blur-xl border transition-all ${theme === 'dark'
-                        ? 'bg-gray-950/80 hover:bg-gray-900/90 border-gray-900 text-white'
-                        : 'bg-white/40 hover:bg-white/50 border-gray-300/50 text-gray-900'
+                      ? 'bg-gray-950/80 hover:bg-gray-900/90 border-gray-900 text-white'
+                      : 'bg-white/40 hover:bg-white/50 border-gray-300/50 text-gray-900'
                       }`}
                   >
                     <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
@@ -3415,33 +3367,28 @@ transition={{ duration: 0.15 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-md rounded-2xl shadow-2xl ${
-                theme === 'dark'
-                  ? 'bg-gray-900 border border-gray-800'
-                  : 'bg-white border border-gray-200'
-              }`}
+              className={`w-full max-w-md rounded-2xl shadow-2xl ${theme === 'dark'
+                ? 'bg-gray-900 border border-gray-800'
+                : 'bg-white border border-gray-200'
+                }`}
             >
               {/* Modal Header */}
-              <div className={`px-6 py-5 border-b ${
-                theme === 'dark' ? 'border-gray-800' : 'border-gray-200'
-              }`}>
+              <div className={`px-6 py-5 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'
+                }`}>
                 <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    theme === 'dark'
-                      ? 'bg-red-500/20 text-red-400'
-                      : 'bg-red-50 text-red-600'
-                  }`}>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${theme === 'dark'
+                    ? 'bg-red-500/20 text-red-400'
+                    : 'bg-red-50 text-red-600'
+                    }`}>
                     <Trash2 className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className={`text-lg font-semibold ${
-                      theme === 'dark' ? 'text-white' : 'text-gray-900'
-                    }`}>
+                    <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                       Delete Post
                     </h3>
-                    <p className={`text-sm mt-0.5 ${
-                      theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                    }`}>
+                    <p className={`text-sm mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
                       This action cannot be undone
                     </p>
                   </div>
@@ -3450,23 +3397,21 @@ transition={{ duration: 0.15 }}
 
               {/* Modal Content */}
               <div className="px-6 py-5">
-                <p className={`text-base leading-relaxed ${
-                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                }`}>
+                <p className={`text-base leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                   Are you sure you want to delete this post? This action cannot be undone and the post will be permanently removed.
                 </p>
-                
+
                 {/* Error Message */}
                 {deleteError && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className={`mt-4 px-4 py-3 rounded-xl flex items-center gap-2 ${
-                      theme === 'dark'
-                        ? 'bg-red-500/20 border border-red-500/30 text-red-400'
-                        : 'bg-red-50 border border-red-200 text-red-600'
-                    }`}
+                    className={`mt-4 px-4 py-3 rounded-xl flex items-center gap-2 ${theme === 'dark'
+                      ? 'bg-red-500/20 border border-red-500/30 text-red-400'
+                      : 'bg-red-50 border border-red-200 text-red-600'
+                      }`}
                   >
                     <X className="w-4 h-4 flex-shrink-0" />
                     <span className="text-sm font-medium">{deleteError}</span>
@@ -3475,20 +3420,18 @@ transition={{ duration: 0.15 }}
               </div>
 
               {/* Modal Footer */}
-              <div className={`px-6 py-4 flex items-center gap-3 border-t ${
-                theme === 'dark' ? 'border-gray-800' : 'border-gray-200'
-              }`}>
+              <div className={`px-6 py-4 flex items-center gap-3 border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'
+                }`}>
                 <motion.button
                   onClick={() => {
                     setShowDeleteModal(false);
                     setDeleteError(null);
                   }}
                   whileTap={{ scale: 0.98 }}
-                  className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition-all ${
-                    theme === 'dark'
-                      ? 'bg-gray-800 text-white hover:bg-gray-700'
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  }`}
+                  className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition-all ${theme === 'dark'
+                    ? 'bg-gray-800 text-white hover:bg-gray-700'
+                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                    }`}
                 >
                   Cancel
                 </motion.button>
@@ -3496,11 +3439,10 @@ transition={{ duration: 0.15 }}
                   onClick={handleDeletePost}
                   disabled={isDeleting}
                   whileTap={{ scale: 0.98 }}
-                  className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-                    theme === 'dark'
-                      ? 'bg-red-600 text-white hover:bg-red-700'
-                      : 'bg-red-600 text-white hover:bg-red-700'
-                  } ${isDeleting ? 'opacity-50 cursor-wait' : ''}`}
+                  className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${theme === 'dark'
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-red-600 text-white hover:bg-red-700'
+                    } ${isDeleting ? 'opacity-50 cursor-wait' : ''}`}
                 >
                   {isDeleting ? (
                     <>
@@ -3528,7 +3470,7 @@ const MemoizedPost = React.memo(Post, (prevProps, nextProps) => {
   if (prevProps.post.public_id !== nextProps.post.public_id) {
     return false;
   }
-  
+
   // If other props changed, re-render
   if (
     prevProps.showChildren !== nextProps.showChildren ||
@@ -3537,11 +3479,11 @@ const MemoizedPost = React.memo(Post, (prevProps, nextProps) => {
   ) {
     return false;
   }
-  
+
   // Check if engagement counts changed (important for UI updates)
   const prevCounts = prevProps.post.engagements?.counts;
   const nextCounts = nextProps.post.engagements?.counts;
-  
+
   if (prevCounts && nextCounts) {
     if (
       prevCounts.like_received_count !== nextCounts.like_received_count ||
@@ -3558,26 +3500,26 @@ const MemoizedPost = React.memo(Post, (prevProps, nextProps) => {
   } else if (prevCounts !== nextCounts) {
     return false;
   }
-  
+
   // Check if poll vote counts changed
   if (prevProps.post.poll && nextProps.post.poll) {
     if (prevProps.post.poll.length !== nextProps.post.poll.length) {
       return false;
     }
-    
+
     for (let i = 0; i < prevProps.post.poll.length; i++) {
       const prevPoll = prevProps.post.poll[i];
       const nextPoll = nextProps.post.poll[i];
-      
+
       if (prevPoll.id !== nextPoll.id) {
         return false;
       }
-      
+
       if (prevPoll.choices && nextPoll.choices) {
         if (prevPoll.choices.length !== nextPoll.choices.length) {
           return false;
         }
-        
+
         for (let j = 0; j < prevPoll.choices.length; j++) {
           if (prevPoll.choices[j].vote_count !== nextPoll.choices[j].vote_count) {
             return false;
@@ -3588,12 +3530,12 @@ const MemoizedPost = React.memo(Post, (prevProps, nextProps) => {
   } else if (prevProps.post.poll !== nextProps.post.poll) {
     return false;
   }
-  
+
   // Check if children changed
   if (prevProps.post.children?.length !== nextProps.post.children?.length) {
     return false;
   }
-  
+
   // If nothing important changed, skip re-render
   return true;
 });

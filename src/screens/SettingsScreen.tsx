@@ -29,22 +29,22 @@ import LanguageSelectorModal from '../components/ui/LanguageSelector';
 const SettingItem = memo(({ icon: Icon, label, subtitle, onClick, value, toggle, danger, dark, border = true }: any) => (
     <div
         onClick={onClick}
-        className={`group flex items-center justify-between p-4 cursor-pointer transition-all ${dark ? 'hover:bg-white/[0.03]' : 'hover:bg-black/[0.02]'
-            } ${border ? (dark ? 'border-b border-gray-800/50' : 'border-b border-gray-100') : ''}`}
+        className={`group flex items-center justify-between p-4 cursor-pointer transition-all ${dark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'
+            } ${border ? (dark ? 'border-b border-gray-900' : 'border-b border-gray-200/50') : ''}`}
     >
         <div className="flex items-center gap-4 min-w-0">
             <div className={`flex items-center justify-center w-10 h-10 rounded-2xl transition-colors ${danger
-                ? 'bg-red-500/10 text-red-500'
-                : (dark ? 'bg-gray-800 text-gray-400 group-hover:text-white' : 'bg-gray-100 text-gray-500 group-hover:text-black')
+                ? 'bg-gray-900/30 text-white'
+                : (dark ? 'bg-gray-900/50 text-gray-300 group-hover:text-white' : 'bg-gray-100 text-gray-600 group-hover:text-gray-900')
                 }`}>
                 <Icon size={20} strokeWidth={2} />
             </div>
             <div className="flex flex-col min-w-0">
-                <span className={`text-[15px] font-semibold leading-tight ${danger ? 'text-red-500' : (dark ? 'text-gray-200' : 'text-gray-900')}`}>
+                <span className={`text-[15px] font-semibold leading-tight ${danger ? 'text-white' : (dark ? 'text-white' : 'text-gray-900')}`}>
                     {label}
                 </span>
                 {subtitle && (
-                    <span className={`text-[12px] truncate leading-tight mt-0.5 ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
+                    <span className={`text-[12px] truncate leading-tight mt-0.5 ${dark ? 'text-gray-500' : 'text-gray-500'}`}>
                         {subtitle}
                     </span>
                 )}
@@ -63,12 +63,12 @@ SettingItem.displayName = 'SettingItem';
 const Section = memo(({ title, children, dark }: any) => (
     <div className="mb-8">
         {title && (
-            <h3 className={`px-4 mb-3 text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? 'text-gray-600' : 'text-gray-400'}`}>
+            <h3 className={`px-4 mb-3 text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
                 {title}
             </h3>
         )}
-        <div className={`overflow-hidden rounded-[24px] border ${dark ? 'bg-[#0f0f10] border-gray-800/50' : 'bg-white border-gray-100'
-            } shadow-sm`}>
+        <div className={`overflow-hidden rounded-[24px] border ${dark ? 'bg-gray-950 border-gray-900' : 'bg-white border-gray-200/50 shadow-sm'
+            }`}>
             {children}
         </div>
     </div>
@@ -78,11 +78,11 @@ Section.displayName = 'Section';
 
 const Toggle = memo(({ value, dark }: { value: boolean, dark: boolean }) => (
     <div
-        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${value ? 'bg-emerald-500' : (dark ? 'bg-gray-800' : 'bg-gray-200')
+        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${value ? (dark ? 'bg-white' : 'bg-black') : (dark ? 'bg-gray-800' : 'bg-gray-200')
             }`}
     >
         <span
-            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${value ? 'translate-x-[22px]' : 'translate-x-1'
+            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full ${value ? (dark ? 'bg-black' : 'bg-white') : 'bg-white'} shadow-md ring-0 transition duration-200 ease-in-out ${value ? 'translate-x-[22px]' : 'translate-x-1'
                 } mt-[4px]`}
         />
     </div>
@@ -110,12 +110,12 @@ export default function SettingsScreen() {
 
     return (
         <Container>
-            <div className={`flex flex-col h-[100dvh] w-full max-w-[600px] mx-auto ${isDark ? 'bg-black text-white' : 'bg-[#F2F2F7] text-black'}`}>
+            <div className={`flex flex-col h-[100dvh] w-full max-w-[600px] mx-auto ${isDark ? 'bg-gray-950 text-white' : 'bg-white text-gray-900'}`}>
                 {/* Header */}
-                <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[60px] px-4 ${isDark ? 'bg-black/90' : 'bg-white/95'} backdrop-blur-xl border-b-[0.5px] ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+                <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[60px] px-4 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-sm border-b ${isDark ? 'border-gray-900' : 'border-gray-200/50'}`}>
                     <button
                         onClick={() => navigate(-1)}
-                        className={`p-2.5 -ml-2 rounded-full transition-colors ${isDark ? 'hover:bg-white/10' : 'hover:bg-black/5'}`}
+                        className={`p-2.5 -ml-2 rounded-full transition-colors ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
@@ -223,7 +223,7 @@ export default function SettingsScreen() {
 
                     {/* Footer / Version */}
                     <div className="mt-12 text-center">
-                        <p className={`text-[11px] font-bold uppercase tracking-widest ${isDark ? 'text-gray-800' : 'text-gray-300'}`}>
+                        <p className={`text-[11px] font-bold uppercase tracking-widest ${isDark ? 'text-gray-700' : 'text-gray-300'}`}>
                             CoolVibes v1.4.2
                         </p>
                     </div>
@@ -245,7 +245,7 @@ export default function SettingsScreen() {
                 confirmText={t('settings.logout', { defaultValue: 'Log Out' })}
                 cancelText={t('common.cancel', { defaultValue: 'Cancel' })}
                 variant="danger"
-                icon={<AlertTriangle className="text-red-500" />}
+                icon={<AlertTriangle className="text-white" />}
             />
         </Container>
     );

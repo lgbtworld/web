@@ -21,17 +21,17 @@ type CursorType = {
 const PlaceCardSkeleton = () => {
   const { theme } = useTheme();
   return (
-    <div className={`rounded-2xl animate-pulse overflow-hidden border ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
-      <div className={`w-full aspect-video ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
+    <div className={`rounded-2xl animate-pulse overflow-hidden border ${theme === 'dark' ? 'bg-gray-950 border-gray-900' : 'bg-white border-gray-200/50'}`}>
+      <div className={`w-full aspect-video ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`} />
       <div className="p-4 space-y-3">
-        <div className={`h-5 rounded-md ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`} />
+        <div className={`h-5 rounded-md ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
         <div className="flex items-center gap-2 pt-1">
-          <div className={`w-4 h-4 rounded-full ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`} />
-          <div className={`h-3 rounded-md w-1/2 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`} />
+          <div className={`w-4 h-4 rounded-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
+          <div className={`h-3 rounded-md w-1/2 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
         </div>
         <div className="space-y-1 pt-1">
-          <div className={`h-3 rounded-md w-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
-          <div className={`h-3 rounded-md w-5/6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
+          <div className={`h-3 rounded-md w-full ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`} />
+          <div className={`h-3 rounded-md w-5/6 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`} />
         </div>
       </div>
     </div>
@@ -318,7 +318,7 @@ const PlacesScreen: React.FC = () => {
             place={place}
             selected={false}
             onClick={p => navigate(`/places/${p.public_id}`, { state: { place: p } })}
-            className={`rounded-2xl border ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'
+            className={`rounded-2xl border ${theme === 'dark' ? 'border-gray-900 bg-gray-950' : 'border-gray-200/50 bg-white'
               }`}
           />
         ))}
@@ -407,10 +407,10 @@ const PlacesScreen: React.FC = () => {
     // Show full-page error ONLY for fatal issues (API errors, etc.)
     if (error && error !== 'LOCATION_DENIED') {
       return (
-        <div className={`rounded-2xl p-8 mt-8 border text-center max-w-xl mx-auto relative z-10 ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'
+        <div className={`rounded-2xl p-8 mt-8 border text-center max-w-xl mx-auto relative z-10 ${theme === 'dark' ? 'bg-gray-950 border-gray-900' : 'bg-white border-gray-200/50'
           }`}>
           <div className="relative">
-            <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'
+            <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'
               }`}>
               <MapPin className="w-8 h-8" />
             </div>
@@ -442,7 +442,7 @@ const PlacesScreen: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 relative z-20 pointer-events-auto ${theme === 'dark' ? 'bg-gray-900/50 border-gray-800 backdrop-blur-md' : 'bg-gray-50/80 border-gray-200 backdrop-blur-md'
+            className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 relative z-20 pointer-events-auto ${theme === 'dark' ? 'bg-gray-950/80 border-gray-900 backdrop-blur-md' : 'bg-white/95 border-gray-200/50 backdrop-blur-md'
               }`}
           >
             <div className="flex items-center gap-3">
@@ -507,8 +507,8 @@ const PlacesScreen: React.FC = () => {
 
         {/* Sticky Header - Restoring pointer-events-auto for use */}
         <div className={`sticky top-0 z-50 border-b transition-all duration-500 pointer-events-auto ${theme === 'dark'
-          ? viewMode === 'map' ? 'border-white/5 bg-black/40 backdrop-blur-xl' : 'border-gray-800/50 bg-black/95'
-          : viewMode === 'map' ? 'border-black/5 bg-white/40 backdrop-blur-xl' : 'border-gray-200/50 bg-white/95'
+          ? 'border-gray-900 bg-gray-950/95 backdrop-blur-sm'
+          : 'border-gray-200/50 bg-white/95 backdrop-blur-sm'
           }`}>
           <div className="w-full flex flex-row items-center justify-between gap-2 p-2 px-2 max-w-7xl mx-auto">
             <div className="hidden md:flex items-center space-x-3">
@@ -527,8 +527,8 @@ const PlacesScreen: React.FC = () => {
             </div>
             <div className="flex flex-1 md:flex-initial flex-col sm:flex-row gap-2 justify-end">
               <div className={`relative flex-1 min-w-[180px] rounded-xl transition-all ${theme === 'dark'
-                ? viewMode === 'map' ? 'bg-black/20 border-white/10' : 'bg-gray-900 border-gray-800'
-                : viewMode === 'map' ? 'bg-white/20 border-black/10' : 'bg-gray-50 border-gray-200'
+                ? 'bg-gray-900 border-gray-800'
+                : 'bg-gray-50 border-gray-200'
                 } backdrop-blur-md border`}>
                 <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
                   <Search className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
@@ -542,9 +542,9 @@ const PlacesScreen: React.FC = () => {
                     }`}
                 />
               </div>
-              <div className={`flex items-center gap-1 p-1 rounded-xl border transition-all ${theme === 'dark'
-                ? viewMode === 'map' ? 'bg-black/20 border-white/10' : 'bg-gray-900 border-gray-800'
-                : viewMode === 'map' ? 'bg-white/20 border-black/10' : 'bg-gray-100 border-gray-200'
+                <div className={`flex items-center gap-1 p-1 rounded-xl border transition-all ${theme === 'dark'
+                ? 'bg-gray-900 border-gray-800'
+                : 'bg-gray-100 border-gray-200'
                 } backdrop-blur-md`}>
                 <button
                   type="button"
@@ -568,8 +568,8 @@ const PlacesScreen: React.FC = () => {
                 </button>
               </div>
               <button type="button" onClick={handleInitialFetch} disabled={loadingInitial} className={`px-3 py-2 rounded-xl text-sm font-medium inline-flex items-center gap-2 backdrop-blur-md transition-all ${theme === 'dark'
-                ? viewMode === 'map' ? 'bg-black/20 border-white/10 text-gray-200' : 'bg-gray-900 border border-gray-800 text-gray-200 hover:bg-gray-800'
-                : viewMode === 'map' ? 'bg-white/20 border-black/10 text-gray-800' : 'bg-gray-100 border border-gray-200 text-gray-800 hover:bg-gray-200'
+                ? 'bg-gray-900 border border-gray-800 text-gray-200 hover:bg-gray-800'
+                : 'bg-gray-100 border border-gray-200 text-gray-800 hover:bg-gray-200'
                 }`}>
                 <RefreshCw className={`w-4 h-4 ${loadingInitial && places.length === 0 ? 'animate-spin' : ''}`} />
               </button>
@@ -585,10 +585,10 @@ const PlacesScreen: React.FC = () => {
                     <button key={cat} type="button" onClick={() => setSelectedCategory(cat)} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium border transition-all backdrop-blur-md ${theme === 'dark'
                       ? isSelected
                         ? 'bg-gray-800 text-white border-gray-700'
-                        : viewMode === 'map' ? 'bg-black/20 border-white/5 text-gray-400 hover:bg-white/5' : 'bg-gray-900 text-gray-400 border-gray-800 hover:bg-gray-800'
+                        : 'bg-gray-900 text-gray-400 border-gray-800 hover:bg-gray-800'
                       : isSelected
                         ? 'bg-gray-100 text-gray-800 border-gray-300'
-                        : viewMode === 'map' ? 'bg-white/20 border-black/5 text-gray-600 hover:bg-black/5' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                       }`}>
                       {isAll ? t('places.all_categories', 'Tümü') : `#${cat}`}
                     </button>

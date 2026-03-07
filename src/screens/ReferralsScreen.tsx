@@ -79,20 +79,20 @@ const ReferralsScreen: React.FC = () => {
 
     const isDark = theme === 'dark';
 
-    // Apple-like color semantics
-    const bgColor = isDark ? 'bg-black' : 'bg-[#F2F2F7]';
-    const cardBgColor = isDark ? 'bg-[#1C1C1E]' : 'bg-white';
-    const textColor = isDark ? 'text-white' : 'text-black';
-    const secTextColor = isDark ? 'text-[#8E8E93]' : 'text-[#8E8E93]';
-    const borderColor = isDark ? 'border-white/5' : 'border-black/5';
+    // Match ProfileScreen palette
+    const bgColor = isDark ? 'bg-gray-950' : 'bg-white';
+    const cardBgColor = isDark ? 'bg-gray-950' : 'bg-white';
+    const textColor = isDark ? 'text-white' : 'text-gray-900';
+    const secTextColor = isDark ? 'text-gray-400' : 'text-gray-600';
+    const borderColor = isDark ? 'border-gray-900' : 'border-gray-200/50';
 
     return (
-        <div className={`flex flex-col h-[100dvh] w-full max-w-[600px] mx-auto ${bgColor} ${textColor}`}>
+            <div className={`flex flex-col h-[100dvh] w-full max-w-[600px] mx-auto ${bgColor} ${textColor}`}>
             {/* Minimalist Header */}
-            <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[60px] px-4 ${isDark ? 'bg-black/90' : 'bg-white/95'} backdrop-blur-xl border-b-[0.5px] ${borderColor}`}>
+            <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[60px] px-4 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-sm border-b ${borderColor}`}>
                 <button
                     onClick={() => navigate(-1)}
-                    className={`p-2.5 -ml-2 rounded-full transition-colors ${isDark ? 'hover:bg-white/10' : 'hover:bg-black/5'}`}
+                    className={`p-2.5 -ml-2 rounded-full transition-colors ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
                 >
                     <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -110,7 +110,7 @@ const ReferralsScreen: React.FC = () => {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                        className={`w-[60px] h-[60px] rounded-[20px] flex items-center justify-center mb-5 ${isDark ? 'bg-[#1C1C1E] text-white' : 'bg-white text-gray-900 shadow-[0_2px_10px_rgba(0,0,0,0.04)]'} `}
+                        className={`w-[60px] h-[60px] rounded-[20px] flex items-center justify-center mb-5 ${isDark ? 'bg-gray-900/30 text-white' : 'bg-white text-gray-900 shadow-[0_2px_10px_rgba(0,0,0,0.04)]'} `}
                     >
                         <Gift className="w-8 h-8" strokeWidth={1.5} />
                     </motion.div>
@@ -142,8 +142,8 @@ const ReferralsScreen: React.FC = () => {
                         transition={{ delay: 0.2, duration: 0.4 }}
                     >
                         <div className={`flex items-center p-1.5 rounded-[22px] ${cardBgColor} shadow-sm border-[0.5px] ${borderColor}`}>
-                            <div className={`flex items-center justify-center w-11 h-11 rounded-[16px] flex-shrink-0 ml-1 ${isDark ? 'bg-white/5' : 'bg-[#F2F2F7]'}`}>
-                                <Users className={`w-5 h-5 ${isDark ? 'text-[#8E8E93]' : 'text-gray-500'}`} />
+                            <div className={`flex items-center justify-center w-11 h-11 rounded-[16px] flex-shrink-0 ml-1 ${isDark ? 'bg-gray-900/50' : 'bg-gray-100'}`}>
+                                <Users className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                             </div>
                             <div className="flex-1 px-3 overflow-hidden">
                                 <p className={`text-[15px] font-semibold truncate ${textColor}`}>{referralLink}</p>
@@ -151,10 +151,10 @@ const ReferralsScreen: React.FC = () => {
                             <button
                                 onClick={copyToClipboard}
                                 className={`flex items-center justify-center px-5 h-10 rounded-[14px] font-semibold text-[14px] transition-all ml-2 ${copied
-                                    ? 'bg-emerald-500 text-white'
+                                    ? (isDark ? 'bg-white text-black' : 'bg-black text-white')
                                     : isDark
                                         ? 'bg-white text-black hover:bg-gray-200'
-                                        : 'bg-black text-white hover:bg-gray-800'
+                                        : 'bg-gray-900 text-white hover:bg-gray-800'
                                     }`}
                             >
                                 {copied ? 'Copied' : 'Copy'}
@@ -201,7 +201,7 @@ const ReferralsScreen: React.FC = () => {
 
                         <div className="relative">
                             {/* Vertical Line */}
-                            <div className={`absolute top-4 bottom-4 left-[15px] w-[2px] ${isDark ? 'bg-[#3A3A3C]' : 'bg-[#E5E5EA]'}`} />
+                            <div className={`absolute top-4 bottom-4 left-[15px] w-[2px] ${isDark ? 'bg-gray-900' : 'bg-gray-200/50'}`} />
 
                             <div className="space-y-6 relative">
                                 {[
@@ -211,8 +211,8 @@ const ReferralsScreen: React.FC = () => {
                                 ].map((step, idx) => (
                                     <div key={idx} className="flex gap-4 relative z-10">
                                         <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center font-bold text-[14px] flex-shrink-0 transition-colors ${isDark
-                                            ? 'bg-[#1C1C1E] text-white border-2 border-[#3A3A3C]'
-                                            : 'bg-white text-gray-900 border-2 border-[#E5E5EA]'
+                                            ? 'bg-gray-900/30 text-white border-2 border-gray-900'
+                                            : 'bg-white text-gray-900 border-2 border-gray-200/50'
                                             }`}>
                                             {step.num}
                                         </div>
@@ -245,10 +245,10 @@ const ReferralsScreen: React.FC = () => {
                                     className={`p-4 flex items-center justify-between cursor-pointer transition-colors duration-200 ${idx !== arr.length - 1
                                         ? `border-b-[0.5px] ${borderColor}`
                                         : ''
-                                        } ${isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
+                                        } ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-[14px] overflow-hidden flex items-center justify-center font-bold text-[14px] ${isDark ? 'bg-white/5 text-gray-300' : 'bg-[#F2F2F7] text-gray-700'}`}>
+                                        <div className={`w-10 h-10 rounded-[14px] overflow-hidden flex items-center justify-center font-bold text-[14px] ${isDark ? 'bg-gray-900/50 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
                                             <img className='w-full h-full object-cover' src={getSafeImageURLEx(engagement.engager.public_id, engagement.engager.avatar || undefined, "thumbnail") || undefined} alt={engagement.engager.username} />
                                         </div>
                                         <div>
@@ -259,7 +259,7 @@ const ReferralsScreen: React.FC = () => {
                                     <div className="text-right flex flex-col items-end">
 
                                         <>
-                                            <span className="text-[15px] font-semibold text-emerald-500">{engagement.details.amount}</span>
+                                            <span className="text-[15px] font-semibold text-gray-900 dark:text-white">{engagement.details.amount}</span>
                                             <span className={`text-[11px] font-medium mt-0.5 ${secTextColor}`}>Completed</span>
                                         </>
 

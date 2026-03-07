@@ -853,7 +853,7 @@ const Post: React.FC<PostProps> = ({
 
   const authorAvatarUrl = useMemo(() => {
     const avatar = (post.author as any)?.avatar;
-    return getSafeImageURLEx(post.author.public_id, avatar, 'thumbnail')
+    return getSafeImageURLEx(post?.author?.public_id, avatar, 'thumbnail')
   }, [post.author]);
 
   // Helper function to format timestamp
@@ -1490,12 +1490,12 @@ const Post: React.FC<PostProps> = ({
                 ? 'bg-gray-900/30 hover:bg-gray-900/50 border-gray-900'
                 : 'bg-white hover:bg-gray-100 border-gray-200/50'
                 }`}
-              aria-label={`${post.author.displayname}'s profile`}
+              aria-label={`${post?.author?.displayname}'s profile`}
             >
               {authorAvatarUrl && !authorAvatarFailed ? (
                 <img
                   src={authorAvatarUrl}
-                  alt={post.author.displayname}
+                  alt={post?.author?.displayname}
                   className="w-full h-full object-cover"
                   onError={() => setAuthorAvatarFailed(true)}
                 />

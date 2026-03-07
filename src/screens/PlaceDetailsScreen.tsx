@@ -148,9 +148,9 @@ const PlaceDetailsScreen: React.FC = () => {
       {/* Header - requested to stay as is */}
       <div
         className={`z-50 border-b sticky top-0 ${theme === 'dark'
-          ? 'bg-gray-950/80 border-gray-800/50'
-          : 'bg-white/80 border-gray-100/50'
-          } backdrop-blur-xl`}
+          ? 'bg-gray-950/95 border-gray-900'
+          : 'bg-white/95 border-gray-200/50'
+          } backdrop-blur-sm`}
       >
         <div className="flex items-center px-4 py-3">
           <button
@@ -195,7 +195,7 @@ const PlaceDetailsScreen: React.FC = () => {
           >
             {place.hashtags && place.hashtags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3">
-                <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-600 text-white shadow-lg">
+                <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black text-white shadow-sm">
                   #{place.hashtags[0].tag}
                 </span>
                 {place.hashtags.length > 1 && (
@@ -211,7 +211,7 @@ const PlaceDetailsScreen: React.FC = () => {
             </h1>
 
             <div className="flex items-center gap-2 text-white/80 text-sm sm:text-base">
-              <MapPin className="w-4 h-4 text-purple-400" />
+              <MapPin className="w-4 h-4 text-white/80" />
               <span>{locationText}</span>
             </div>
           </motion.div>
@@ -219,13 +219,16 @@ const PlaceDetailsScreen: React.FC = () => {
       </motion.div>
 
       {/* Action Bar */}
-      <div className={`sticky top-[52px] z-40 px-4 py-3 border-b backdrop-blur-md ${theme === 'dark' ? 'bg-black/60 border-gray-800' : 'bg-white/60 border-gray-100'
+      <div className={`sticky top-[52px] z-40 px-4 py-3 border-b backdrop-blur-sm ${theme === 'dark' ? 'bg-gray-950/90 border-gray-900' : 'bg-white/90 border-gray-200/50'
         }`}>
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-2 overflow-x-auto scrollbar-hide">
           {telephone && (
             <a
               href={`tel:${telephone}`}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm transition-all shadow-lg active:scale-95 whitespace-nowrap"
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-sm transition-all border whitespace-nowrap active:scale-95 ${theme === 'dark'
+                ? 'bg-white border-white/10 text-black hover:bg-gray-200'
+                : 'bg-gray-50 border-gray-200 text-gray-900 hover:bg-gray-100'
+                }`}
             >
               <Phone className="w-4 h-4" />
               <span>{t('places.call', { defaultValue: 'Hemen Ara' })}</span>
@@ -237,8 +240,8 @@ const PlaceDetailsScreen: React.FC = () => {
             target="_blank"
             rel="noopener noreferrer"
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-sm transition-all border whitespace-nowrap active:scale-95 ${theme === 'dark'
-              ? 'bg-white/5 border-white/10 text-white hover:bg-white/10'
-              : 'bg-gray-100 border-gray-200 text-gray-900 hover:bg-gray-200'
+              ? 'bg-white border-white/10 text-black hover:bg-gray-200'
+              : 'bg-gray-50 border-gray-200 text-gray-900 hover:bg-gray-100'
               }`}
           >
             <Compass className="w-4 h-4" />
@@ -251,8 +254,8 @@ const PlaceDetailsScreen: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-sm transition-all border whitespace-nowrap active:scale-95 ${theme === 'dark'
-                ? 'bg-purple-900/20 border-purple-500/30 text-purple-300 hover:bg-purple-900/40'
-                : 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100'
+                ? 'bg-white border-white/10 text-black hover:bg-gray-200'
+                : 'bg-gray-50 border-gray-200 text-gray-900 hover:bg-gray-100'
                 }`}
             >
               <Globe className="w-4 h-4" />
@@ -268,7 +271,7 @@ const PlaceDetailsScreen: React.FC = () => {
         {/* About Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="w-1 h-6 bg-purple-600 rounded-full" />
+            <div className="w-1 h-6 bg-black dark:bg-white rounded-full" />
             <h3 className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
               {t('places.about', { defaultValue: 'İşletme Hakkında' })}
             </h3>
@@ -283,8 +286,8 @@ const PlaceDetailsScreen: React.FC = () => {
       />
 
           <div className={`rounded-3xl p-6 border ${theme === 'dark'
-            ? 'border-gray-800 bg-gray-950/50'
-            : 'border-gray-200 bg-white shadow-sm'
+            ? 'border-gray-900 bg-gray-950'
+            : 'border-gray-200/50 bg-white shadow-sm'
             }`}>
        
 
@@ -294,8 +297,8 @@ const PlaceDetailsScreen: React.FC = () => {
                   <span
                     key={tag.id}
                     className={`px-4 py-1.5 rounded-2xl text-xs font-semibold border transition-all cursor-default ${theme === 'dark'
-                      ? 'border-gray-800 bg-gray-900 text-gray-400 hover:text-white hover:border-gray-600'
-                      : 'border-gray-200 bg-gray-50 text-gray-600 hover:text-black hover:border-gray-300'
+                      ? 'border-gray-900 bg-gray-950 text-gray-400 hover:text-white hover:border-gray-700'
+                      : 'border-gray-200/50 bg-white text-gray-600 hover:text-black hover:border-gray-300'
                       }`}
                   >
                     #{tag.tag}
@@ -318,20 +321,20 @@ const PlaceDetailsScreen: React.FC = () => {
             </div>
 
             <div className={`rounded-3xl p-6 border h-full flex flex-col justify-between ${theme === 'dark'
-              ? 'border-gray-800 bg-gray-950/50'
-              : 'border-gray-200 bg-white shadow-sm'
+              ? 'border-gray-900 bg-gray-950'
+              : 'border-gray-200/50 bg-white shadow-sm'
               }`}>
               <div className="space-y-4">
                 {telephone && (
                   <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-white/5' : 'bg-gray-100'}`}>
-                      <Phone className="w-5 h-5 text-purple-600" />
+                    <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                      <Phone className="w-5 h-5 text-black dark:text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                      <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                         {t('places.phone', { defaultValue: 'Telefon' })}
                       </p>
-                      <a href={`tel:${telephone}`} className={`text-base font-bold transition-cyan block truncate ${theme === 'dark' ? 'text-white hover:text-purple-400' : 'text-gray-900 hover:text-purple-600'}`}>
+                      <a href={`tel:${telephone}`} className={`text-base font-bold transition-cyan block truncate ${theme === 'dark' ? 'text-white hover:text-gray-200' : 'text-gray-900 hover:text-black'}`}>
                         {telephone}
                       </a>
                     </div>
@@ -340,14 +343,14 @@ const PlaceDetailsScreen: React.FC = () => {
 
                 {email && (
                   <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-white/5' : 'bg-gray-100'}`}>
-                      <Mail className="w-5 h-5 text-purple-600" />
+                    <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                      <Mail className="w-5 h-5 text-black dark:text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                      <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                         {t('places.email', { defaultValue: 'E-Posta' })}
                       </p>
-                      <a href={`mailto:${email}`} className={`text-base font-bold transition-cyan block truncate ${theme === 'dark' ? 'text-white hover:text-purple-400' : 'text-gray-900 hover:text-purple-600'}`}>
+                      <a href={`mailto:${email}`} className={`text-base font-bold transition-cyan block truncate ${theme === 'dark' ? 'text-white hover:text-gray-200' : 'text-gray-900 hover:text-black'}`}>
                         {email}
                       </a>
                     </div>
@@ -356,14 +359,14 @@ const PlaceDetailsScreen: React.FC = () => {
 
                 {mainUrl && (
                   <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-white/5' : 'bg-gray-100'}`}>
-                      <Globe className="w-5 h-5 text-purple-600" />
+                    <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                      <Globe className="w-5 h-5 text-black dark:text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                      <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                         {t('places.website', { defaultValue: 'Web Sitesi' })}
                       </p>
-                      <a href={mainUrl.startsWith('http') ? mainUrl : `https://${mainUrl}`} target="_blank" rel="noreferrer" className={`text-base font-bold transition-cyan block truncate ${theme === 'dark' ? 'text-white hover:text-purple-400' : 'text-gray-900 hover:text-purple-600'}`}>
+                      <a href={mainUrl.startsWith('http') ? mainUrl : `https://${mainUrl}`} target="_blank" rel="noreferrer" className={`text-base font-bold transition-cyan block truncate ${theme === 'dark' ? 'text-white hover:text-gray-200' : 'text-gray-900 hover:text-black'}`}>
                         {mainUrl}
                       </a>
                     </div>
@@ -371,7 +374,7 @@ const PlaceDetailsScreen: React.FC = () => {
                 )}
 
                 {!telephone && !email && !mainUrl && (
-                  <p className="text-gray-500 text-sm">İletişim bilgisi bulunmuyor.</p>
+                  <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm`}>İletişim bilgisi bulunmuyor.</p>
                 )}
               </div>
             </div>
@@ -380,30 +383,30 @@ const PlaceDetailsScreen: React.FC = () => {
           {/* Location Card */}
           <section className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="w-1 h-6 bg-purple-600 rounded-full" />
+              <div className="w-1 h-6 bg-black dark:bg-white rounded-full" />
               <h3 className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                 {t('places.location', { defaultValue: 'Konum' })}
               </h3>
             </div>
 
             <div className={`rounded-3xl p-6 border h-full flex flex-col justify-between ${theme === 'dark'
-              ? 'border-gray-800 bg-gray-950/50'
-              : 'border-gray-200 bg-white shadow-sm'
+              ? 'border-gray-900 bg-gray-950'
+              : 'border-gray-200/50 bg-white shadow-sm'
               }`}>
               <div className="space-y-4">
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-white/5' : 'bg-gray-100'}`}>
-                    <Navigation className="w-5 h-5 text-purple-600" />
+                  <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                    <Navigation className="w-5 h-5 text-black dark:text-white" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                    <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                       {t('places.address', { defaultValue: 'Adres' })}
                     </p>
                     <p className={`text-base font-medium leading-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                       {address || locationText || t('places.no_address', { defaultValue: 'Adres bilgisi yok' })}
                     </p>
                     {postcode && (
-                      <p className="text-sm text-gray-500 mt-1">{postcode}</p>
+                      <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{postcode}</p>
                     )}
                   </div>
                 </div>
@@ -416,7 +419,7 @@ const PlaceDetailsScreen: React.FC = () => {
                   rel="noopener noreferrer"
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all shadow-md active:scale-95 ${theme === 'dark'
                     ? 'bg-white text-black hover:bg-gray-200'
-                    : 'bg-black text-white hover:bg-gray-800'
+                    : 'bg-black text-white hover:bg-gray-900'
                     }`}
                 >
                   <Compass className="w-4 h-4" />
@@ -429,11 +432,11 @@ const PlaceDetailsScreen: React.FC = () => {
 
         {/* Business Owner Section */}
         <section className={`rounded-3xl p-6 border flex items-center justify-between gap-4 ${theme === 'dark'
-          ? 'border-gray-800 bg-gray-950/30'
-          : 'border-gray-100 bg-gray-50'
+          ? 'border-gray-900 bg-gray-950'
+          : 'border-gray-200/50 bg-white'
           }`}>
           <div className="flex items-center gap-4 min-w-0">
-            <div className={`w-12 h-12 rounded-full overflow-hidden border-2 shrink-0 ${theme === 'dark' ? 'border-purple-600/50' : 'border-purple-200'}`}>
+            <div className={`w-12 h-12 rounded-full overflow-hidden border-2 shrink-0 ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
               <img
                 src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${place.author.username}`}
                 alt={place.author.displayname}
@@ -441,7 +444,7 @@ const PlaceDetailsScreen: React.FC = () => {
               />
             </div>
             <div className="min-w-0 flex-1">
-              <p className={`text-[10px] font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+              <p className={`text-[10px] font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                 {t('places.added_by', { defaultValue: 'Added By User' })}
               </p>
               <h4 className={`font-bold truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
@@ -452,8 +455,8 @@ const PlaceDetailsScreen: React.FC = () => {
           <button
             onClick={() => navigate(`/${place.author.username}`)}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 ${theme === 'dark'
-              ? 'border-gray-700 text-gray-300 hover:bg-gray-800'
-              : 'border-gray-200 text-gray-700 hover:bg-gray-100'
+              ? 'border-gray-900 text-gray-300 hover:bg-gray-900/50'
+              : 'border-gray-200/50 text-gray-700 hover:bg-gray-100'
               }`}
           >
             {t('places.view_profile', { defaultValue: 'Profili Gör' })}
@@ -462,10 +465,10 @@ const PlaceDetailsScreen: React.FC = () => {
 
         {/* Meta Footer */}
         <div className="pt-8 text-center">
-          <p className={`text-[10px] font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-gray-700' : 'text-gray-400'}`}>
+          <p className={`text-[10px] font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
             {t('places.business_id', { defaultValue: 'Business ID' })}: {place.public_id}
           </p>
-          <p className={`text-[10px] text-gray-500 mt-1`}>
+          <p className={`text-[10px] mt-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
             {t('places.verified_by', { defaultValue: 'Verified by {{domain}}', domain: place.domain })}
           </p>
         </div>
@@ -475,4 +478,3 @@ const PlaceDetailsScreen: React.FC = () => {
 };
 
 export default PlaceDetailsScreen;
-

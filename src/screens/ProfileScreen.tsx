@@ -4772,8 +4772,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     <button
                       onClick={() => navigate('/messages')}
                       className={`px-3 sm:px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap transition-colors border ${theme === 'dark'
-                        ? 'border-gray-700 text-white hover:bg-gray-900'
-                        : 'border-gray-300 text-gray-900 hover:bg-gray-50'
+                        ? 'border-gray-900 text-white hover:bg-gray-900/50'
+                        : 'border-gray-200/50 text-gray-900 hover:bg-gray-50'
                         }`}
                     >
                       <div className="flex items-center gap-1.5">
@@ -4784,8 +4784,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     <button
                       onClick={() => setIsEditMode(true)}
                       className={`px-3 sm:px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap transition-colors border ${theme === 'dark'
-                        ? 'border-gray-700 text-white hover:bg-gray-900'
-                        : 'border-gray-300 text-gray-900 hover:bg-gray-50'
+                        ? 'border-gray-900 text-white hover:bg-gray-900/50'
+                        : 'border-gray-200/50 text-gray-900 hover:bg-gray-50'
                         }`}
                     >
                       {t('profile.edit_profile_button')}
@@ -4796,7 +4796,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     <button
                       onClick={handleFollowClick}
                       className={`px-3 sm:px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap transition-colors ${isFollowing
-                        ? `border ${theme === 'dark' ? 'border-gray-700 hover:bg-gray-900' : 'border-gray-300 hover:bg-gray-50'}`
+                        ? `border ${theme === 'dark' ? 'border-gray-900 text-white hover:bg-gray-900/50' : 'border-gray-200/50 text-gray-900 hover:bg-gray-50'}`
                         : theme === 'dark'
                           ? 'bg-white text-black hover:bg-gray-200'
                           : 'bg-black text-white hover:bg-gray-900'
@@ -4807,8 +4807,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                     <button
                       onClick={() => handleSendMessage(user)}
                       className={`px-3 sm:px-4 py-1.5 rounded-full transition-colors border inline-flex items-center gap-1.5 font-bold text-xs sm:text-sm whitespace-nowrap ${theme === 'dark'
-                        ? 'border-gray-700 text-white hover:bg-gray-900'
-                        : 'border-gray-300 text-gray-900 hover:bg-gray-50'
+                        ? 'border-gray-900 text-white hover:bg-gray-900/50'
+                        : 'border-gray-200/50 text-gray-900 hover:bg-gray-50'
                         }`}
                     >
                       <MessageCircle className="w-4 h-4" />
@@ -5511,8 +5511,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                           >
                             <div className="flex flex-col items-center gap-4 max-w-sm mx-auto px-4">
                               <div className={`w-20 h-20 rounded-full flex items-center justify-center ${theme === 'dark'
-                                ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 border border-white/[0.06]'
-                                : 'bg-gradient-to-br from-gray-50 to-white border border-black/[0.06]'
+                                ? 'bg-gray-900/30 border border-gray-900'
+                                : 'bg-white border border-gray-200/50'
                                 }`}>
                                 <ImageIcon className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
                               </div>
@@ -5597,7 +5597,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: index * 0.05 }}
-                              className={`${theme === 'dark' ? 'bg-black' : 'bg-white'}`}
+                              className={`${theme === 'dark' ? 'bg-gray-950' : 'bg-white'}`}
                             >
                               <Post
                                 post={post as any}

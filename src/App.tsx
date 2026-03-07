@@ -32,7 +32,7 @@ import TestPage from './screens/TestPage.tsx';
 import PwaInstallPrompt, { PwaInstallProvider, usePwaInstall } from './components/ui/PwaInstallPrompt';
 import PremiumScreen from './screens/PremiumScreen.tsx';
 import PostDetails from './screens/PostDetails.tsx';
-// import WalletScreen from './screens/WalletScreen.tsx'; // TODO: Re-enable
+ import WalletScreen from './screens/WalletScreen.tsx'; // TODO: Re-enable
 import PlacesScreen from './screens/PlacesScreen.tsx';
 import ReferralsScreen from './screens/ReferralsScreen.tsx';
 import ReferralHandler from './screens/ReferralHandler.tsx';
@@ -723,7 +723,7 @@ function AppContent() {
               <Route path="/pride" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
               <Route path="/testpage" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
               <Route path="/premium" element={<ProtectedRoute><PremiumScreen /></ProtectedRoute>} />
-              {/* <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} /> */}
+               <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} /> 
               <Route path="/referrals" element={<ProtectedRoute><ReferralsScreen /></ProtectedRoute>} />
 
               <Route path="/checkin" element={<ProtectedRoute><CheckInScreen /></ProtectedRoute>} />

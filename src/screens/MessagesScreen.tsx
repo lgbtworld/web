@@ -1704,7 +1704,7 @@ const MessagesScreen: React.FC = () => {
   // If not authenticated, show inline auth wizard
   if (!isAuthenticated) {
     return (
-      <div className={`h-[100dvh] w-full overflow-hidden flex flex-col ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}>
+      <div className={`h-[100dvh] w-full overflow-hidden flex flex-col ${theme === 'dark' ? 'bg-gray-950' : 'bg-white'}`}>
         <div className="flex items-center justify-center flex-1 px-4">
           <div className="w-full max-w-lg">
             <AuthWizard
@@ -1722,16 +1722,16 @@ const MessagesScreen: React.FC = () => {
   }
 
   return (
-    <div className={`h-[100dvh] w-full flex flex-col ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`} style={{ height: '100dvh', display: 'flex', flexDirection: 'column' }}>
+    <div className={`h-[100dvh] w-full flex flex-col ${theme === 'dark' ? 'bg-gray-950' : 'bg-white'}`} style={{ height: '100dvh', display: 'flex', flexDirection: 'column' }}>
       <div className="h-full w-full flex-1 flex flex-row min-h-0 overflow-hidden" style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'row' }}>
         <div className="flex flex-row h-full w-full flex-1 min-h-0 overflow-hidden" style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'row' }}>
           {/* Sidebar - Responsive Design */}
-          <div className={`absolute lg:relative inset-0 z-40 lg:z-auto w-full lg:w-80 lg:flex-shrink-0 border-r flex flex-col h-full overflow-hidden ${theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'
+          <div className={`absolute lg:relative inset-0 z-40 lg:z-auto w-full lg:w-80 lg:flex-shrink-0 border-r flex flex-col h-full overflow-hidden ${theme === 'dark' ? 'border-gray-900 bg-gray-950' : 'border-gray-200/50 bg-white'
             } ${showSidebar ? 'flex' : 'hidden lg:flex'}`}>
             {/* Header */}
             <div className={`flex-shrink-0 sticky mb-[56px] md:mb-[0px]  top-[56px] lg:top-0 z-50 p-3 sm:p-4 border-b ${theme === 'dark'
-              ? 'border-gray-800 bg-black/95 backdrop-blur-xl'
-              : 'border-gray-200 bg-white/95 backdrop-blur-xl'
+              ? 'border-gray-900 bg-gray-950/95 backdrop-blur-sm'
+              : 'border-gray-200/50 bg-white/95 backdrop-blur-sm'
               }`}>
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h1 className={`text-lg sm:text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'
@@ -2060,8 +2060,8 @@ const MessagesScreen: React.FC = () => {
                 <div
                   ref={headerRef}
                   className={`flex-shrink-0 sticky top-0 z-50 p-3 sm:p-4 border-b ${theme === 'dark'
-                    ? 'border-gray-800 bg-black/95 backdrop-blur-xl'
-                    : 'border-gray-200 bg-white/95 backdrop-blur-xl'
+                    ? 'border-gray-900 bg-gray-950/95 backdrop-blur-sm'
+                    : 'border-gray-200/50 bg-white/95 backdrop-blur-sm'
                     }`}
                   style={{
                     flexGrow: 0,

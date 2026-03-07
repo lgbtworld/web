@@ -1,44 +1,44 @@
 import React, { useState } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import Footer from './components/Footer';
-import MatchScreen from './components/MatchScreen';
-import NearbyScreen from './components/NearbyScreen';
-import ProfileScreen from './components/ProfileScreen';
-import ProfileEngagementsScreen from './components/ProfileEngagementsScreen';
-import SearchScreen from './components/SearchScreen';
-import MessagesScreen from './components/MessagesScreen';
-import NotificationsScreen from './components/NotificationsScreen';
-import SplashScreen from './components/SplashScreen';
+import Footer from './components/ui/Footer';
+import MatchScreen from './screens/MatchScreen';
+import NearbyScreen from './screens/NearbyScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import ProfileEngagementsScreen from './screens/ProfileEngagementsScreen';
+import SearchScreen from './screens/SearchScreen';
+import MessagesScreen from './screens/MessagesScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
+import SplashScreen from './components/ui/SplashScreen';
 import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useSettings } from './contexts/SettingsContext';
-import AuthWizard from './components/AuthWizard';
+import AuthWizard from './features/auth/AuthWizard';
 import { MapPin, Heart, MessageCircle, User, Users, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Briefcase, Navigation, Settings as SettingsIcon } from 'lucide-react';
-import TrendsPanel, { NormalizedTrend } from './components/TrendsPanel';
-import PopularUsersPanel from './components/PopularUsersPanel';
-import PlaceDetailsScreen from './components/PlaceDetailsScreen';
-import HomeScreen from './components/HomeScreen';
-import LanguageSelector from './components/LanguageSelector.tsx';
-import ClassifiedsScreen from './components/ClassifiedsScreen';
-import ClassifiedDetailScreen from './components/ClassifiedDetailScreen';
-import SettingsScreen from './components/SettingsScreen';
+import TrendsPanel, { NormalizedTrend } from './features/discovery/TrendsPanel';
+import PopularUsersPanel from './features/discovery/PopularUsersPanel';
+import PlaceDetailsScreen from './screens/PlaceDetailsScreen';
+import HomeScreen from './screens/HomeScreen';
+import LanguageSelector from './components/ui/LanguageSelector.tsx';
+import ClassifiedsScreen from './screens/ClassifiedsScreen';
+import ClassifiedDetailScreen from './screens/ClassifiedDetailScreen';
+import SettingsScreen from './screens/SettingsScreen';
 import './i18n';
 import { useTranslation } from 'react-i18next';
 import { applicationName } from './appSettings.tsx';
-import LandingPage from './components/LandingPage.tsx';
+import LandingPage from './screens/LandingPage.tsx';
 import { getSafeImageURLEx } from './helpers/helpers.tsx';
-import TestPage from './components/TestPage.tsx';
-import PwaInstallPrompt, { PwaInstallProvider, usePwaInstall } from './components/PwaInstallPrompt';
-import PremiumScreen from './components/PremiumScreen.tsx';
-import PostDetails from './components/PostDetails.tsx';
-// import WalletScreen from './components/WalletScreen.tsx'; // TODO: Re-enable
-import PlacesScreen from './components/PlacesScreen.tsx';
-import ReferralsScreen from './components/ReferralsScreen.tsx';
-import ReferralHandler from './components/ReferralHandler.tsx';
-// import CheckInScreen from './components/CheckInScreen'; // TODO: Re-enable
-import ConfirmationModal from './components/ConfirmationModal.tsx';
-import CheckInScreen from './components/CheckInScreen.tsx';
+import TestPage from './screens/TestPage.tsx';
+import PwaInstallPrompt, { PwaInstallProvider, usePwaInstall } from './components/ui/PwaInstallPrompt';
+import PremiumScreen from './screens/PremiumScreen.tsx';
+import PostDetails from './screens/PostDetails.tsx';
+// import WalletScreen from './screens/WalletScreen.tsx'; // TODO: Re-enable
+import PlacesScreen from './screens/PlacesScreen.tsx';
+import ReferralsScreen from './screens/ReferralsScreen.tsx';
+import ReferralHandler from './screens/ReferralHandler.tsx';
+// import CheckInScreen from './screens/CheckInScreen'; // TODO: Re-enable
+import ConfirmationModal from './components/ui/ConfirmationModal.tsx';
+import CheckInScreen from './screens/CheckInScreen.tsx';
 const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/': 'pride',
   '/pride': 'pride',

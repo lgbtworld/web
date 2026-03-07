@@ -77,6 +77,7 @@ export const DEFAULT_SETTINGS = {
   emailNotifications: false,
   messageNotifications: true,
   matchNotifications: true,
+  showOnlineStatus: true,
 } as const;
 
 // These are mutated in setupEnv

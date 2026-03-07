@@ -130,4 +130,23 @@ export interface User {
       name: Record<string, string>;
     };
   }>;
+  engagements?: {
+    counts?: {
+      referral_count?: number;
+      referral_amount?: number;
+    };
+    engagement_details?: Array<{
+      id: string;
+      kind: string;
+      created_at: string;
+      details: {
+        amount: number;
+      };
+      engager: {
+        public_id: number;
+        username: string;
+        avatar?: any;
+      };
+    }>;
+  };
 }

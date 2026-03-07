@@ -505,6 +505,19 @@ function AppContent() {
                                 <User className="w-4 h-4" />
                                 <span className="text-sm font-semibold">{t('app.nav.profile')}</span>
                               </button>
+                              <button
+                                onClick={() => {
+                                  navigate('/settings');
+                                  setIsProfileMenuOpen(false);
+                                }}
+                                className={`w-full px-4 py-3 flex items-center gap-3 text-left ${theme === 'dark'
+                                  ? 'text-white hover:bg-white/10'
+                                  : 'text-gray-900 hover:bg-gray-50'
+                                  }`}
+                              >
+                                <SettingsIcon className="w-4 h-4" />
+                                <span className="text-sm font-semibold">{t('app.nav.settings')}</span>
+                              </button>
                               <div className={`h-px ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
                               <button
                                 onClick={() => requestLogout(() => setIsProfileMenuOpen(false))}
@@ -946,6 +959,19 @@ function AppContent() {
                             >
                               <User className="w-5 h-5" />
                               <span className="font-semibold text-[15px]">{t('app.nav.profile')}</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                navigate('/settings');
+                                closeMobileMenus();
+                              }}
+                              className={`w-full px-4 py-3.5 text-left flex items-center gap-3 transition-colors ${theme === 'dark'
+                                ? 'hover:bg-white/10 text-white'
+                                : 'hover:bg-black/5 text-gray-900'
+                                }`}
+                            >
+                              <SettingsIcon className="w-5 h-5" />
+                              <span className="font-semibold text-[15px]">{t('app.nav.settings')}</span>
                             </button>
                             <div className={`h-px ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`} />
                             <button

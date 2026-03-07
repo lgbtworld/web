@@ -196,7 +196,7 @@ export class ApiService {
   }
 
   async toggleBlockUser(blocked_id: string) {
-    await api.call(Actions.CMD_USER_TOGGLE_BLOCK, {
+    await this.call(Actions.CMD_USER_TOGGLE_BLOCK, {
       method: 'POST',
       body: {
         blocked_id: blocked_id,
@@ -394,6 +394,52 @@ export class ApiService {
 
   async fetchEngagements(payload: Record<string, any>) {
     return this.call(Actions.CMD_USER_FETCH_ENGAGEMENTS, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  // System
+  async fetchInitialSync() {
+    return this.call(Actions.SYSTEM_INITIAL_SYNC, {
+      method: "POST",
+      body: {},
+    });
+  }
+
+  // Discovery
+  async fetchTrends(payload: Record<string, any>) {
+    return this.call(Actions.CMD_SEARCH_TRENDS, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  // Stories
+  async fetchStories(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_FETCH_STORIES, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async uploadStory(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_UPLOAD_STORY, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  // User interactions
+  async toggleUserLike(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_TOGGLE_LIKE, {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  async toggleUserDislike(payload: Record<string, any>) {
+    return this.call(Actions.CMD_USER_TOGGLE_DISLIKE, {
       method: "POST",
       body: payload,
     });

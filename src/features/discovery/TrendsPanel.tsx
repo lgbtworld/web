@@ -192,10 +192,7 @@ const TrendsPanel: React.FC<TrendsPanelProps> = ({ limit = 20, onTrendSelect }) 
     setLoading(true);
     setError(null);
     try {
-      const response = await api.call<any>(Actions.CMD_SEARCH_TRENDS, {
-        method: "POST",
-        body: { limit },
-      });
+      const response = await api.fetchTrends({ limit });
 
       let normalized: NormalizedTrend[] = [];
 

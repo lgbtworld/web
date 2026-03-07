@@ -5,7 +5,6 @@ import { globalState } from '../../../state/nearby'; // atomun tanımlı olduğu
 import { calculateAge } from '../../../helpers/helpers';
 import { ActionBar } from '../../profile/UserCard/ActionBar';
 import { api } from '../../../services/api';
-import { Actions } from '../../../services/actions';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -86,7 +85,7 @@ export default function BubbleView() {
 
         try {
             // Create chat via API
-            const chatResponse = await api.call<{
+            const chatResponse = await api.createChat([profile.id], 'private') as {
                 chat: {
                     id: string;
                     type: string;
@@ -100,13 +99,7 @@ export default function BubbleView() {
                     }>;
                 };
                 success: boolean;
-            }>(Actions.CMD_CHAT_CREATE, {
-                method: "POST",
-                body: {
-                    type: 'private',
-                    participant_ids: [profile.id],
-                },
-            });
+            };
 
             const chatId = chatResponse?.chat?.id;
 
@@ -143,11 +136,8 @@ export default function BubbleView() {
         if (!user?.public_id) return;
 
         try {
-            await api.call(Actions.CMD_USER_TOGGLE_LIKE, {
-                method: 'POST',
-                body: {
-                    likee_id: user.public_id,
-                },
+            await api.toggleUserLike({
+                likee_id: user.public_id,
             });
 
 
@@ -164,11 +154,8 @@ export default function BubbleView() {
         if (!user?.public_id) return;
 
         try {
-            await api.call(Actions.CMD_USER_TOGGLE_DISLIKE, {
-                method: 'POST',
-                body: {
-                    likee_id: user.public_id,
-                },
+            await api.toggleUserDislike({
+                likee_id: user.public_id,
             });
 
 

@@ -3,7 +3,6 @@ import { Plus, X, ChevronLeft, ChevronRight, Heart, MessageCircle, Share } from 
 import { useTheme } from '../../contexts/ThemeContext';
 import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import { api } from '../../services/api';
-import { Actions } from '../../services/actions';
 import { useAuth } from '../../contexts/AuthContext';
 import { getSafeImageURL, getSafeImageURLEx } from '../../helpers/helpers';
 import ReactDOM from 'react-dom';
@@ -60,10 +59,7 @@ const Stories: React.FC = () => {
     const fetchStories = async () => {
       try {
         setLoadingStories(true);
-        const response = await api.call(Actions.CMD_USER_FETCH_STORIES, {
-          method: "POST",
-          body: { limit: 100 }, // Increased limit to show all stories
-        });
+        const response = await api.fetchStories({ limit: 100 });
 
         // Transform API response to match component structure
         // API returns { stories: [...] }
@@ -197,10 +193,7 @@ const Stories: React.FC = () => {
     setUploadError(null);
 
     try {
-      const response = await api.call(Actions.CMD_USER_UPLOAD_STORY, {
-        method: "POST",
-        body: { story: selectedFile },
-      });
+      const response = await api.uploadStory({ story: selectedFile });
 
       // Handle successful upload
       console.log('Story uploaded successfully:', response);
@@ -218,10 +211,7 @@ const Stories: React.FC = () => {
 
       // Refresh stories list to show the newly uploaded story
       try {
-        const storiesResponse = await api.call(Actions.CMD_USER_FETCH_STORIES, {
-          method: "POST",
-          body: { limit: 100 }, // Increased limit to show all stories
-        });
+        const storiesResponse = await api.fetchStories({ limit: 100 });
         const storiesData = storiesResponse?.stories || [];
 
         // Filter out expired stories
@@ -287,7 +277,7 @@ const Stories: React.FC = () => {
   
       try {
         // Create chat via API - modal stays open during this process
-        const chatResponse = await api.call<{
+        const chatResponse = await api.createChat([profile.id], 'private') as {
           chat: {
             id: string;
             type: string;
@@ -301,13 +291,7 @@ const Stories: React.FC = () => {
             }>;
           };
           success: boolean;
-        }>(Actions.CMD_CHAT_CREATE, {
-          method: "POST",
-          body: {
-            type: 'private',
-            participant_ids: [profile.id],
-          },
-        });
+        };
   
         const chatId = chatResponse?.chat?.id;
   

@@ -5,7 +5,6 @@ import { calculateAge } from '../../../helpers/helpers';
 import { ActionBar } from './ActionBar';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../../services/api';
-import { Actions } from '../../../services/actions';
 
 interface ReelItemProps {
     vibe: any;
@@ -30,12 +29,7 @@ export const VibeItem: React.FC<ReelItemProps> = ({ vibe }) => {
         }));
 
       try{
-           await api.call(Actions.CMD_POST_LIKE, {
-                method: 'POST',
-                body: {
-                  post_id: postId,
-                },
-              });
+           await api.handlePostLike(postId);
         
         
             } catch (error) {
@@ -56,7 +50,7 @@ const handleMessage =async (user: any) => {
 
     try {
       // Create chat via API
-      const chatResponse = await api.call<{
+      const chatResponse = await api.createChat([user.id], 'private') as {
         chat: {
           id: string;
           type: string;
@@ -70,13 +64,7 @@ const handleMessage =async (user: any) => {
           }>;
         };
         success: boolean;
-      }>(Actions.CMD_CHAT_CREATE, {
-        method: "POST",
-        body: {
-          type: 'private',
-          participant_ids: [user.id],
-        },
-      });
+      };
 
       const chatId = chatResponse?.chat?.id;
 

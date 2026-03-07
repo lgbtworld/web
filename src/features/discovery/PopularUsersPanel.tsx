@@ -62,13 +62,10 @@ const PopularUsersPanel: React.FC<PopularUsersPanelProps> = ({ limit = 20 }) => 
     setError(null);
 
     try {
-      const response = await api.call<{ users?: PopularUser[] }>(Actions.CMD_USER_FETCH_NEARBY_USERS, {
-        method: 'POST',
-        body: {
-          limit: limit,
-          cursor: null,
-        },
-      });
+      const response = await api.fetchNearbyUsers({
+        limit: limit,
+        cursor: null,
+      }) as { users?: PopularUser[] };
 
       const normalized = (response?.users ?? []).slice(0, limit);
       setUsers(normalized);

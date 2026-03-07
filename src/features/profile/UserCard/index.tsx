@@ -7,7 +7,6 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import GiftSelector from './GiftSelector';
 import QuickMessages from '../../post/QuickMessages';
 import { calculateAge, getSafeImageURLEx } from '../../../helpers/helpers';
-import { Actions } from '../../../services/actions';
 import { api } from '../../../services/api';
 import { burstConfig, BurstOverlayState, BurstType, createOverlayConfetti, createOverlayParticles, createOverlayStreaks } from './ActionBar';
 
@@ -62,7 +61,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, viewMode = 'card' }) =
 
     try {
       // Create chat via API
-      const chatResponse = await api.call<{
+      const chatResponse = await api.createChat([profile.id], 'private') as {
         chat: {
           id: string;
           type: string;
@@ -76,13 +75,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, viewMode = 'card' }) =
           }>;
         };
         success: boolean;
-      }>(Actions.CMD_CHAT_CREATE, {
-        method: "POST",
-        body: {
-          type: 'private',
-          participant_ids: [profile.id],
-        },
-      });
+      };
 
       const chatId = chatResponse?.chat?.id;
 
@@ -119,11 +112,8 @@ export const UserCard: React.FC<UserCardProps> = ({ user, viewMode = 'card' }) =
     if (!user?.public_id) return;
 
     try {
-      await api.call(Actions.CMD_USER_TOGGLE_LIKE, {
-        method: 'POST',
-        body: {
-          likee_id: user.public_id,
-        },
+      await api.toggleUserLike({
+        likee_id: user.public_id,
       });
 
 
@@ -140,11 +130,8 @@ export const UserCard: React.FC<UserCardProps> = ({ user, viewMode = 'card' }) =
     if (!user?.public_id) return;
 
     try {
-      await api.call(Actions.CMD_USER_TOGGLE_DISLIKE, {
-        method: 'POST',
-        body: {
-          likee_id: user.public_id,
-        },
+      await api.toggleUserDislike({
+        likee_id: user.public_id,
       });
 
 

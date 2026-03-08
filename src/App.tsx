@@ -1,6 +1,6 @@
 import React, { useState, Suspense, lazy } from 'react';
 import ChunkErrorBoundary from './components/ui/ChunkErrorBoundary';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Footer from './components/ui/Footer';
 
@@ -26,6 +26,7 @@ const PlacesScreen = lazy(() => import('./screens/PlacesScreen.tsx'));
 const ReferralsScreen = lazy(() => import('./screens/ReferralsScreen.tsx'));
 const ReferralHandler = lazy(() => import('./screens/ReferralHandler.tsx'));
 const CheckInScreen = lazy(() => import('./screens/CheckInScreen.tsx'));
+const LegalScreen = lazy(() => import('./screens/LegalScreen.tsx'));
 
 import SplashScreen from './components/ui/SplashScreen';
 import { useTheme } from './contexts/ThemeContext';
@@ -744,6 +745,9 @@ function AppContent() {
 
                   {/* Fallback */}
                   <Route path="*" element={<HomeScreen />} />
+
+                  {/* Legal Pages */}
+                  <Route path="/legal/:page" element={<LegalScreen />} />
                 </Routes>
               </Suspense>
             </ChunkErrorBoundary>
@@ -767,19 +771,17 @@ function AppContent() {
                 <div className="pb-4 pt-2">
                   <div className="flex flex-wrap gap-x-3 gap-y-1.5">
                     {[
-                      { label: 'Privacy Policy', href: 'https://coolvibes.lgbt/privacy' },
-                      { label: 'Cookie Policy', href: 'https://coolvibes.lgbt/cookies' },
-                      { label: 'Terms of Service', href: 'https://coolvibes.lgbt/terms' },
-                      { label: 'Community Guidelines', href: 'https://coolvibes.lgbt/guidelines' },
-                      { label: 'Accessibility', href: 'https://coolvibes.lgbt/accessibility' },
-                      { label: 'About', href: 'https://coolvibes.lgbt/about' },
-                      { label: 'Help Center', href: 'https://coolvibes.lgbt/help' },
+                      { label: 'Privacy Policy', to: '/legal/privacy' },
+                      { label: 'Cookie Policy', to: '/legal/cookies' },
+                      { label: 'Terms of Service', to: '/legal/terms' },
+                      { label: 'Community Guidelines', to: '/legal/guidelines' },
+                      { label: 'Accessibility', to: '/legal/accessibility' },
+                      { label: 'About', to: '/legal/about' },
+                      { label: 'Help Center', to: '/legal/help' },
                     ].map((link) => (
-                      <a
+                      <Link
                         key={link.label}
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        to={link.to}
                         className={`text-[11px] font-medium transition-colors hover:underline underline-offset-2 ${
                           theme === 'dark'
                             ? 'text-gray-500 hover:text-gray-300'
@@ -787,7 +789,7 @@ function AppContent() {
                         }`}
                       >
                         {link.label}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                   <p className={`mt-2.5 text-[11px] ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`}>

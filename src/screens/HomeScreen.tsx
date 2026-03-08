@@ -89,12 +89,11 @@ const HomeScreen: React.FC = () => {
 
       {
         activeTab == "flows" && <div
-          className={`flex-shrink-0 px-1 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] border-b ${theme === 'dark' ? 'border-black' : 'border-gray-100'}`}
+          className={`flex-shrink-0 px-1 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] border-b ${theme === 'dark' ? 'border-black' : 'border-gray-100'}`}
           style={{
             opacity: headerVisibilityProgress,
-            transform: `translateY(${(1 - headerVisibilityProgress) * -0}px)`,
             pointerEvents: headerVisibilityProgress < 0.2 ? 'none' : 'auto',
-            height: headerHeight == MIN_HEADER_HEIGHT ? 0 : "190px"
+            height: 190 // Fixed height prevents layout jumps that break Virtuoso tracking
           }}>
           <Stories />
         </div>

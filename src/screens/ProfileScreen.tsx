@@ -3374,7 +3374,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                   </div>
 
                   {/* Edit Tabs */}
-                  <div className={`sticky z-20 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'} backdrop-blur-sm ${theme === 'dark' ? 'bg-gray-950/95' : 'bg-white/95'}`} style={{ top: inline || isEmbed ? '0' : `${headerHeight}px` }}>
+                  <div className={`sticky z-20 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'} backdrop-blur-sm`} style={{ top: inline || isEmbed ? '0' : `${headerHeight}px` }}>
                     <div className="flex px-4 sm:px-6 relative">
                       {[
                         { id: 'profile', label: t('profile.profile_info') || 'Profile Info' },
@@ -4964,8 +4964,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                           </span>
                         </div>
                         <div className={`rounded-[18px] overflow-hidden ${theme === 'dark'
-                          ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
-                          : 'bg-white backdrop-blur-xl border border-black/[0.06]'
+                          ? 'backdrop-blur-xl border border-white/[0.06]'
+                          : 'backdrop-blur-xl border border-black/[0.06]'
                           }`}>
                           {USER_ATTRIBUTES.map((item, index) => {
                             // Get display value - use authUser if viewing own profile in edit context, otherwise use user
@@ -5239,8 +5239,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                           // No fantasies
                           return (
                             <div className={`text-center py-16 rounded-[18px] ${theme === 'dark'
-                              ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
-                              : 'bg-white/95 backdrop-blur-xl border border-black/[0.06]'
+                              ? 'border border-white/[0.06]'
+                              : 'border border-black/[0.06]'
                               }`}>
                               <div className={`w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center ${theme === 'dark' ? 'bg-white/[0.08]' : 'bg-black/[0.04]'}`}>
                                 <Sparkles className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
@@ -5428,8 +5428,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
                           // No interests
                           return (
                             <div className={`text-center py-16 rounded-[18px] ${theme === 'dark'
-                              ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl border border-white/[0.06]'
-                              : 'bg-white/95 backdrop-blur-xl border border-black/[0.06]'
+                              ? 'border border-white/[0.06]'
+                              : 'border border-black/[0.06]'
                               }`}>
                               <div className={`w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center ${theme === 'dark' ? 'bg-white/[0.08]' : 'bg-black/[0.04]'}`}>
                                 <Heart className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />

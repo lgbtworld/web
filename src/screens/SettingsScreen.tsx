@@ -34,13 +34,13 @@ const SettingItem = memo(({ icon: Icon, label, subtitle, onClick, value, toggle,
     >
         <div className="flex items-center gap-4 min-w-0">
             <div className={`flex items-center justify-center w-10 h-10 rounded-2xl transition-colors ${danger
-                ? 'bg-gray-900/30 text-white'
+                ? (dark ? 'bg-red-500/10 text-red-500' : 'bg-red-50 text-red-600')
                 : (dark ? 'bg-gray-900/50 text-gray-300 group-hover:text-white' : 'bg-gray-100 text-gray-600 group-hover:text-gray-900')
                 }`}>
                 <Icon size={20} strokeWidth={2} />
             </div>
             <div className="flex flex-col min-w-0">
-                <span className={`text-[15px] font-semibold leading-tight ${danger ? 'text-white' : (dark ? 'text-white' : 'text-gray-900')}`}>
+                <span className={`text-[15px] font-semibold leading-tight ${danger ? 'text-red-500' : (dark ? 'text-white' : 'text-gray-900')}`}>
                     {label}
                 </span>
                 {subtitle && (
@@ -112,17 +112,18 @@ export default function SettingsScreen() {
         <Container>
             <div className={`flex flex-col h-[100dvh] w-full max-w-[600px] mx-auto ${isDark ? 'bg-gray-950 text-white' : 'bg-white text-gray-900'}`}>
                 {/* Header */}
-                <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[60px] px-4 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-sm border-b ${isDark ? 'border-gray-900' : 'border-gray-200/50'}`}>
-                    <button
-                        onClick={() => navigate(-1)}
-                        className={`p-2.5 -ml-2 rounded-full transition-colors ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <h1 className="text-[16px] font-semibold tracking-wide">
-                        {t('settings.title', { defaultValue: 'Settings' })}
-                    </h1>
-                    <div className="w-10" />
+                <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[64px] px-4 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-md border-b ${isDark ? 'border-gray-900' : 'border-gray-200/50'}`}>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => navigate(-1)}
+                            className={`p-2.5 -ml-2 rounded-full transition-all active:scale-90 ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        <h1 className="text-[17px] font-bold tracking-tight">
+                            {t('settings.title', { defaultValue: 'Settings' })}
+                        </h1>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto scrollbar-hide pb-24">
@@ -148,7 +149,7 @@ export default function SettingsScreen() {
                         />
                     </Section>
 
-                    <Section title={t('settings.notifications', { defaultValue: 'Notifications' })} dark={isDark}>
+                    <Section title={t('settings.notifications.title', { defaultValue: 'Notifications' })} dark={isDark}>
                         <SettingItem
                             icon={Bell}
                             label={t('settings.push_notifications', { defaultValue: 'Push Notifications' })}
@@ -209,7 +210,7 @@ export default function SettingsScreen() {
                         />
                     </Section>
 
-                    <Section title={t('settings.account', { defaultValue: 'Account' })} dark={isDark}>
+                    <Section title={t('settings.account.title', { defaultValue: 'Account' })} dark={isDark}>
                         <SettingItem
                             icon={Trash2}
                             label={t('settings.logout', { defaultValue: 'Log Out' })}
@@ -221,15 +222,9 @@ export default function SettingsScreen() {
                         />
                     </Section>
 
-                    {/* Footer / Version */}
-                    <div className="mt-12 text-center">
-                        <p className={`text-[11px] font-bold uppercase tracking-widest ${isDark ? 'text-gray-700' : 'text-gray-300'}`}>
-                            CoolVibes v1.4.2
-                        </p>
                     </div>
                 </div>
             </div>
-        </div>
 
             <LanguageSelectorModal
                 isOpen={isLangModalOpen}

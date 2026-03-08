@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Users, Calendar, Heart, MessageCircle, Share2, X } from 'lucide-react';
+import { Search, MapPin, Users, Calendar, Heart, MessageCircle, Share2, X, ArrowLeft, MoreVertical, Star } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
-import Container from '../components/ui/Container';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface SearchResult {
   id: number;
-  type: string;
+  type: 'people' | 'events' | 'posts' | 'locations';
   name?: string;
   username?: string;
   avatar?: string;
@@ -40,6 +41,14 @@ const SearchScreen: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { theme } = useTheme();
+  const navigate = useNavigate();
+  const { t } = useTranslation('common');
+
+  const isDark = theme === 'dark';
+  const bgColor = isDark ? 'bg-gray-950' : 'bg-white';
+  const textColor = isDark ? 'text-white' : 'text-gray-900';
+  const secTextColor = isDark ? 'text-gray-400' : 'text-gray-600';
+  const borderColor = isDark ? 'border-gray-900' : 'border-gray-200/50';
 
   const filters = [
     { id: 'all', label: 'All', icon: Search },
@@ -49,6 +58,7 @@ const SearchScreen: React.FC = () => {
     { id: 'locations', label: 'Places', icon: MapPin },
   ];
 
+  // Dummy data for visual demonstration
   const searchResults: SearchResult[] = [
     {
       id: 1,
@@ -62,7 +72,7 @@ const SearchScreen: React.FC = () => {
       mutual: 12,
     },
     {
-      id: 52,
+      id: 2,
       type: 'events',
       title: 'Pride Parade 2025',
       date: 'June 15, 2025',
@@ -72,106 +82,20 @@ const SearchScreen: React.FC = () => {
       image: 'https://images.pexels.com/photos/1601131/pexels-photo-1601131.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
     },
     {
-      id: 43,
+      id: 3,
       type: 'posts',
       author: {
         name: 'Jordan Kim',
         username: 'jordankim',
         avatar: 'https://images.pexels.com/photos/1559486/pexels-photo-1559486.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
       },
-      content: 'Celebrating my 6-month anniversary with my amazing partner today! Feeling grateful for all the love and support from this incredible community.',
+      content: 'Celebrating our amazing community today! Feeling grateful for all the love and support.',
       likes: 156,
       comments: 28,
       timestamp: '4h',
     },
     {
-      id: 42,
-      type: 'locations',
-      name: 'Rainbow Community Center',
-      address: '123 Pride Street, Downtown',
-      rating: 4.8,
-      reviews: 127,
-      image: 'https://images.pexels.com/photos/1266808/pexels-photo-1266808.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
-    },
-    {
-      id: 112,
-      type: 'people',
-      name: 'Alex Rivera',
-      username: 'alexr_pride',
-      avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-      verified: true,
-      bio: 'LGBTQ+ activist and community organizer',
-      followers: '2.4K',
-      mutual: 12,
-    },
-    {
-      id: 523,
-      type: 'events',
-      title: 'Pride Parade 2025',
-      date: 'June 15, 2025',
-      time: '10:00 AM',
-      location: 'Downtown City Center',
-      attendees: '1.2K',
-      image: 'https://images.pexels.com/photos/1601131/pexels-photo-1601131.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
-    },
-    {
-      id: 435,
-      type: 'posts',
-      author: {
-        name: 'Jordan Kim',
-        username: 'jordankim',
-        avatar: 'https://images.pexels.com/photos/1559486/pexels-photo-1559486.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-      },
-      content: 'Celebrating my 6-month anniversary with my amazing partner today! Feeling grateful for all the love and support from this incredible community.',
-      likes: 156,
-      comments: 28,
-      timestamp: '4h',
-    },
-    {
-      id: 423,
-      type: 'locations',
-      name: 'Rainbow Community Center',
-      address: '123 Pride Street, Downtown',
-      rating: 4.8,
-      reviews: 127,
-      image: 'https://images.pexels.com/photos/1266808/pexels-photo-1266808.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
-    },
-    {
-      id: 11,
-      type: 'people',
-      name: 'Alex Rivera',
-      username: 'alexr_pride',
-      avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-      verified: true,
-      bio: 'LGBTQ+ activist and community organizer',
-      followers: '2.4K',
-      mutual: 12,
-    },
-    {
-      id: 23,
-      type: 'events',
-      title: 'Pride Parade 2025',
-      date: 'June 15, 2025',
-      time: '10:00 AM',
-      location: 'Downtown City Center',
-      attendees: '1.2K',
-      image: 'https://images.pexels.com/photos/1601131/pexels-photo-1601131.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
-    },
-    {
-      id: 34,
-      type: 'posts',
-      author: {
-        name: 'Jordan Kim',
-        username: 'jordankim',
-        avatar: 'https://images.pexels.com/photos/1559486/pexels-photo-1559486.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-      },
-      content: 'Celebrating my 6-month anniversary with my amazing partner today! Feeling grateful for all the love and support from this incredible community.',
-      likes: 156,
-      comments: 28,
-      timestamp: '4h',
-    },
-    {
-      id: 420,
+      id: 4,
       type: 'locations',
       name: 'Rainbow Community Center',
       address: '123 Pride Street, Downtown',
@@ -189,266 +113,194 @@ const SearchScreen: React.FC = () => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setIsSearching(true);
-    // Simulate search delay
-    setTimeout(() => setIsSearching(false), 1000);
+    if (query.length > 2) {
+      setIsSearching(true);
+      setTimeout(() => setIsSearching(false), 800);
+    }
   };
 
   const filteredResults = searchResults.filter(result => {
     if (activeFilter !== 'all' && result.type !== activeFilter) return false;
     if (!searchQuery) return true;
-
     const query = searchQuery.toLowerCase();
-    switch (result.type) {
-      case 'people':
-        return (result.name?.toLowerCase().includes(query) ||
-          result.username?.toLowerCase().includes(query) ||
-          result.bio?.toLowerCase().includes(query)) ?? false;
-      case 'events':
-        return (result.title?.toLowerCase().includes(query) ||
-          result.location?.toLowerCase().includes(query)) ?? false;
-      case 'posts':
-        return (result.content?.toLowerCase().includes(query) ||
-          result.author?.name?.toLowerCase().includes(query)) ?? false;
-      case 'locations':
-        return (result.name?.toLowerCase().includes(query) ||
-          result.address?.toLowerCase().includes(query)) ?? false;
-      default:
-        return true;
-    }
+    return (
+      result.name?.toLowerCase().includes(query) ||
+      result.username?.toLowerCase().includes(query) ||
+      result.title?.toLowerCase().includes(query) ||
+      result.content?.toLowerCase().includes(query) ||
+      result.location?.toLowerCase().includes(query)
+    );
   });
 
   return (
-    <Container>
-      <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-black border-gray-800' : 'bg-white border-gray-200'} border-b backdrop-blur-xl bg-opacity-80`}>
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="relative">
-            <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-              }`} />
+    <div className={`flex flex-col h-[100dvh] w-full max-w-[600px] mx-auto ${bgColor} ${textColor}`}>
+      {/* Header */}
+      <div className={`flex-shrink-0 sticky top-0 z-50 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-md border-b ${borderColor}`}>
+        <div className="flex items-center gap-2 h-[64px] px-4">
+          <button
+            onClick={() => navigate(-1)}
+            className={`p-2.5 -ml-2 rounded-full transition-all active:scale-90 ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          
+          <h1 className="text-[17px] font-bold tracking-tight whitespace-nowrap mr-2">
+            {t('search.title', { defaultValue: 'Search' })}
+          </h1>
+
+          <div className="flex-1 relative">
+            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${secTextColor}`} />
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search people, events, posts, places..."
+              placeholder={t('search.placeholder', { defaultValue: 'Search vibes...' })}
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className={`w-full pl-12 pr-12 py-3 rounded-2xl border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${theme === 'dark'
-                ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-400 focus:border-gray-500 focus:ring-gray-500'
-                : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500 focus:border-gray-400 focus:ring-gray-400'
-                }`}
+              className={`w-full bg-transparent pl-10 pr-10 py-2.5 text-[15px] focus:outline-none placeholder:text-gray-500`}
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors ${isDark ? 'hover:bg-gray-900' : 'hover:bg-gray-100'}`}
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-4 h-4 text-gray-400" />
               </button>
             )}
           </div>
+        </div>
 
-          <div className="flex items-center space-x-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
+        {/* Filters */}
+        <div className="px-4 pb-3 overflow-x-auto scrollbar-hide">
+          <div className="flex space-x-1">
             {filters.map((filter) => (
               <button
                 key={filter.id}
                 onClick={() => setActiveFilter(filter.id)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 whitespace-nowrap ${activeFilter === filter.id
-                  ? (theme === 'dark' ? 'bg-white text-black' : 'bg-gray-900 text-white')
-                  : (theme === 'dark' ? 'bg-gray-900 text-gray-400 hover:text-white' : 'bg-gray-100 text-gray-600 hover:text-gray-900')
-                  }`}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-[14px] text-[13px] font-bold transition-all duration-200 whitespace-nowrap ${
+                  activeFilter === filter.id
+                    ? (isDark ? 'bg-white text-black' : 'bg-gray-900 text-white')
+                    : (isDark ? 'text-gray-400 hover:text-white hover:bg-gray-900/50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100')
+                }`}
               >
                 <filter.icon className="w-4 h-4" />
-                <span className="text-sm font-medium">{filter.label}</span>
+                <span>{filter.label}</span>
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-6 pb-24">
         {isSearching ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className={`text-lg font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Searching vibes...</p>
+          <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+            <div className={`w-[64px] h-[64px] rounded-[22px] flex items-center justify-center mb-6 animate-pulse ${isDark ? 'bg-gray-900/30' : 'bg-gray-50'}`}>
+              <Search className={`w-8 h-8 ${isDark ? 'text-gray-700' : 'text-gray-300'}`} />
+            </div>
+            <p className={`text-[15px] font-medium ${secTextColor}`}>Finding your vibes...</p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {filteredResults.length > 0 ? (
-              filteredResults.map((result) => (
-                <div
-                  key={result.id}
-                  className={`p-6 rounded-3xl transition-all duration-200 cursor-pointer ${theme === 'dark'
-                    ? 'bg-gray-900/50 hover:bg-gray-900 border border-gray-800'
-                    : 'bg-white hover:bg-gray-50 border border-gray-100 shadow-sm hover:shadow-md'
+          <AnimatePresence mode="popLayout">
+            {filteredResults.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center py-24 px-8 text-center"
+              >
+                <div className={`w-[64px] h-[64px] rounded-[22px] flex items-center justify-center mb-6 ${isDark ? 'bg-gray-900/30' : 'bg-gray-50'}`}>
+                  <Search className={`w-8 h-8 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} strokeWidth={1.5} />
+                </div>
+                <h3 className={`text-[17px] font-bold mb-2 ${textColor}`}>No results found</h3>
+                <p className={`text-[14px] max-w-[260px] leading-relaxed ${secTextColor}`}>
+                  Try a different search term or explore one of the categories above.
+                </p>
+              </motion.div>
+            ) : (
+              <div className="space-y-4">
+                {filteredResults.map((result, index) => (
+                  <motion.div
+                    key={`${result.type}-${result.id}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`group p-5 rounded-[24px] border transition-all duration-200 cursor-pointer ${
+                      isDark 
+                        ? 'bg-gray-900/20 hover:bg-gray-900/40 border-gray-900/50' 
+                        : 'bg-white hover:bg-gray-50 border-gray-100 shadow-sm'
                     }`}
-                >
-                  {result.type === 'people' && (
-                    <div className="flex items-center space-x-4">
-                      <img
-                        src={result.avatar}
-                        alt={result.name}
-                        className="w-16 h-16 rounded-2xl object-cover"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <h3 className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'
-                            }`}>
-                            {result.name}
-                          </h3>
-                          {result.verified && (
-                            <div className="w-4 h-4 bg-indigo-500 rounded-full flex items-center justify-center">
-                              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </div>
-                          )}
+                  >
+                    {result.type === 'people' && (
+                      <div className="flex items-center gap-4">
+                        <div className={`w-16 h-16 rounded-[20px] overflow-hidden flex-shrink-0 ring-2 ${isDark ? 'ring-gray-900' : 'ring-gray-100'}`}>
+                          <img src={result.avatar} alt={result.name} className="w-full h-full object-cover" />
                         </div>
-                        <p className={`text-sm mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                          @{result.username} • {result.followers} followers
-                        </p>
-                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                          }`}>
-                          {result.bio}
-                        </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <h3 className={`text-[16px] font-bold truncate ${textColor}`}>{result.name}</h3>
+                            {result.verified && <div className="w-3.5 h-3.5 bg-blue-500 rounded-full flex items-center justify-center"><svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg></div>}
+                          </div>
+                          <p className={`text-[13px] font-medium mb-1.5 ${secTextColor}`}>@{result.username} • {result.followers} followers</p>
+                          <p className={`text-[14px] line-clamp-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{result.bio}</p>
+                        </div>
+                        <button className={`px-4 py-1.5 rounded-[12px] text-[13px] font-bold transition-all ${isDark ? 'bg-white text-black hover:bg-gray-200' : 'bg-gray-900 text-white hover:bg-gray-800'}`}>Follow</button>
                       </div>
-                      <button className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${theme === 'dark'
-                        ? 'bg-white text-black hover:bg-gray-200'
-                        : 'bg-gray-900 text-white hover:bg-gray-800'
-                        }`}>
-                        Follow
-                      </button>
-                    </div>
-                  )}
+                    )}
 
-                  {result.type === 'events' && (
-                    <div className="flex space-x-4">
-                      <img
-                        src={result.image}
-                        alt={result.title}
-                        className="w-32 h-24 rounded-2xl object-cover"
-                      />
-                      <div className="flex-1">
-                        <h3 className={`text-lg font-bold mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'
-                          }`}>
-                          {result.title}
-                        </h3>
-                        <div className="flex items-center space-x-3 text-sm mb-3">
-                          <span className={theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}>{result.date}</span>
-                          <span className={theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}>•</span>
-                          <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>{result.location}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                            }`}>
-                            {result.attendees} attending
-                          </span>
-                          <button className={`px-4 py-1 rounded-full text-sm font-medium ${theme === 'dark'
-                            ? 'bg-gray-800 text-white hover:bg-gray-700'
-                            : 'bg-gray-900 text-white hover:bg-gray-800'
-                            }`}>
-                            Join
-                          </button>
+                    {result.type === 'events' && (
+                      <div className="flex gap-4">
+                        <img src={result.image} alt={result.title} className="w-24 h-24 rounded-[18px] object-cover flex-shrink-0" />
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                          <h3 className={`text-[16px] font-bold mb-1 truncate ${textColor}`}>{result.title}</h3>
+                          <div className="flex items-center gap-2 text-[13px] mb-2">
+                            <span className="text-pink-500 font-bold">{result.date}</span>
+                            <span className="text-gray-500">•</span>
+                            <span className={`truncate ${secTextColor}`}>{result.location}</span>
+                          </div>
+                          <span className={`text-[12px] font-medium ${secTextColor}`}>{result.attendees} attending</span>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {result.type === 'posts' && (
-                    <div>
-                      <div className="flex items-center space-x-3 mb-3">
-                        <img
-                          src={result.author?.avatar}
-                          alt={result.author?.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div>
-                          <h3 className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'
-                            }`}>
-                            {result.author?.name}
-                          </h3>
-                          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                            }`}>
-                            @{result.author?.username} • {result.timestamp}
-                          </p>
+                    {result.type === 'posts' && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <img src={result.author?.avatar} alt={result.author?.name} className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-900" />
+                          <div className="flex-1 min-w-0">
+                            <h3 className={`text-[14px] font-bold truncate ${textColor}`}>{result.author?.name}</h3>
+                            <p className={`text-[12px] ${secTextColor}`}>@{result.author?.username} • {result.timestamp}</p>
+                          </div>
+                          <button className={`p-1.5 rounded-full transition-colors ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}><MoreVertical className="w-4 h-4 text-gray-500" /></button>
+                        </div>
+                        <p className={`text-[14px] leading-relaxed line-clamp-3 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>{result.content}</p>
+                        <div className="flex items-center gap-6 pt-1">
+                          <button className={`flex items-center gap-2 text-[13px] font-medium ${secTextColor} hover:text-white transition-colors`}><Heart className="w-4 h-4" /> {result.likes}</button>
+                          <button className={`flex items-center gap-2 text-[13px] font-medium ${secTextColor} hover:text-white transition-colors`}><MessageCircle className="w-4 h-4" /> {result.comments}</button>
+                          <button className={`p-1.5 -m-1.5 rounded-full ${secTextColor} hover:text-white transition-colors ml-auto`}><Share2 className="w-4 h-4" /></button>
                         </div>
                       </div>
-                      <p className={`mb-3 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                        }`}>
-                        {result.content}
-                      </p>
-                      <div className="flex items-center space-x-6">
-                        <button className={`flex items-center space-x-2 ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-                          }`}>
-                          <Heart className="w-4 h-4" />
-                          <span className="text-sm">{result.likes}</span>
-                        </button>
-                        <button className={`flex items-center space-x-2 ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-                          }`}>
-                          <MessageCircle className="w-4 h-4" />
-                          <span className="text-sm">{result.comments}</span>
-                        </button>
-                        <button className={`flex items-center space-x-2 ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-                          }`}>
-                          <Share2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                    )}
 
-                  {result.type === 'locations' && (
-                    <div className="flex space-x-4">
-                      <img
-                        src={result.image}
-                        alt={result.name}
-                        className="w-20 h-20 rounded-xl object-cover"
-                      />
-                      <div className="flex-1">
-                        <h3 className={`font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'
-                          }`}>
-                          {result.name}
-                        </h3>
-                        <p className={`text-sm mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                          {result.address}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className="flex items-center">
-                              {[...Array(5)].map((_, i) => (
-                                <svg
-                                  key={i}
-                                  className={`w-4 h-4 ${i < Math.floor(result.rating || 0)
-                                    ? 'text-yellow-400'
-                                    : theme === 'dark'
-                                      ? 'text-gray-600'
-                                      : 'text-gray-300'
-                                    }`}
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                              ))}
-                            </div>
-                            <span className={`text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>({result.reviews})</span>
+                    {result.type === 'locations' && (
+                      <div className="flex gap-4">
+                        <img src={result.image} alt={result.name} className="w-20 h-20 rounded-[18px] object-cover flex-shrink-0" />
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                          <h3 className={`text-[16px] font-bold mb-1 truncate ${textColor}`}>{result.name}</h3>
+                          <p className={`text-[13px] mb-2 truncate ${secTextColor}`}>{result.address}</p>
+                          <div className="flex items-center gap-1.5 text-[13px] font-bold">
+                            <div className="flex items-center text-yellow-500"><Star className="w-3.5 h-3.5 fill-current" /> <span className="ml-1">{result.rating}</span></div>
+                            <span className="text-gray-500">•</span>
+                            <span className={secTextColor}>{result.reviews} reviews</span>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <Search className={`w-16 h-16 mb-6 ${theme === 'dark' ? 'text-gray-800' : 'text-gray-200'}`} />
-                <h3 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>No results found</h3>
-                <p className={theme === 'dark' ? 'text-gray-500' : 'text-gray-600'}>Try searching for something else or adjusting your filters.</p>
+                    )}
+                  </motion.div>
+                ))}
               </div>
             )}
-          </div>
+          </AnimatePresence>
         )}
       </div>
-    </Container>
+    </div>
   );
 };
 

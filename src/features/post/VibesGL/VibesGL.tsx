@@ -12,6 +12,8 @@ import { api } from "../../../services/api";
 import { getSafeImageURL, getSafeImageURLEx } from "../../../helpers/helpers";
 import { defaultServiceServerId, serviceURL } from "../../../appSettings";
 import { useWebGLCoverflow } from "../../../hooks/useWebGLCoverflow";
+import { Volume2, VolumeX, Loader2, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const VibesGL: React.FC = () => {
     const [state, setState] = useAtom(globalState);
@@ -25,7 +27,7 @@ const VibesGL: React.FC = () => {
     const vibes = useMemo(() => state.vibes ?? [], [state.vibes]);
     const [isMuted, setIsMuted] = useState(false);
 
-    // Refs for safe fetching without dependency cycles
+    // Refs for safe fetching
     const cursorRef = useRef(state.vibesCursor);
     const hasMoreRef = useRef(true);
     const isFetchingRef = useRef(false);
@@ -38,9 +40,7 @@ const VibesGL: React.FC = () => {
         hasMoreRef.current = hasMore;
     }, [hasMore]);
 
-    // ------------------------------------------------------------
-    // FETCH FONKSİYONU
-    // ------------------------------------------------------------
+    // FETCH FUNCTION
     const fetchVibesFromAPI = useCallback(
         async (loadMore = false) => {
             if (isFetchingRef.current) return;
@@ -53,13 +53,11 @@ const VibesGL: React.FC = () => {
                 const currentCursor = loadMore ? (cursorRef.current?.toString?.() || "") : "";
 
                 const response = await api.fetchVibes({
-                    limit: 10,
+                    limit: 15, // Increased limit for smoother experience
                     cursor: currentCursor
                 });
 
                 const posts = response.posts || [];
-
-                // Formatlama
                 const incomingVibes = posts
                     .filter((post: any) => post.attachments?.length > 0)
                     .map((post: any) => {
@@ -83,17 +81,12 @@ const VibesGL: React.FC = () => {
                                 "";
 
                             if (!mediaUrl && file?.storage_path) {
-                                const serviceURI =
-                                    serviceURL[defaultServiceServerId];
-                                const path = file.storage_path.replace(
-                                    /^\.\//,
-                                    ""
-                                );
+                                const serviceURI = serviceURL[defaultServiceServerId];
+                                const path = file.storage_path.replace(/^\.\//, "");
                                 mediaUrl = `${serviceURI}/${path}`;
                             }
 
-                            posterUrl =
-                                getSafeImageURL(attachment, "poster") || "";
+                            posterUrl = getSafeImageURL(attachment, "poster") || "";
                         } else {
                             mediaUrl =
                                 getSafeImageURL(attachment, "large") ||
@@ -118,7 +111,6 @@ const VibesGL: React.FC = () => {
                         };
                     });
 
-                // Global state update
                 setState(prev => {
                     if (!loadMore) {
                         return {
@@ -128,12 +120,8 @@ const VibesGL: React.FC = () => {
                         };
                     }
 
-                    const existingIds = new Set(
-                        prev.vibes.map((v: any) => v.id)
-                    );
-                    const filtered = incomingVibes.filter(
-                        (v: any) => !existingIds.has(v.id)
-                    );
+                    const existingIds = new Set(prev.vibes.map((v: any) => v.id));
+                    const filtered = incomingVibes.filter((v: any) => !existingIds.has(v.id));
 
                     return {
                         ...prev,
@@ -142,13 +130,13 @@ const VibesGL: React.FC = () => {
                     };
                 });
 
-                // Use the same safe check as Flows.tsx to handle numeric 0 cursors
                 const cursorVal = response?.cursor != null ? String(response.cursor) : '';
                 const hasMorePosts = cursorVal !== '' && cursorVal !== '0' && cursorVal !== 'null' && cursorVal !== 'undefined';
+                
                 setHasMore(hasMorePosts);
-                // Immediately update ref so next loadMore call has correct cursor without waiting for state→effect cycle
                 cursorRef.current = response?.cursor ?? null;
                 hasMoreRef.current = hasMorePosts;
+                
             } catch (err) {
                 console.error("fetchVibes error:", err);
             } finally {
@@ -156,25 +144,22 @@ const VibesGL: React.FC = () => {
                 isFetchingRef.current = false;
             }
         },
-        [setState] // removed dependencies that cause infinite loops
+        [setState]
     );
 
-    // ------------------------------------------------------------
-    // İLK YÜKLEME 
-    // ------------------------------------------------------------
+    // Initial Load
     useEffect(() => {
-        // Sadece vibe yoksa ya da ilk açılışta fetch et.
         if (!state.vibes || state.vibes.length === 0) {
             fetchVibesFromAPI(false);
         } else {
-            setIsLoading(false); // Bellekte varsa yüklenmiş kabul et
+            setIsLoading(false);
         }
     }, [fetchVibesFromAPI, state.vibes]);
 
-    // Sonsuz Scroll / Auto-Load
+    // Infinite Scroll
     useEffect(() => {
-        // Son 3 karta gelindiğinde otomatik yeni vibe'ları çek
-        if (vibes.length > 0 && hasMoreRef.current && activeIndex >= vibes.length - 3) {
+        // Trigger load more when we reach the last 5 items
+        if (vibes.length > 0 && hasMoreRef.current && activeIndex >= vibes.length - 5) {
             fetchVibesFromAPI(true);
         }
     }, [activeIndex, vibes.length, fetchVibesFromAPI]);
@@ -193,48 +178,47 @@ const VibesGL: React.FC = () => {
 
     return (
         <div
-            className="relative w-full  h-[calc(100dvh-112px)] sm:h-[calc(100vh-64px)] overflow-hidden bg-black"
+            className="relative w-full h-full overflow-hidden bg-black"
             style={{ cursor: "grab" }}
         >
-            {(isLoading || isMediaLoading) && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center text-white bg-black/50 backdrop-blur-sm pointer-events-none">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-                        <p className="mt-4 text-lg">Loading Vibes...</p>
-                    </div>
-                </div>
-            )}
+            <AnimatePresence>
+                {(isLoading || isMediaLoading) && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-50 flex items-center justify-center text-white bg-black/60 backdrop-blur-md pointer-events-none"
+                    >
+                        <div className="flex flex-col items-center">
+                            <div className="relative">
+                                <Loader2 className="w-12 h-12 text-white/20 animate-spin" />
+                                <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 text-white animate-pulse" />
+                            </div>
+                            <p className="mt-6 text-[15px] font-bold tracking-widest uppercase opacity-80">Loading Vibes</p>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {!isLoading && vibes.length === 0 && (
                 <div className="absolute inset-0 z-40 flex flex-col items-center justify-center text-white bg-black">
-                    <div className="p-4 bg-gray-900 rounded-full mb-4">
-                        <svg className="w-12 h-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
+                    <div className="w-20 h-20 bg-gray-900/50 rounded-[32px] flex items-center justify-center mb-6">
+                        <Sparkles className="w-10 h-10 text-gray-700" />
                     </div>
-                    <h2 className="text-xl font-bold">No Vibes Found</h2>
-                    <p className="text-gray-400 mt-2">Check back later for new vibes.</p>
+                    <h2 className="text-xl font-bold tracking-tight">No Vibes Found</h2>
+                    <p className="text-gray-500 mt-2 text-[14px]">Check back later for new discoveries.</p>
                 </div>
             )}
 
-
-
-            <button
-                onClick={() => setIsMuted(m => !m)}
-                className="absolute top-6 right-6 z-10 p-2 bg-black/50 rounded-full text-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/50 transition-opacity hover:opacity-80"
-                aria-label={isMuted ? "Unmute" : "Mute"}
-            >
-                {isMuted ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                    </svg>
-                ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                    </svg>
-                )}
-            </button>
+            <div className="absolute top-6 right-6 z-20 flex gap-3">
+                <button
+                    onClick={() => setIsMuted(m => !m)}
+                    className="p-3 bg-black/40 hover:bg-black/60 rounded-full text-white backdrop-blur-xl border border-white/10 transition-all active:scale-90"
+                    aria-label={isMuted ? "Unmute" : "Mute"}
+                >
+                    {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                </button>
+            </div>
 
             <canvas
                 ref={canvasRef}

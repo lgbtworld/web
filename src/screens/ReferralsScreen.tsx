@@ -88,18 +88,19 @@ const ReferralsScreen: React.FC = () => {
 
     return (
             <div className={`flex flex-col h-[100dvh] w-full max-w-[600px] mx-auto ${bgColor} ${textColor}`}>
-            {/* Minimalist Header */}
-            <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[60px] px-4 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-sm border-b ${borderColor}`}>
-                <button
-                    onClick={() => navigate(-1)}
-                    className={`p-2.5 -ml-2 rounded-full transition-colors ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                </button>
-                <h1 className="text-[16px] font-semibold tracking-wide">
-                    {t('menu.referrals', { defaultValue: 'Referrals' })}
-                </h1>
-                <div className="w-10" /> {/* Spacer for centering */}
+            {/* Standardized Header */}
+            <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[64px] px-4 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-md border-b ${borderColor}`}>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className={`p-2.5 -ml-2 rounded-full transition-all active:scale-90 ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <h1 className="text-[17px] font-bold tracking-tight">
+                        {t('menu.referrals', { defaultValue: 'Referrals' })}
+                    </h1>
+                </div>
             </div>
 
             <div className={`flex-1 overflow-y-auto scrollbar-hide pb-24`}>

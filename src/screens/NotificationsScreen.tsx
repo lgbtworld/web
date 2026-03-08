@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,9 +14,9 @@ import {
   Sparkles,
   Eye,
   Users,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from 'lucide-react';
-import Container from '../components/ui/Container';
 import { api } from '../services/api';
 import { useAtom } from 'jotai';
 import { globalState } from '../state/nearby';
@@ -38,51 +38,31 @@ const NotificationsScreen: React.FC = () => {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'chat_message':
-        return MessageCircle;
-      case 'new_match':
-        return Heart;
-      case 'profile_visit':
-        return Eye;
-      case 'friend_request':
-        return UserPlus;
-      case 'event_reminder':
-        return Bell;
-      case 'system_alert':
-        return AlertCircle;
-      case 'like':
-        return Heart;
-      case 'gift':
-        return Gift;
-      case 'follow':
-        return UserPlus;
-      case 'unfollow':
-        return UserMinus;
-      case 'super_like':
-        return Sparkles;
-      case 'message_read':
-        return CheckCheck;
-      case 'match_unmatch':
-        return Users;
-      case 'referral':
-        return Users;
-      default:
-        return Bell;
+      case 'chat_message': return MessageCircle;
+      case 'new_match': return Heart;
+      case 'profile_visit': return Eye;
+      case 'friend_request': return UserPlus;
+      case 'event_reminder': return Bell;
+      case 'system_alert': return AlertCircle;
+      case 'like': return Heart;
+      case 'gift': return Gift;
+      case 'follow': return UserPlus;
+      case 'unfollow': return UserMinus;
+      case 'super_like': return Sparkles;
+      case 'message_read': return CheckCheck;
+      case 'match_unmatch': return Users;
+      case 'referral': return Users;
+      default: return Bell;
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
   const messageCount = notifications.filter(n => n.type === 'chat_message' || n.type === 'message_read').length;
   const matchCount = notifications.filter(n => n.type === 'new_match' || n.type === 'match_unmatch').length;
   const likeCount = notifications.filter(n => n.type === 'like' || n.type === 'super_like').length;
   const followCount = notifications.filter(n => n.type === 'follow' || n.type === 'unfollow').length;
   const giftCount = notifications.filter(n => n.type === 'gift').length;
   const otherCount = notifications.filter(n =>
-    n.type === 'profile_visit' ||
-    n.type === 'friend_request' ||
-    n.type === 'event_reminder' ||
-    n.type === 'system_alert' ||
-    n.type === 'referral'
+    ['profile_visit', 'friend_request', 'event_reminder', 'system_alert', 'referral'].includes(n.type)
   ).length;
 
   const filteredNotifications = activeTab === 'all'
@@ -98,11 +78,7 @@ const NotificationsScreen: React.FC = () => {
             : activeTab === 'gifts'
               ? notifications.filter(n => n.type === 'gift')
               : notifications.filter(n =>
-                n.type === 'profile_visit' ||
-                n.type === 'friend_request' ||
-                n.type === 'event_reminder' ||
-                n.type === 'system_alert' ||
-                n.type === 'referral'
+                ['profile_visit', 'friend_request', 'event_reminder', 'system_alert', 'referral'].includes(n.type)
               );
 
   const formatTime = (createdAt: string) => {
@@ -113,99 +89,62 @@ const NotificationsScreen: React.FC = () => {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) {
-      return t('notifications.just_now');
-    } else if (diffMins < 60) {
-      return diffMins === 1
-        ? t('notifications.min_ago', { count: diffMins })
-        : t('notifications.mins_ago', { count: diffMins });
-    } else if (diffHours < 24) {
-      return diffHours === 1
-        ? t('notifications.hour_ago', { count: diffHours })
-        : t('notifications.hours_ago', { count: diffHours });
-    } else if (diffDays < 7) {
-      return diffDays === 1
-        ? t('notifications.day_ago', { count: diffDays })
-        : t('notifications.days_ago', { count: diffDays });
-    } else {
-      return created.toLocaleDateString();
-    }
+    if (diffMins < 1) return t('notifications.just_now');
+    if (diffMins < 60) return t('notifications.mins_ago', { count: diffMins });
+    if (diffHours < 24) return t('notifications.hours_ago', { count: diffHours });
+    if (diffDays < 7) return t('notifications.day_ago', { count: diffDays });
+    return created.toLocaleDateString();
   };
-
 
   useEffect(() => {
     if (!socket) return;
-
-
     const onConnect = () => {
       if (user?.public_id) {
-        const savedToken = localStorage.getItem("authToken")
-        if (savedToken) {
-          socket.emit('auth', savedToken);
-        }
+        const savedToken = localStorage.getItem("authToken");
+        if (savedToken) socket.emit('auth', savedToken);
       }
     };
-
-    onConnect()
+    onConnect();
     socket.on('notifications', onConnect);
-
     return () => {
       socket.off('notifications');
     };
-  }, [socket, isAuthenticated]); // Removed selectedChat from dependencies - use ref instead
-
+  }, [socket, isAuthenticated, user?.public_id]);
 
   const fetchNotifications = async (reset: boolean = false) => {
-    const res = await api.checkNewNotifications(
-      20,
-      reset ? null : state.notificationNextCursor // ilerleme için kullanıyoruz
-    );
+    const res = await api.checkNewNotifications(20, reset ? null : state.notificationNextCursor);
     setState(prev => ({
       ...prev,
-      notifications: reset
-        ? (res.notifications ?? [])
-        : [
-          ...prev.notifications,
-          ...(res.notifications ?? [])
-        ],
+      notifications: reset ? (res.notifications ?? []) : [...prev.notifications, ...(res.notifications ?? [])],
       notificationNextCursor: res.next_cursor,
       notificationPrevCursor: res.prev_cursor
     }));
-  }
+  };
 
   useEffect(() => {
-    fetchNotifications(true); // İlk yüklemede sıfırla
+    fetchNotifications(true);
   }, []);
 
   const markAsRead = async (notificationId: string) => {
     if (isAuthenticated && socket) {
-      const savedToken = localStorage.getItem("authToken")
-      let payload = {
+      const savedToken = localStorage.getItem("authToken");
+      socket.emit("notifications", JSON.stringify({
         action: Actions.CMD_USER_MARK_NOTIFICATIONS_SEEN,
         token: savedToken,
         notification_id: notificationId
-      }
-      socket?.emit("notifications", JSON.stringify(payload));
+      }));
     }
-
-    // Mark notification as read in the state
     setState(prev => ({
       ...prev,
-      notifications: prev.notifications?.map(n =>
-        n.id === notificationId ? { ...n, is_read: true } : n
-      ) || []
+      notifications: prev.notifications?.map(n => n.id === notificationId ? { ...n, is_read: true } : n) || []
     }));
-
-    // TODO: Make API call to mark as read
-    // await api.markNotificationAsRead(notificationId);
   };
 
-  const observerTarget = React.useRef<HTMLDivElement>(null);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const target = observerTarget.current;
     if (!target) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && state.notificationNextCursor) {
@@ -214,332 +153,117 @@ const NotificationsScreen: React.FC = () => {
       },
       { threshold: 0.1, rootMargin: '100px' }
     );
-
     observer.observe(target);
-
     return () => {
       if (target) observer.unobserve(target);
     };
   }, [state.notificationNextCursor]);
 
   const handleNotificationClick = (notification: Notification) => {
-    if (notification.type === 'chat_message') {
-      navigate('/messages');
-    } else if (notification.type === 'new_match' || notification.type === 'match_unmatch') {
-      navigate('/matches');
-    } else if (notification.type === 'referral') {
-      navigate('/referrals');
-    } else if (notification.sender?.username) {
-      navigate(`/${notification.sender.username}`);
-    }
+    if (notification.type === 'chat_message') navigate('/messages');
+    else if (notification.type === 'new_match' || notification.type === 'match_unmatch') navigate('/matches');
+    else if (notification.type === 'referral') navigate('/referrals');
+    else if (notification.sender?.username) navigate(`/${notification.sender.username}`);
   };
 
+  const isDark = theme === 'dark';
+  const bgColor = isDark ? 'bg-gray-950' : 'bg-white';
+  const textColor = isDark ? 'text-white' : 'text-gray-900';
+  const secTextColor = isDark ? 'text-gray-400' : 'text-gray-600';
+  const borderColor = isDark ? 'border-gray-900' : 'border-gray-200/50';
+
   return (
-    <Container>
-      {/* Header - Sticky */}
-      <div className={`sticky top-0 z-50 border-b ${theme === 'dark'
-        ? 'border-gray-800/50 bg-black/95 backdrop-blur-xl'
-        : 'border-gray-100/50 bg-white/95 backdrop-blur-xl'
-        }`}>
-        <div className="w-full px-4 lg:px-6">
-          {/* Top Bar */}
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center space-x-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${theme === 'dark'
-                ? 'bg-white text-black'
-                : 'bg-black text-white'
-                }`}>
-                <Bell className="w-5 h-5" />
-              </div>
-              <div>
-                <h1 className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  {t('notifications.title')}
-                </h1>
-                <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                  {unreadCount} {t('notifications.unread')}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`p-2 rounded-full transition-colors ${theme === 'dark'
-                  ? 'hover:bg-white/10 text-gray-400 hover:text-white'
-                  : 'hover:bg-black/10 text-gray-500 hover:text-gray-900'
-                  }`}
-                title={t('notifications.mark_all_read')}
-              >
-                <CheckCheck className="w-5 h-5" />
-              </motion.button>
-              <motion.button
-                onClick={() => navigate('/settings')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`p-2 rounded-full transition-colors ${theme === 'dark'
-                  ? 'hover:bg-white/10 text-gray-400 hover:text-white'
-                  : 'hover:bg-black/10 text-gray-500 hover:text-gray-900'
-                  }`}
-                title={t('notifications.settings')}
-              >
-                <Settings className="w-5 h-5" />
-              </motion.button>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex space-x-1 -mb-px overflow-x-auto scrollbar-hide">
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'all'
-                ? theme === 'dark'
-                  ? 'text-white'
-                  : 'text-black'
-                : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300'
-                  : 'text-gray-500 hover:text-gray-700'
-                }`}
-            >
-              {t('notifications.all')}
-              {activeTab === 'all' && (
-                <motion.div
-                  layoutId="activeTab"
-                  className={`absolute bottom-0 left-0 right-0 h-0.5 ${theme === 'dark' ? 'bg-white' : 'bg-black'
-                    }`}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab('messages')}
-              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'messages'
-                ? theme === 'dark'
-                  ? 'text-white'
-                  : 'text-black'
-                : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300'
-                  : 'text-gray-500 hover:text-gray-700'
-                }`}
-            >
-              {t('notifications.messages')}
-              {messageCount > 0 && (
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                  ? 'bg-white/10 text-white'
-                  : 'bg-black/10 text-black'
-                  }`}>
-                  {messageCount}
-                </span>
-              )}
-              {activeTab === 'messages' && (
-                <motion.div
-                  layoutId="activeTab"
-                  className={`absolute bottom-0 left-0 right-0 h-0.5 ${theme === 'dark' ? 'bg-white' : 'bg-black'
-                    }`}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab('matches')}
-              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'matches'
-                ? theme === 'dark'
-                  ? 'text-white'
-                  : 'text-black'
-                : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300'
-                  : 'text-gray-500 hover:text-gray-700'
-                }`}
-            >
-              {t('notifications.matches')}
-              {matchCount > 0 && (
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                  ? 'bg-white/10 text-white'
-                  : 'bg-black/10 text-black'
-                  }`}>
-                  {matchCount}
-                </span>
-              )}
-              {activeTab === 'matches' && (
-                <motion.div
-                  layoutId="activeTab"
-                  className={`absolute bottom-0 left-0 right-0 h-0.5 ${theme === 'dark' ? 'bg-white' : 'bg-black'
-                    }`}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab('likes')}
-              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'likes'
-                ? theme === 'dark'
-                  ? 'text-white'
-                  : 'text-black'
-                : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300'
-                  : 'text-gray-500 hover:text-gray-700'
-                }`}
-            >
-              {t('notifications.likes')}
-              {likeCount > 0 && (
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                  ? 'bg-white/10 text-white'
-                  : 'bg-black/10 text-black'
-                  }`}>
-                  {likeCount}
-                </span>
-              )}
-              {activeTab === 'likes' && (
-                <motion.div
-                  layoutId="activeTab"
-                  className={`absolute bottom-0 left-0 right-0 h-0.5 ${theme === 'dark' ? 'bg-white' : 'bg-black'
-                    }`}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab('follows')}
-              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'follows'
-                ? theme === 'dark'
-                  ? 'text-white'
-                  : 'text-black'
-                : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300'
-                  : 'text-gray-500 hover:text-gray-700'
-                }`}
-            >
-              {t('notifications.follows')}
-              {followCount > 0 && (
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                  ? 'bg-white/10 text-white'
-                  : 'bg-black/10 text-black'
-                  }`}>
-                  {followCount}
-                </span>
-              )}
-              {activeTab === 'follows' && (
-                <motion.div
-                  layoutId="activeTab"
-                  className={`absolute bottom-0 left-0 right-0 h-0.5 ${theme === 'dark' ? 'bg-white' : 'bg-black'
-                    }`}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab('gifts')}
-              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'gifts'
-                ? theme === 'dark'
-                  ? 'text-white'
-                  : 'text-black'
-                : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300'
-                  : 'text-gray-500 hover:text-gray-700'
-                }`}
-            >
-              {t('notifications.gifts')}
-              {giftCount > 0 && (
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                  ? 'bg-white/10 text-white'
-                  : 'bg-black/10 text-black'
-                  }`}>
-                  {giftCount}
-                </span>
-              )}
-              {activeTab === 'gifts' && (
-                <motion.div
-                  layoutId="activeTab"
-                  className={`absolute bottom-0 left-0 right-0 h-0.5 ${theme === 'dark' ? 'bg-white' : 'bg-black'
-                    }`}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab('other')}
-              className={`relative px-4 py-3 text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'other'
-                ? theme === 'dark'
-                  ? 'text-white'
-                  : 'text-black'
-                : theme === 'dark'
-                  ? 'text-gray-500 hover:text-gray-300'
-                  : 'text-gray-500 hover:text-gray-700'
-                }`}
-            >
-              {t('notifications.other')}
-              {otherCount > 0 && (
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${theme === 'dark'
-                  ? 'bg-white/10 text-white'
-                  : 'bg-black/10 text-black'
-                  }`}>
-                  {otherCount}
-                </span>
-              )}
-              {activeTab === 'other' && (
-                <motion.div
-                  layoutId="activeTab"
-                  className={`absolute bottom-0 left-0 right-0 h-0.5 ${theme === 'dark' ? 'bg-white' : 'bg-black'
-                    }`}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-          </div>
+    <div className={`flex flex-col h-[100dvh] w-full max-w-[600px] mx-auto ${bgColor} ${textColor}`}>
+      {/* Premium Header */}
+      <div className={`flex-shrink-0 sticky top-0 z-50 flex items-center justify-between h-[64px] px-4 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-md border-b ${borderColor}`}>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => navigate(-1)} 
+            className={`p-2.5 -ml-2 rounded-full transition-all active:scale-90 ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-[17px] font-bold tracking-tight">
+            {t('notifications.title', { defaultValue: 'Notifications' })}
+          </h1>
+        </div>
+        <div className="flex items-center gap-1">
+          <motion.button 
+            whileHover={{ scale: 1.05 }} 
+            whileTap={{ scale: 0.95 }} 
+            className={`p-2.5 rounded-full transition-colors ${isDark ? 'hover:bg-gray-900/50 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`}
+          >
+            <CheckCheck className="w-5 h-5" />
+          </motion.button>
+          <button 
+            onClick={() => navigate('/settings')} 
+            className={`p-2.5 rounded-full transition-colors ${isDark ? 'hover:bg-gray-900/50 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`}
+          >
+            <Settings className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
-      {/* Notifications List */}
-      <div className="w-full">
-        <AnimatePresence mode="wait">
-          {filteredNotifications.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex flex-col items-center justify-center py-20 px-4"
-            >
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'
-                }`}>
-                <Bell className={`w-8 h-8 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
-              </div>
-              <h3 className={`text-lg font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                {activeTab === 'all'
-                  ? t('notifications.no_notifications')
-                  : activeTab === 'messages'
-                    ? t('notifications.no_messages')
-                    : activeTab === 'matches'
-                      ? t('notifications.no_matches')
-                      : activeTab === 'likes'
-                        ? t('notifications.no_likes')
-                        : activeTab === 'follows'
-                          ? t('notifications.no_follows')
-                          : activeTab === 'gifts'
-                            ? t('notifications.no_gifts')
-                            : t('notifications.no_other')
-                }
-              </h3>
-              <p className={`text-sm text-center max-w-sm ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                {activeTab === 'all'
-                  ? t('notifications.empty_message_all')
-                  : activeTab === 'messages'
-                    ? t('notifications.empty_message_messages')
-                    : activeTab === 'matches'
-                      ? t('notifications.empty_message_matches')
-                      : activeTab === 'likes'
-                        ? t('notifications.empty_message_likes')
-                        : activeTab === 'follows'
-                          ? t('notifications.empty_message_follows')
-                          : activeTab === 'gifts'
-                            ? t('notifications.empty_message_gifts')
-                            : t('notifications.empty_message_other')
-                }
-              </p>
-            </motion.div>
-          ) : (
-            <div className='w-full'>
-              {filteredNotifications.map((notification, index) => {
-                const isLast = index === filteredNotifications.length - 1;
-                return (
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Capsule Tab Switcher */}
+        <div className={`flex-shrink-0 px-4 py-4 overflow-x-auto scrollbar-hide border-b ${borderColor}`}>
+          <div className="flex space-x-2 min-w-max">
+            {[
+              { id: 'all', label: t('notifications.all') },
+              { id: 'messages', label: t('notifications.messages'), count: messageCount },
+              { id: 'matches', label: t('notifications.matches'), count: matchCount },
+              { id: 'likes', label: t('notifications.likes'), count: likeCount },
+              { id: 'follows', label: t('notifications.follows'), count: followCount },
+              { id: 'gifts', label: t('notifications.gifts'), count: giftCount },
+              { id: 'other', label: t('notifications.other'), count: otherCount }
+            ].map((tab) => (
+              <button 
+                key={tab.id} 
+                onClick={() => setActiveTab(tab.id as any)} 
+                className={`relative px-4 py-2 rounded-2xl text-[13px] font-bold transition-all duration-300 whitespace-nowrap ${
+                  activeTab === tab.id 
+                    ? (isDark ? 'text-white' : 'text-gray-950') 
+                    : (isDark ? 'text-gray-500 hover:text-gray-300' : 'text-gray-500 hover:text-gray-900')
+                }`}
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  {tab.label}
+                  {tab.count !== undefined && tab.count > 0 && (
+                    <span className={`px-1.5 py-0.5 rounded-lg text-[10px] font-black transition-colors ${
+                      activeTab === tab.id 
+                        ? (isDark ? 'bg-white text-black' : 'bg-gray-950 text-white') 
+                        : (isDark ? 'bg-gray-900 text-gray-400' : 'bg-gray-100 text-gray-600')
+                    }`}>
+                      {tab.count}
+                    </span>
+                  )}
+                </span>
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId="activeNotifTab"
+                    className={`absolute inset-0 rounded-2xl border ${
+                      isDark ? 'bg-gray-900/40 border-white/10' : 'bg-gray-100 border-gray-200/50'
+                    }`}
+                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
+          <AnimatePresence mode="wait">
+            {filteredNotifications.length === 0 ? (
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center py-24 px-8 text-center">
+                <div className={`w-[64px] h-[64px] rounded-[22px] flex items-center justify-center mb-6 ${isDark ? 'bg-gray-900/30' : 'bg-gray-50'}`}>
+                  <Bell className={`w-8 h-8 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} strokeWidth={1.5} />
+                </div>
+                <h3 className={`text-[17px] font-bold mb-2 ${textColor}`}>{activeTab === 'all' ? t('notifications.no_notifications') : 'No updates found'}</h3>
+                <p className={`text-[14px] max-w-[260px] leading-relaxed ${secTextColor}`}>Check back later for new interactions and system updates.</p>
+              </motion.div>
+            ) : (
+              <div className="divide-y divide-transparent">
+                {filteredNotifications.map((notification, index) => (
                   <NotificationItem
                     key={notification.id}
                     notification={notification}
@@ -549,18 +273,16 @@ const NotificationsScreen: React.FC = () => {
                     getNotificationIcon={getNotificationIcon}
                     formatTime={formatTime}
                     index={index}
-                    isLast={isLast}
+                    isLast={index === filteredNotifications.length - 1}
                   />
-                );
-              })}
-            </div>
-          )}
-        </AnimatePresence>
-        <div ref={observerTarget} className="h-10 w-full flex items-center justify-center">
-          {/* Infinite Scroll Sentinel */}
+                ))}
+              </div>
+            )}
+          </AnimatePresence>
+          <div ref={observerTarget} className="h-24 w-full" />
         </div>
       </div>
-    </Container>
+    </div>
   );
 };
 

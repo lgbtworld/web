@@ -57,6 +57,7 @@ const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/classifieds': 'classifieds',
   '/checkin': 'checkin',
   '/settings': 'settings',
+  '/profile': 'profile',
 };
 
 const RIGHT_SIDEBAR_HIDDEN_PATHS = new Set(['/messages', '/landing', '/classifieds', '/places', '/match', '/nearby', '/checkin']);
@@ -805,10 +806,10 @@ function AppContent() {
           {/* Clean Professional Bottom Bar */}
           {showBottomBar && (
             <nav className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 ${theme === 'dark'
-              ? 'bg-gray-950 border-t border-gray-900'
-              : 'bg-white/95 border-t border-black/[0.08]'
-              } backdrop-blur-xl safe-area-inset-bottom`}>
-              <div className="flex items-center justify-around px-4 py-3">
+              ? 'bg-gray-950/80 border-t border-gray-900/50 shadow-[0_-8px_30px_rgb(0,0,0,0.12)]'
+              : 'bg-white/80 border-t border-black/[0.04] shadow-[0_-8px_30px_rgb(0,0,0,0.04)]'
+              } backdrop-blur-2xl safe-area-inset-bottom`}>
+              <div className="flex items-center justify-around px-2 py-2">
                 {bottomNavItems.map((item) => {
                   const isActive = activeScreen === item.id;
                   const Icon = item.icon;
@@ -816,26 +817,33 @@ function AppContent() {
                     <button
                       key={item.id}
                       onClick={() => navigateByNavId(item.id)}
-                      className="relative flex flex-col items-center justify-center flex-1 py-2 px-1 min-w-0"
+                      className="relative flex flex-col items-center justify-center flex-1 py-1.5 px-1 min-w-0 transition-all duration-300"
                     >
-                      {/* Active Background */}
+                      {/* Premium Active Indicator (Pill or Dot) */}
                       {isActive && (
-                        <div
-                          style={{ zIndex: -1 }}
-                          className={`absolute inset-0 rounded-2xl ${theme === 'dark'
-                            ? 'bg-gray-50/[0.08]'
-                            : 'bg-gray-950/[0.06]'
+                        <motion.div
+                          layoutId="activeTab"
+                          className={`absolute inset-x-3 inset-y-1 rounded-[16px] ${theme === 'dark'
+                            ? 'bg-white/[0.05]'
+                            : 'bg-black/[0.04]'
                             }`}
+                          transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                         />
                       )}
 
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${item.accent} text-white`}>
-                        <Icon className="w-4 h-4" />
+                      <div className={`relative z-10 w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                        isActive ? 'scale-110' : 'scale-100 opacity-60'
+                      } bg-gradient-to-br ${item.accent} text-white shadow-lg`}>
+                        <Icon className="w-4 h-4" strokeWidth={2.5} />
                       </div>
 
-                      {/* Label */}
+                      {/* Label with micro-animation */}
                       <span
-                        className={`relative z-10 text-[10px] font-medium tracking-tight mt-1 transition-all duration-200 `}>
+                        className={`relative z-10 text-[9px] font-black uppercase tracking-tighter mt-1.5 transition-all duration-300 ${
+                          isActive 
+                            ? (theme === 'dark' ? 'text-white' : 'text-black') 
+                            : 'text-gray-500 opacity-40'
+                        }`}>
                         {item.label}
                       </span>
                     </button>

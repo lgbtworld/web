@@ -293,55 +293,53 @@ const ProfileEngagementsScreen: React.FC = () => {
 
   return (
     <Container>
-      <div className="max-w-3xl mx-auto min-h-[100dvh]">
+      <div className={`flex flex-col h-[100dvh] w-full max-w-[600px] mx-auto ${theme === 'dark' ? 'bg-gray-950 text-white' : 'bg-white text-gray-900'}`}>
         <div
-          className={`sticky top-0 z-30 backdrop-blur-xl border-b ${theme === 'dark'
-            ? 'bg-gray-950/90 border-gray-900'
-            : 'bg-white/90 border-gray-200/50'
+          className={`sticky top-0 z-30 flex items-center justify-between h-[64px] px-4 backdrop-blur-md border-b ${theme === 'dark'
+            ? 'bg-gray-950/95 border-gray-900'
+            : 'bg-white/95 border-gray-200/50'
             }`}
         >
-          <div className="flex items-center justify-between px-4 py-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <button
-                type="button"
-                onClick={handleNavigateBack}
-                className={`p-2 rounded-full transition-all duration-200 ${theme === 'dark'
-                  ? 'hover:bg-gray-900/50 text-white active:scale-95'
-                  : 'hover:bg-gray-100 text-gray-700 active:scale-95'
-                  }`}
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="min-w-0">
-                <h1
-                  className={`text-xl font-bold leading-tight tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'
-                    }`}
-                >
-                  {pageTitle}
-                </h1>
-                <p
-                  className={`text-xs mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                >
-                  @{username}
-                </p>
-              </div>
-            </div>
+          <div className="flex items-center gap-2 overflow-hidden">
             <button
               type="button"
-              onClick={handleRefresh}
-              disabled={loadingEngagements}
-              className={`p-2 rounded-full transition-all duration-200 ${theme === 'dark'
-                ? 'hover:bg-gray-900/50 text-gray-400 hover:text-white active:scale-95'
-                : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900 active:scale-95'
-                } ${loadingEngagements ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={handleNavigateBack}
+              className={`p-2.5 -ml-2 rounded-full transition-all active:scale-90 flex-shrink-0 ${theme === 'dark'
+                ? 'hover:bg-gray-900/50 text-white'
+                : 'hover:bg-gray-100 text-gray-700'
+                }`}
             >
-              <RefreshCw
-                className={`w-5 h-5 transition-transform ${loadingEngagements ? 'animate-spin' : ''
-                  }`}
-              />
+              <ArrowLeft className="w-5 h-5" />
             </button>
+            <div className="flex flex-col min-w-0">
+              <h1
+                className={`text-[17px] font-bold tracking-tight truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+                  }`}
+              >
+                {pageTitle}
+              </h1>
+              <p
+                className={`text-[11px] font-medium leading-none -mt-0.5 opacity-60 truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                  }`}
+              >
+                @{username}
+              </p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={loadingEngagements}
+            className={`p-2.5 -mr-2 rounded-full transition-all active:scale-90 flex-shrink-0 ${theme === 'dark'
+              ? 'hover:bg-gray-900/50 text-gray-400 hover:text-white'
+              : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
+              } ${loadingEngagements ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <RefreshCw
+              className={`w-5 h-5 transition-transform ${loadingEngagements ? 'animate-spin' : ''
+                }`}
+            />
+          </button>
         </div>
 
         <div className="px-4 py-6 space-y-5">

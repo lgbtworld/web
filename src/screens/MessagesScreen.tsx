@@ -217,7 +217,6 @@ const MessagesScreen: React.FC = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [isRefreshingMessages, setIsRefreshingMessages] = useState(false);
   const { socket } = useSocket();
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentRef = useRef<number>(0);
   const typingIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1082,22 +1081,6 @@ const MessagesScreen: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChat, user?.id]);
 
-  // Auto-scroll to bottom when new messages are added or chat is selected
-  useEffect(() => {
-    if (messagesContainerRef.current && messages.length > 0 && !isLoadingMessages) {
-      // Small delay to ensure DOM is updated
-      const scrollToBottom = () => {
-        if (messagesContainerRef.current) {
-          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-        }
-      };
-
-      // Use requestAnimationFrame for smoother scrolling
-      requestAnimationFrame(() => {
-        setTimeout(scrollToBottom, 50);
-      });
-    }
-  }, [messages, isLoadingMessages, selectedChat]);
 
   // Handle refresh messages
   const handleRefreshMessages = () => {
@@ -1701,46 +1684,41 @@ const MessagesScreen: React.FC = () => {
           {/* Sidebar - Responsive Design */}
           <div className={`absolute lg:relative inset-0 z-40 lg:z-auto w-full lg:w-80 lg:flex-shrink-0 border-r flex flex-col h-full overflow-hidden ${theme === 'dark' ? 'border-gray-900 bg-gray-950' : 'border-gray-200/50 bg-white'
             } ${showSidebar ? 'flex' : 'hidden lg:flex'}`}>
-            {/* Header */}
-            <div className={`flex-shrink-0 sticky mb-[56px] md:mb-[0px]  top-[56px] lg:top-0 z-50 p-3 sm:p-4 border-b ${theme === 'dark'
-              ? 'border-gray-900 bg-gray-950/95 backdrop-blur-sm'
-              : 'border-gray-200/50 bg-white/95 backdrop-blur-sm'
+            <div className={`flex-shrink-0 sticky top-0 z-50 flex items-center justify-between h-[64px] px-4 border-b ${theme === 'dark'
+              ? 'border-gray-900 bg-gray-950/95 backdrop-blur-md'
+              : 'border-gray-200/50 bg-white/95 backdrop-blur-md'
               }`}>
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <h1 className={`text-lg sm:text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+              <div className="flex items-center gap-2 overflow-hidden">
+                <button
+                  onClick={() => navigate(-1)}
+                  className={`p-2.5 -ml-2 rounded-full transition-all active:scale-90 lg:hidden flex-shrink-0 ${theme === 'dark' ? 'hover:bg-gray-900/50 text-white' : 'hover:bg-gray-100 text-gray-900'}`}
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <h1 className={`text-[17px] font-bold tracking-tight truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'
                   }`}>{t('messages.chat')}</h1>
-                <div className="flex items-center space-x-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-black/10'
-                      }`}
-                  >
-                    <Settings className={`w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} />
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-black/10'
-                      }`}
-                  >
-                    <PlusSquare className={`w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} />
-                  </motion.button>
-                  <motion.button
-                    onClick={() => {
-                      setShowSidebar(false);
-                      setShowBottomBar(true);
-                      navigate('/');
-                    }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="lg:hidden p-2 rounded-lg transition-colors"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </motion.button>
-                </div>
               </div>
+              <div className="flex items-center space-x-1 flex-shrink-0">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-white/10 text-white' : 'hover:bg-black/10 text-gray-900'
+                    }`}
+                >
+                  <Settings className="w-5 h-5" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-white/10 text-white' : 'hover:bg-black/10 text-gray-900'
+                    }`}
+                >
+                  <PlusSquare className="w-5 h-5" />
+                </motion.button>
+              </div>
+            </div>
 
+            <div className="p-3 sm:p-4 flex-shrink-0">
               {/* Search */}
               <div className="relative mb-3 sm:mb-4 z-20">
                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 z-10 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
@@ -2261,8 +2239,8 @@ const MessagesScreen: React.FC = () => {
                         duration: 0.25,
                         ease: [0.4, 0, 0.2, 1]
                       }}
-                      ref={messagesContainerRef}
-                      className={`flex-1 overflow-y-auto p-3 sm:p-4 scrollbar-hide min-h-0 ${theme === 'dark'
+                      ref={null/*messagesContainerRef*/}
+                      className={`flex-1 flex flex-col p-3 sm:p-4 scrollbar-hide min-h-0 overflow-hidden ${theme === 'dark'
                         ? 'bg-black'
                         : 'bg-white'
                         }`}
@@ -2278,7 +2256,7 @@ const MessagesScreen: React.FC = () => {
                         } : {})
                       }}
                     >
-                      <div className="space-y-3 max-w-4xl mx-auto">
+                      <div className="flex-1 flex flex-col w-full max-w-4xl mx-auto min-h-0">
                         {isLoadingMessages ? (
                           <div className="flex flex-col gap-4 px-2 py-4 max-w-4xl mx-auto">
                             {/* Skeleton bubbles — alternating sides like a real conversation */}
@@ -2308,13 +2286,12 @@ const MessagesScreen: React.FC = () => {
                             ))}
                           </div>
                         ) : (
-                          <div style={{ height: 'calc(100vh - 200px)' }}> {/* Container for Virtuoso */}
+                          <div className="flex-1 min-h-0"> {/* Container for Virtuoso */}
                             <Virtuoso
                               style={{ height: '100%' }}
                               data={messages}
                               initialTopMostItemIndex={messages.length - 1}
                               followOutput="auto"
-                              alignToBottom={true}
                               itemContent={(index, msg) => (
                                 <div className="pb-3">
                                   {index === 0 && (
@@ -2834,4 +2811,4 @@ const MessagesScreen: React.FC = () => {
   );
 };
 
-export default MessagesScreen; 
+export default MessagesScreen;

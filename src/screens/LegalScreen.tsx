@@ -113,13 +113,17 @@ const LegalScreen: React.FC = () => {
   if (!data) {
     return (
       <div className={`flex flex-col h-[100dvh] w-full max-w-[600px] mx-auto ${bgColor} ${textColor}`}>
-        <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[60px] px-4 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-sm border-b ${borderColor}`}>
-          <button onClick={() => navigate(-1)} className={`p-2.5 -ml-2 rounded-full transition-colors ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}>
+        <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[64px] px-4 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-md border-b ${borderColor}`}>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => navigate(-1)} 
+            className={`p-2.5 -ml-2 rounded-full transition-all active:scale-90 ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-[16px] font-semibold tracking-wide">Not Found</h1>
-          <div className="w-10" />
+          <h1 className="text-[17px] font-bold tracking-tight">Not Found</h1>
         </div>
+      </div>
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
           <p className={`text-[17px] font-semibold ${textColor}`}>Page not found</p>
           <p className={`text-[14px] mt-2 ${secTextColor}`}>The page you're looking for doesn't exist.</p>
@@ -136,79 +140,83 @@ const LegalScreen: React.FC = () => {
   return (
     <div className={`flex flex-col h-[100dvh] w-full max-w-[600px] mx-auto ${bgColor} ${textColor}`}>
 
-      {/* Sticky Header — matches ReferralsScreen exactly */}
-      <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[60px] px-4 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-sm border-b ${borderColor}`}>
-        <button
-          onClick={() => navigate(-1)}
-          className={`p-2.5 -ml-2 rounded-full transition-colors ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <h1 className="text-[16px] font-semibold tracking-wide">{data.title}</h1>
-        <div className="w-10" /> {/* Spacer for centering */}
+      {/* Sticky Header — Standardized alignment */}
+      <div className={`flex-shrink-0 sticky top-0 z-30 flex items-center justify-between h-[64px] px-4 ${isDark ? 'bg-gray-950/95' : 'bg-white/95'} backdrop-blur-md border-b ${borderColor}`}>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate(-1)}
+            className={`p-2.5 -ml-2 rounded-full transition-all active:scale-90 ${isDark ? 'hover:bg-gray-900/50' : 'hover:bg-gray-100'}`}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-[17px] font-bold tracking-tight">{data.title}</h1>
+        </div>
       </div>
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto scrollbar-hide pb-24">
 
-        {/* Hero */}
-        <div className="px-5 pt-10 pb-6 text-center flex flex-col items-center">
+        {/* Hero section with enhanced styling */}
+        <div className="px-6 pt-12 pb-10 text-center flex flex-col items-center">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className={`w-[60px] h-[60px] rounded-[20px] flex items-center justify-center mb-5 ${isDark ? 'bg-gray-900/30 text-white' : 'bg-white text-gray-900 shadow-[0_2px_10px_rgba(0,0,0,0.04)]'}`}
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className={`w-[72px] h-[72px] rounded-[24px] flex items-center justify-center mb-6 shadow-xl ${isDark ? 'bg-white text-black' : 'bg-gray-900 text-white'}`}
           >
-            <Icon className="w-8 h-8" strokeWidth={1.5} />
+            <Icon className="w-10 h-10" strokeWidth={1.5} />
           </motion.div>
 
           <motion.h2
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.4 }}
-            className="text-[28px] font-bold tracking-tight mb-2"
+            className="text-[32px] font-black tracking-tighter mb-3 leading-tight"
           >
             {data.title}
           </motion.h2>
 
           <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.4 }}
-            className={`text-[15px] max-w-[300px] leading-relaxed font-medium ${secTextColor}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className={`text-[16px] max-w-[320px] leading-relaxed font-semibold opacity-60`}
           >
             {data.description}
           </motion.p>
         </div>
 
-        {/* Sections */}
-        <div className="px-4 space-y-3 pb-4">
+        {/* Sections with premium card design */}
+        <div className="px-4 space-y-4 pb-12">
           {data.sections.map((section, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + i * 0.05, duration: 0.4 }}
-              className={`p-5 rounded-[24px] ${cardBg} border-[0.5px] ${borderColor} shadow-sm`}
+              transition={{ delay: 0.2 + i * 0.05, duration: 0.5 }}
+              className={`p-6 rounded-[28px] ${cardBg} border-[0.5px] ${borderColor} shadow-sm group hover:border-gray-500/30 transition-colors`}
             >
-              <h3 className={`text-[15px] font-semibold mb-2 ${textColor}`}>
+              <h3 className={`text-[17px] font-bold mb-3 ${textColor}`}>
                 {section.heading}
               </h3>
-              <p className={`text-[14px] leading-relaxed ${secTextColor}`}>
+              <p className={`text-[15px] leading-relaxed font-medium ${secTextColor}`}>
                 {section.body}
               </p>
             </motion.div>
           ))}
 
           {/* Footer note */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.4 }}
-            className={`text-[12px] text-center pt-2 ${isDark ? 'text-gray-600' : 'text-gray-400'}`}
+          <motion.div 
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             transition={{ delay: 0.6 }}
+             className="pt-8 flex flex-col items-center"
           >
-            © {new Date().getFullYear()} CoolVibes LGBT. All rights reserved.
-          </motion.p>
+            <div className={`w-12 h-1 rounded-full mb-6 ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`} />
+            <p className={`text-[12px] font-bold uppercase tracking-[0.2em] ${isDark ? 'text-gray-700' : 'text-gray-300'}`}>
+              © {new Date().getFullYear()} CoolVibes LGBT
+            </p>
+          </motion.div>
         </div>
       </div>
     </div>

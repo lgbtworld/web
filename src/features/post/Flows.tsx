@@ -521,13 +521,22 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick, scrollParent
           <div className={`p-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
             No posts available
           </div>
+        ) : (Boolean(scrollParentRef) && !scrollElement) ? (
+          <div className="p-4 space-y-4">
+            {[1, 2, 3].map((val) => (
+              <div key={`wait-skeleton-${val}`}>
+                <PostSkeleton theme={theme} />
+              </div>
+            ))}
+          </div>
         ) : (
           <Virtuoso
+            key={scrollElement ? 'scroll-element-ready' : 'window-scroll-fallback'}
             useWindowScroll={!scrollElement}
             customScrollParent={scrollElement || undefined}
             data={posts}
             endReached={loadMorePosts}
-            overscan={1200}
+            overscan={400}
             itemContent={(_index, post) => (
               <MemoizedPostItem
                 post={post}

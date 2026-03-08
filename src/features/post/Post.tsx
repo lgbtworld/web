@@ -1449,7 +1449,7 @@ const Post: React.FC<PostProps> = ({
     <>
       <motion.div
         className={`
-  overflow-hidden border-b transition-all duration-300 ease-out
+  overflow-hidden border-b transition-colors duration-300 ease-out
   ${theme === "dark"
             ? "border-gray-900 hover:bg-gray-900/50"
             : "border-gray-200/50 hover:bg-gray-50"}

@@ -763,8 +763,40 @@ function AppContent() {
 
                 <TrendsPanel limit={20} onTrendSelect={handleTrendSelect} />
 
+                {/* Legal Footer */}
+                <div className="pb-4 pt-2">
+                  <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+                    {[
+                      { label: 'Privacy Policy', href: 'https://coolvibes.lgbt/privacy' },
+                      { label: 'Cookie Policy', href: 'https://coolvibes.lgbt/cookies' },
+                      { label: 'Terms of Service', href: 'https://coolvibes.lgbt/terms' },
+                      { label: 'Community Guidelines', href: 'https://coolvibes.lgbt/guidelines' },
+                      { label: 'Accessibility', href: 'https://coolvibes.lgbt/accessibility' },
+                      { label: 'About', href: 'https://coolvibes.lgbt/about' },
+                      { label: 'Help Center', href: 'https://coolvibes.lgbt/help' },
+                    ].map((link) => (
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`text-[11px] font-medium transition-colors hover:underline underline-offset-2 ${
+                          theme === 'dark'
+                            ? 'text-gray-500 hover:text-gray-300'
+                            : 'text-gray-400 hover:text-gray-700'
+                        }`}
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                  <p className={`mt-2.5 text-[11px] ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`}>
+                    © {new Date().getFullYear()} CoolVibes LGBT. All rights reserved.
+                  </p>
+                </div>
 
               </div>
+
             </aside>
           )}
 

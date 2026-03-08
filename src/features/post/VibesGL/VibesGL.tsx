@@ -24,15 +24,33 @@ const VibesGL: React.FC = () => {
 
     const vibes = useMemo(() => state.vibes ?? [], [state.vibes]);
     const [isMuted, setIsMuted] = useState(false);
+
+    // Refs for safe fetching without dependency cycles
+    const cursorRef = useRef(state.vibesCursor);
+    const hasMoreRef = useRef(true);
+    const isFetchingRef = useRef(false);
+    
+    useEffect(() => {
+        cursorRef.current = state.vibesCursor;
+    }, [state.vibesCursor]);
+
+    useEffect(() => {
+        hasMoreRef.current = hasMore;
+    }, [hasMore]);
+
     // ------------------------------------------------------------
-    // FETCH FONKSİYONU (HER ŞEYDEN ÖNCE TANIMLI OLMALI)
+    // FETCH FONKSİYONU
     // ------------------------------------------------------------
     const fetchVibesFromAPI = useCallback(
         async (loadMore = false) => {
-            try {
-                setIsLoading(true);
+            if (isFetchingRef.current) return;
+            if (loadMore && !hasMoreRef.current) return;
 
-                const currentCursor = loadMore ? (state.vibesCursor?.toString?.() || "") : "";
+            try {
+                isFetchingRef.current = true;
+                if (!loadMore) setIsLoading(true);
+
+                const currentCursor = loadMore ? (cursorRef.current?.toString?.() || "") : "";
 
                 const response = await api.fetchVibes({
                     limit: 10,
@@ -128,18 +146,32 @@ const VibesGL: React.FC = () => {
             } catch (err) {
                 console.error("fetchVibes error:", err);
             } finally {
-                setIsLoading(false);
+                if (!loadMore) setIsLoading(false);
+                isFetchingRef.current = false;
             }
         },
-        [state.vibesCursor, setState]
+        [setState] // removed dependencies that cause infinite loops
     );
 
     // ------------------------------------------------------------
-    // İLK YÜKLEME → TEK useEffect
+    // İLK YÜKLEME 
     // ------------------------------------------------------------
     useEffect(() => {
-        fetchVibesFromAPI(false);
-    }, [fetchVibesFromAPI]);
+        // Sadece vibe yoksa ya da ilk açılışta fetch et.
+        if (!state.vibes || state.vibes.length === 0) {
+            fetchVibesFromAPI(false);
+        } else {
+            setIsLoading(false); // Bellekte varsa yüklenmiş kabul et
+        }
+    }, [fetchVibesFromAPI, state.vibes]);
+    
+    // Sonsuz Scroll / Auto-Load
+    useEffect(() => {
+        // Son 3 karta gelindiğinde otomatik yeni vibe'ları çek
+        if (vibes.length > 0 && activeIndex >= vibes.length - 3) {
+            fetchVibesFromAPI(true);
+        }
+    }, [activeIndex, vibes.length, fetchVibesFromAPI]);
 
     const [isMediaLoading, setIsMediaLoading] = useState(false);
 

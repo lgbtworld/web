@@ -610,19 +610,19 @@ function AppContent() {
                             const Icon = item.icon;
                             const isActive = activeScreen === item.id;
                             return (
-                            <button
-                              key={item.id}
-                              onClick={() => navigate(item.path || '/')}
-                              className={`w-full relative rounded-xl px-3 py-2.5 border transition-all flex items-center justify-between ${theme === 'dark'
-                                ? 'border-gray-800/80 bg-transparent hover:bg-gray-800/45'
-                                : 'border-black/[0.06] bg-transparent hover:bg-black/[0.03]'
-                                } ${isActive
-                                  ? (theme === 'dark'
-                                    ? 'ring-1 ring-gray-600/60 bg-gray-800/55'
-                                    : 'ring-1 ring-black/15 bg-black/[0.03]')
-                                  : ''
-                                }`}
-                            >
+                              <button
+                                key={item.id}
+                                onClick={() => navigate(item.path || '/')}
+                                className={`w-full relative rounded-xl px-3 py-2.5 border transition-all flex items-center justify-between ${theme === 'dark'
+                                  ? 'border-gray-800/80 bg-transparent hover:bg-gray-800/45'
+                                  : 'border-black/[0.06] bg-transparent hover:bg-black/[0.03]'
+                                  } ${isActive
+                                    ? (theme === 'dark'
+                                      ? 'ring-1 ring-gray-600/60 bg-gray-800/55'
+                                      : 'ring-1 ring-black/15 bg-black/[0.03]')
+                                    : ''
+                                  }`}
+                              >
                                 <div className="flex items-center gap-2.5 min-w-0">
                                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${item.accent} text-white`}>
                                     <Icon className="w-4 h-4" />
@@ -708,7 +708,7 @@ function AppContent() {
           {/* Middle Section - Scrollable */}
           <main className={`max-h-[100dvh]  min-h-[100dvh] overflow-y-hidden overflow-x-hidden scrollbar-hide flex-1 min-w-0 lg:border-l lg:border-r  ${theme === 'dark' ? 'lg:border-gray-900/70' : 'lg:border-gray-100'} pt-[56px] lg:pt-0  lg:pb-0`}>
             <ChunkErrorBoundary>
-              <Suspense fallback={<div className="h-full w-full flex items-center justify-center bg-[var(--background-color)]"><SplashScreen onComplete={() => {}} /></div>}>
+              <Suspense fallback={<div className="h-full w-full flex items-center justify-center bg-[var(--background-color)]"><SplashScreen onComplete={() => { }} /></div>}>
                 <Routes>
                   {/* Public Routes */}
                   <Route path="/landing" element={<LandingPage />} />

@@ -168,7 +168,7 @@ const VibesGL: React.FC = () => {
     // Sonsuz Scroll / Auto-Load
     useEffect(() => {
         // Son 3 karta gelindiğinde otomatik yeni vibe'ları çek
-        if (vibes.length > 0 && activeIndex >= vibes.length - 3) {
+        if (vibes.length > 0 && hasMoreRef.current && activeIndex >= vibes.length - 3) {
             fetchVibesFromAPI(true);
         }
     }, [activeIndex, vibes.length, fetchVibesFromAPI]);

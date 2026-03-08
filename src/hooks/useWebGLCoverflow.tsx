@@ -147,10 +147,89 @@ export function useWebGLCoverflow({ canvasRef, vibes, onActiveIndexChange, isMut
 
     }, [canvasRef, vibes]);
 
+    const prevVibesLengthRef = useRef(0);
+
     useEffect(() => {
         const gl = glRef.current;
         if (!gl || !vibes.length) return;
 
+        const isAppend = vibes.length > prevVibesLengthRef.current && prevVibesLengthRef.current > 0;
+        prevVibesLengthRef.current = vibes.length;
+
+        if (isAppend) {
+            // Only create new media items for newly appended vibes, preserve existing ones + scroll position
+            const existingCount = mediaItemsRef.current.length;
+            const newVibes = vibes.slice(existingCount);
+            if (newVibes.length === 0) return;
+
+            const newMediaItems = newVibes.map((vibe) => {
+                const texture = gl.createTexture()!;
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
+
+                const isVideo = vibe.mediaType === 'video';
+                let element: HTMLImageElement | HTMLVideoElement;
+                const mediaItem: MediaItem = { vibe, texture, element: null!, isReady: false, isVideo, resolution: [1, 1] };
+
+                if (isVideo) {
+                    element = document.createElement('video');
+                    element.crossOrigin = 'anonymous';
+                    element.muted = isMutedRef.current;
+                    element.loop = true;
+                    element.playsInline = true;
+                    element.src = vibe.mediaUrl;
+
+                    if (vibe.posterUrl) {
+                        const poster = new Image();
+                        poster.crossOrigin = 'anonymous';
+                        poster.src = vibe.posterUrl;
+                        poster.onload = () => {
+                            if (!glRef.current) return;
+                            const glCtx = glRef.current;
+                            glCtx.bindTexture(glCtx.TEXTURE_2D, mediaItem.texture);
+                            glCtx.texImage2D(glCtx.TEXTURE_2D, 0, glCtx.RGBA, glCtx.RGBA, glCtx.UNSIGNED_BYTE, poster);
+                            mediaItem.resolution = [poster.naturalWidth, poster.naturalHeight];
+                        };
+                    }
+
+                    element.addEventListener('loadeddata', () => {
+                        const vid = element as HTMLVideoElement;
+                        if (vid.videoWidth > 0) {
+                            mediaItem.resolution = [vid.videoWidth, vid.videoHeight];
+                            mediaItem.isReady = true;
+                        }
+                    }, { once: true });
+
+                    (element as HTMLVideoElement).load();
+                } else {
+                    element = new Image();
+                    element.src = vibe.mediaUrl;
+                    element.crossOrigin = 'anonymous';
+                    element.onload = () => {
+                        if (!glRef.current) return;
+                        const glCtx = glRef.current;
+                        const img = element as HTMLImageElement;
+                        mediaItem.resolution = [img.naturalWidth, img.naturalHeight];
+                        glCtx.bindTexture(glCtx.TEXTURE_2D, mediaItem.texture);
+                        glCtx.texImage2D(glCtx.TEXTURE_2D, 0, glCtx.RGBA, glCtx.RGBA, glCtx.UNSIGNED_BYTE, img);
+                        mediaItem.isReady = true;
+                    };
+                }
+
+                mediaItem.element = element;
+                return mediaItem;
+            });
+
+            // Append only — do NOT reset scroll position
+            mediaItemsRef.current = [...mediaItemsRef.current, ...newMediaItems];
+            return;
+        }
+
+        // Full initial load: rebuild everything and reset scroll
         mediaItemsRef.current.forEach(item => {
             if (item.isVideo) { (item.element as HTMLVideoElement).pause(); }
         });

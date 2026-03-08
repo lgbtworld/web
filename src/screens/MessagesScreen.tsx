@@ -33,6 +33,7 @@ import { useSocket } from '../contexts/SocketContext';
 import { defaultServiceServerId, serviceURL } from '../appSettings';
 import { getSafeImageURL, buildSafeURL, getSafeImageURLEx } from '../helpers/helpers';
 import { useTranslation } from 'react-i18next';
+import { Virtuoso } from 'react-virtuoso';
 
 interface MessageItemProps {
   msg: {
@@ -197,7 +198,6 @@ const MessagesScreen: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'groups' | 'unencrypted'>('all');
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [message, setMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -1008,9 +1008,9 @@ const MessagesScreen: React.FC = () => {
         });
 
         // Sort messages by created_at (oldest first)
-        mappedMessages.sort((a, b) => {
-          const msgA = response.messages?.find(m => m.id === a.id);
-          const msgB = response.messages?.find(m => m.id === b.id);
+        mappedMessages.sort((a: any, b: any) => {
+          const msgA = response.messages?.find((m: any) => m.id === a.id);
+          const msgB = response.messages?.find((m: any) => m.id === b.id);
           if (!msgA?.created_at || !msgB?.created_at) return 0;
           return new Date(msgA.created_at).getTime() - new Date(msgB.created_at).getTime();
         });
@@ -1130,7 +1130,6 @@ const MessagesScreen: React.FC = () => {
     e.preventDefault();
     setSelectedMessageId(messageId);
     // Determine if message is from me or other to offset the menu slightly
-    const message = messages.find(m => m.id === messageId);
 
     // Fallbacks just in case coords are missing
     const x = e.clientX || window.innerWidth / 2;
@@ -1319,7 +1318,6 @@ const MessagesScreen: React.FC = () => {
     setMessage('');
     setSelectedImages([]);
     setSelectedVideos([]);
-    setIsTyping(false);
     setShowEmojiPicker(false);
 
     // Clear typing timeout
@@ -1523,7 +1521,6 @@ const MessagesScreen: React.FC = () => {
   const handleTyping = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setMessage(value);
-    setIsTyping(value.length > 0);
 
     // Send typing indicator to server on every keystroke
     if (!selectedChat || !value.trim()) {
@@ -1675,14 +1672,6 @@ const MessagesScreen: React.FC = () => {
 
   const removeVideo = (index: number) => {
     setSelectedVideos(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   // If not authenticated, show inline auth wizard
@@ -2319,40 +2308,46 @@ const MessagesScreen: React.FC = () => {
                             ))}
                           </div>
                         ) : (
-                          <>
-                            {/* Date Separator */}
-                            {messages.length > 0 && (
-                              <div className="flex justify-center my-6">
-                                <div className={`px-3 py-1 rounded-full ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'
-                                  }`}>
-                                  <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                                    }`}>{t('messages.today')}</span>
+                          <div style={{ height: 'calc(100vh - 200px)' }}> {/* Container for Virtuoso */}
+                            <Virtuoso
+                              style={{ height: '100%' }}
+                              data={messages}
+                              initialTopMostItemIndex={messages.length - 1}
+                              followOutput="auto"
+                              alignToBottom={true}
+                              itemContent={(index, msg) => (
+                                <div className="pb-3">
+                                  {index === 0 && (
+                                    <div className="flex justify-center my-6">
+                                      <div className={`px-3 py-1 rounded-full ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                                        <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                                          {t('messages.today')}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                  <MessageItem
+                                    key={msg.id}
+                                    msg={msg}
+                                    theme={theme}
+                                    onContextMenu={handleMessageContextMenu}
+                                  />
                                 </div>
-                              </div>
-                            )}
-
-                            {/* Messages */}
-                            {messages.length === 0 ? (
-                              <div className="flex items-center justify-center py-12">
-                                <div className="text-center">
-                                  <MessageCircle className={`w-12 h-12 mx-auto mb-3 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
-                                    }`} />
-                                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                                    {t('messages.no_messages_yet')}
-                                  </p>
-                                </div>
-                              </div>
-                            ) : (
-                              messages.map((msg) => (
-                                <MessageItem
-                                  key={msg.id}
-                                  msg={msg}
-                                  theme={theme}
-                                  onContextMenu={handleMessageContextMenu}
-                                />
-                              ))
-                            )}
-                          </>
+                              )}
+                              components={{
+                                EmptyPlaceholder: () => (
+                                  <div className="flex items-center justify-center py-12">
+                                    <div className="text-center">
+                                      <MessageCircle className={`w-12 h-12 mx-auto mb-3 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
+                                      <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        {t('messages.no_messages_yet')}
+                                      </p>
+                                    </div>
+                                  </div>
+                                )
+                              }}
+                            />
+                          </div>
                         )}
 
                         {/* Telegram/WhatsApp Style Context Menu */}

@@ -1,14 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Footer from './components/ui/Footer';
-import MatchScreen from './screens/MatchScreen';
-import NearbyScreen from './screens/NearbyScreen';
-import ProfileScreen from './screens/ProfileScreen';
-import ProfileEngagementsScreen from './screens/ProfileEngagementsScreen';
-import SearchScreen from './screens/SearchScreen';
-import MessagesScreen from './screens/MessagesScreen';
-import NotificationsScreen from './screens/NotificationsScreen';
+
+// Lazy load screens for performance optimization
+const MatchScreen = lazy(() => import('./screens/MatchScreen'));
+const NearbyScreen = lazy(() => import('./screens/NearbyScreen'));
+const ProfileScreen = lazy(() => import('./screens/ProfileScreen'));
+const ProfileEngagementsScreen = lazy(() => import('./screens/ProfileEngagementsScreen'));
+const SearchScreen = lazy(() => import('./screens/SearchScreen'));
+const MessagesScreen = lazy(() => import('./screens/MessagesScreen'));
+const NotificationsScreen = lazy(() => import('./screens/NotificationsScreen'));
+const PlaceDetailsScreen = lazy(() => import('./screens/PlaceDetailsScreen'));
+const HomeScreen = lazy(() => import('./screens/HomeScreen'));
+const ClassifiedsScreen = lazy(() => import('./screens/ClassifiedsScreen'));
+const ClassifiedDetailScreen = lazy(() => import('./screens/ClassifiedDetailScreen'));
+const SettingsScreen = lazy(() => import('./screens/SettingsScreen'));
+const LandingPage = lazy(() => import('./screens/LandingPage.tsx'));
+const TestPage = lazy(() => import('./screens/TestPage.tsx'));
+const PremiumScreen = lazy(() => import('./screens/PremiumScreen.tsx'));
+const PostDetails = lazy(() => import('./screens/PostDetails.tsx'));
+const WalletScreen = lazy(() => import('./screens/WalletScreen.tsx'));
+const PlacesScreen = lazy(() => import('./screens/PlacesScreen.tsx'));
+const ReferralsScreen = lazy(() => import('./screens/ReferralsScreen.tsx'));
+const ReferralHandler = lazy(() => import('./screens/ReferralHandler.tsx'));
+const CheckInScreen = lazy(() => import('./screens/CheckInScreen.tsx'));
+
 import SplashScreen from './components/ui/SplashScreen';
 import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext.tsx';
@@ -17,28 +34,13 @@ import AuthWizard from './features/auth/AuthWizard';
 import { MapPin, Heart, MessageCircle, User, Users, Menu, X, Sun, Moon, Languages, MoreHorizontal, Bell, ChevronRight, LogOut, HandFist, Briefcase, Navigation, Settings as SettingsIcon } from 'lucide-react';
 import TrendsPanel, { NormalizedTrend } from './features/discovery/TrendsPanel';
 import PopularUsersPanel from './features/discovery/PopularUsersPanel';
-import PlaceDetailsScreen from './screens/PlaceDetailsScreen';
-import HomeScreen from './screens/HomeScreen';
 import LanguageSelector from './components/ui/LanguageSelector.tsx';
-import ClassifiedsScreen from './screens/ClassifiedsScreen';
-import ClassifiedDetailScreen from './screens/ClassifiedDetailScreen';
-import SettingsScreen from './screens/SettingsScreen';
 import './i18n';
 import { useTranslation } from 'react-i18next';
 import { applicationName } from './appSettings.tsx';
-import LandingPage from './screens/LandingPage.tsx';
 import { getSafeImageURLEx } from './helpers/helpers.tsx';
-import TestPage from './screens/TestPage.tsx';
 import PwaInstallPrompt, { PwaInstallProvider, usePwaInstall } from './components/ui/PwaInstallPrompt';
-import PremiumScreen from './screens/PremiumScreen.tsx';
-import PostDetails from './screens/PostDetails.tsx';
- import WalletScreen from './screens/WalletScreen.tsx'; // TODO: Re-enable
-import PlacesScreen from './screens/PlacesScreen.tsx';
-import ReferralsScreen from './screens/ReferralsScreen.tsx';
-import ReferralHandler from './screens/ReferralHandler.tsx';
-// import CheckInScreen from './screens/CheckInScreen'; // TODO: Re-enable
 import ConfirmationModal from './components/ui/ConfirmationModal.tsx';
-import CheckInScreen from './screens/CheckInScreen.tsx';
 const ACTIVE_SCREEN_BY_PATH: Record<string, string> = {
   '/': 'pride',
   '/pride': 'pride',
@@ -704,42 +706,44 @@ function AppContent() {
 
           {/* Middle Section - Scrollable */}
           <main className={`max-h-[100dvh]  min-h-[100dvh] overflow-y-hidden overflow-x-hidden scrollbar-hide flex-1 min-w-0 lg:border-l lg:border-r  ${theme === 'dark' ? 'lg:border-gray-900/70' : 'lg:border-gray-100'} pt-[56px] lg:pt-0  lg:pb-0`}>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/landing" element={<LandingPage />} />
-              <Route path="/places" element={<PlacesScreen />} />
-              <Route path="/places/:publicId" element={<PlaceDetailsScreen />} />
-              <Route path="/ref/:code" element={<ReferralHandler />} />
-              <Route path="/:username/status/:postId" element={<PostDetails />} />
-              <Route path="/status/:postId" element={<PostDetails />} />
-              <Route path="/:username/:engagementType" element={<ProfileEngagementsScreen />} />
-              <Route path="/:username" element={<ProfileScreen />} />
+            <Suspense fallback={<div className="h-full w-full flex items-center justify-center bg-[var(--background-color)]"><SplashScreen onComplete={() => {}} /></div>}>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/landing" element={<LandingPage />} />
+                <Route path="/places" element={<PlacesScreen />} />
+                <Route path="/places/:publicId" element={<PlaceDetailsScreen />} />
+                <Route path="/ref/:code" element={<ReferralHandler />} />
+                <Route path="/:username/status/:postId" element={<PostDetails />} />
+                <Route path="/status/:postId" element={<PostDetails />} />
+                <Route path="/:username/:engagementType" element={<ProfileEngagementsScreen />} />
+                <Route path="/:username" element={<ProfileScreen />} />
 
-              {/* Protected Routes */}
-              <Route path="/" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
-              <Route path="/home" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
-              <Route path="/pride" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
-              <Route path="/testpage" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
-              <Route path="/premium" element={<ProtectedRoute><PremiumScreen /></ProtectedRoute>} />
-               <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} /> 
-              <Route path="/referrals" element={<ProtectedRoute><ReferralsScreen /></ProtectedRoute>} />
+                {/* Protected Routes */}
+                <Route path="/" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
+                <Route path="/home" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
+                <Route path="/pride" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
+                <Route path="/testpage" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
+                <Route path="/premium" element={<ProtectedRoute><PremiumScreen /></ProtectedRoute>} />
+                 <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} /> 
+                <Route path="/referrals" element={<ProtectedRoute><ReferralsScreen /></ProtectedRoute>} />
 
-              <Route path="/checkin" element={<ProtectedRoute><CheckInScreen /></ProtectedRoute>} />
+                <Route path="/checkin" element={<ProtectedRoute><CheckInScreen /></ProtectedRoute>} />
 
-              <Route path="/search" element={<ProtectedRoute><SearchScreen /></ProtectedRoute>} />
-              <Route path="/match" element={<ProtectedRoute><MatchScreen /></ProtectedRoute>} />
-              <Route path="/nearby" element={<ProtectedRoute><NearbyScreen /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><ProfileScreen /></ProtectedRoute>} />
+                <Route path="/search" element={<ProtectedRoute><SearchScreen /></ProtectedRoute>} />
+                <Route path="/match" element={<ProtectedRoute><MatchScreen /></ProtectedRoute>} />
+                <Route path="/nearby" element={<ProtectedRoute><NearbyScreen /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><ProfileScreen /></ProtectedRoute>} />
 
-              <Route path="/messages" element={<ProtectedRoute><MessagesScreen /></ProtectedRoute>} />
-              <Route path="/notifications" element={<ProtectedRoute><NotificationsScreen /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><SettingsScreen /></ProtectedRoute>} />
-              <Route path="/classifieds" element={<ProtectedRoute><ClassifiedsScreen /></ProtectedRoute>} />
-              <Route path="/classifieds/:id" element={<ProtectedRoute><ClassifiedDetailScreen /></ProtectedRoute>} />
+                <Route path="/messages" element={<ProtectedRoute><MessagesScreen /></ProtectedRoute>} />
+                <Route path="/notifications" element={<ProtectedRoute><NotificationsScreen /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><SettingsScreen /></ProtectedRoute>} />
+                <Route path="/classifieds" element={<ProtectedRoute><ClassifiedsScreen /></ProtectedRoute>} />
+                <Route path="/classifieds/:id" element={<ProtectedRoute><ClassifiedDetailScreen /></ProtectedRoute>} />
 
-              {/* Fallback */}
-              <Route path="*" element={<HomeScreen />} />
-            </Routes>
+                {/* Fallback */}
+                <Route path="*" element={<HomeScreen />} />
+              </Routes>
+            </Suspense>
           </main>
 
           {/* Right Sidebar - Fixed */}

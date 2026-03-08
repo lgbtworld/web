@@ -216,6 +216,7 @@ const HomeScreen: React.FC = () => {
               key="flows"
               onPostClick={handlePostClick}
               onProfileClick={handleProfileClick}
+              scrollParentRef={scrollContainerRef}
             />
           ) : (
             <>

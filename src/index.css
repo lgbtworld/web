@@ -967,3 +967,15 @@ img{
   resize: vertical;
   z-index: -1
 }
+/* Performance Optimizations - Reduces layout and paint overhead for long lists */
+.post-container, 
+.message-thread-container,
+.nearby-list-container {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1000px;
+}
+
+/* Optimize image rendering */
+img {
+  content-visibility: auto;
+}

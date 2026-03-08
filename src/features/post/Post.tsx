@@ -357,11 +357,12 @@ const Post: React.FC<PostProps> = ({
   const [hasTipped, setHasTipped] = useState(false);
   const [tipCountDisplay, setTipCountDisplay] = useState(0);
   const [tipAmountDisplay, setTipAmountDisplay] = useState(0);
+  const [isMapVisible, setIsMapVisible] = useState(false);
+  const [isEventMapVisible, setIsEventMapVisible] = useState(false);
   const { theme } = useTheme();
   const { user } = useAuth();
   const { data: appData, defaultLanguage } = useApp();
   const { settings } = useSettings();
-  const [html, setHtml] = useState('');
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const eventMapRef = useRef<HTMLDivElement>(null);
@@ -551,9 +552,34 @@ const Post: React.FC<PostProps> = ({
     },
   }), [theme]);
 
+  // Intersection Observer for map lazy loading
+  useEffect(() => {
+    if (!post.location || !mapRef.current) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setIsMapVisible(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.1 });
+    observer.observe(mapRef.current);
+    return () => observer.disconnect();
+  }, [post.location]);
+
+  useEffect(() => {
+    if (!post.event?.location || !eventMapRef.current) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setIsEventMapVisible(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.1 });
+    observer.observe(eventMapRef.current);
+    return () => observer.disconnect();
+  }, [post.event?.location]);
+
   // Initialize Leaflet map when location is set
   useEffect(() => {
-    if (!post.location || !mapRef.current) {
+    if (!post.location || !mapRef.current || !isMapVisible) {
       return;
     }
 
@@ -681,7 +707,7 @@ const Post: React.FC<PostProps> = ({
 
   // Initialize Leaflet map for event location
   useEffect(() => {
-    if (!post.event?.location || !eventMapRef.current) {
+    if (!post.event?.location || !eventMapRef.current || !isEventMapVisible) {
       return;
     }
 
@@ -1545,7 +1571,7 @@ const Post: React.FC<PostProps> = ({
             <ShareButton
               url={typeof window !== 'undefined' ? `${window.location.origin}/status/${post.public_id}` : ''}
               title={post.author.displayname ? `${post.author.displayname}'s post` : 'Post'}
-              description={html ? html.replace(/<[^>]*>/g, '').substring(0, 100) : ''}
+              description={post.content ? getLocalizedContent(post.content, defaultLanguage || 'en').replace(/<[^>]*>/g, '').substring(0, 100) : ''}
               trigger={
                 <motion.button
                   onClick={(e) => {

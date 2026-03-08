@@ -5,6 +5,7 @@ import CreatePost from './CreatePost';
 import Post, { type ApiPost as PostComponentApiPost } from './Post';
 import { api } from '../../services/api';
 import { RefreshCw, AlertCircle } from 'lucide-react';
+import { Virtuoso } from 'react-virtuoso';
 
 // Shimmer styles - defined once globally
 if (typeof document !== 'undefined' && !document.getElementById('skeleton-shimmer-styles')) {
@@ -184,7 +185,6 @@ export const PostSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) =
 };
 
 type ApiPost = PostComponentApiPost;
-
 interface MemoizedPostItemProps {
   post: ApiPost;
   theme: string;
@@ -212,16 +212,17 @@ const MemoizedPostItem = React.memo(({ post, theme, onPostClick, onProfileClick,
 });
 
 interface TimelineResponse {
-      posts: ApiPost[];
+  posts: ApiPost[];
   cursor?: number | string | null;
 }
 
 interface FlowsProps {
   onPostClick: (postId: string, username: string) => void;
   onProfileClick: (username: string) => void;
+  scrollParentRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
+const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick, scrollParentRef }) => {
   const { theme } = useTheme();
   const [posts, setPosts] = useState<ApiPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -229,16 +230,21 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [nextCursor, setNextCursor] = useState<string>('');
+  const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (scrollParentRef?.current) {
+      setScrollElement(scrollParentRef.current);
+    }
+  }, [scrollParentRef]);
 
   // Use refs to track values and avoid stale closures
   const isRequestPendingRef = useRef(false);
-  const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadingMoreRef = useRef(loadingMore);
   const hasMoreRef = useRef(hasMore);
   const loadingRef = useRef(loading);
   const nextCursorRef = useRef(nextCursor);
   const containerRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLElement | null>(null);
 
   // Update refs when state changes
   useEffect(() => {
@@ -411,198 +417,6 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
     }
   }, []); // No dependencies - uses refs instead
 
-  // Load more posts when scrolling to bottom
-  useEffect(() => {
-    let lastScrollTop = 0;
-    let throttleTimeout: ReturnType<typeof setTimeout> | null = null;
-
-    // Find the scrollable parent container
-    const findScrollContainer = (element: HTMLElement | null): HTMLElement | null => {
-      if (!element || element === document.body || element === document.documentElement) {
-        return null;
-      }
-
-      // Check if current element is scrollable
-      const style = window.getComputedStyle(element);
-      const isScrollable =
-        style.overflowY === 'auto' ||
-        style.overflowY === 'scroll' ||
-        style.overflow === 'auto' ||
-        style.overflow === 'scroll';
-
-      if (isScrollable && element.scrollHeight > element.clientHeight) {
-        return element;
-      }
-
-      // Check parent
-      return findScrollContainer(element.parentElement);
-    };
-
-    // Function to get or find scroll container
-    const getScrollContainer = (): HTMLElement | null => {
-      // Return cached if found
-      if (scrollContainerRef.current) {
-        return scrollContainerRef.current;
-      }
-
-      // Try to find using containerRef
-      if (containerRef.current) {
-        const found = findScrollContainer(containerRef.current.parentElement);
-        if (found) {
-          scrollContainerRef.current = found;
-          return found;
-        }
-      }
-
-      // Fallback: try to find by common selectors
-      const possibleContainers = document.querySelectorAll('div[style*="overflow"], div[style*="overflow-y"]');
-      for (const container of Array.from(possibleContainers)) {
-        const style = window.getComputedStyle(container as HTMLElement);
-        if ((style.overflowY === 'auto' || style.overflowY === 'scroll') &&
-          (container as HTMLElement).scrollHeight > (container as HTMLElement).clientHeight) {
-          scrollContainerRef.current = container as HTMLElement;
-          return container as HTMLElement;
-        }
-      }
-
-      return null;
-    };
-
-    const handleScroll = () => {
-      // Quick early exit checks
-      const currentLoadingMore = loadingMoreRef.current;
-      const currentHasMore = hasMoreRef.current;
-      const currentIsPending = isRequestPendingRef.current;
-
-      // Fast path: skip if already loading or no more posts
-      if (currentLoadingMore || !currentHasMore || currentIsPending) {
-        return;
-      }
-
-      // Throttle: only check every 50ms for better responsiveness
-      if (throttleTimeout) {
-        return;
-      }
-
-      throttleTimeout = setTimeout(() => {
-        throttleTimeout = null;
-
-        // Use refs to get current values (avoid stale closure)
-        const currentLoading = loadingRef.current;
-        const currentNextCursor = nextCursorRef.current;
-
-        // Additional checks
-        if (
-          currentLoading ||
-          !currentNextCursor ||
-          currentNextCursor === '' ||
-          currentNextCursor === '0' ||
-          currentNextCursor === 'null' ||
-          currentNextCursor === 'undefined'
-        ) {
-          return;
-        }
-
-        // Get scroll container (will find it if not cached)
-        const scrollContainer = getScrollContainer();
-
-        // Use scroll container if found, otherwise fall back to window/document
-        let scrollHeight: number;
-        let scrollTop: number;
-        let clientHeight: number;
-
-        if (scrollContainer) {
-          scrollHeight = scrollContainer.scrollHeight;
-          scrollTop = scrollContainer.scrollTop;
-          clientHeight = scrollContainer.clientHeight;
-        } else {
-          scrollHeight = document.documentElement.scrollHeight;
-          scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-          clientHeight = document.documentElement.clientHeight;
-        }
-
-        // Only check if scrolled down (not up)
-        if (scrollTop <= lastScrollTop) {
-          lastScrollTop = scrollTop;
-          return;
-        }
-        lastScrollTop = scrollTop;
-
-        const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-
-        // Load more when 1200px from bottom (slightly increased for earlier trigger)
-        if (distanceFromBottom <= 1200) {
-          console.log('Triggering load more:', {
-            distanceFromBottom,
-            hasMore: currentHasMore,
-            loadingMore: currentLoadingMore,
-            loading: currentLoading,
-            nextCursor: currentNextCursor
-          });
-
-          loadMorePosts();
-        }
-      }, 50);
-    };
-
-    // Try to find scroll container - with a small delay to ensure DOM is ready
-    let scrollContainer: HTMLElement | null = null;
-    let currentListenerTarget: HTMLElement | Window | null = null;
-
-    const attachListener = () => {
-      // Remove old listener if exists
-      if (currentListenerTarget) {
-        if (currentListenerTarget === window) {
-          window.removeEventListener('scroll', handleScroll);
-        } else {
-          (currentListenerTarget as HTMLElement).removeEventListener('scroll', handleScroll);
-        }
-      }
-
-      // Try to find scroll container
-      scrollContainer = getScrollContainer();
-
-      // Attach to the appropriate container
-      if (scrollContainer) {
-        console.log('Using scroll container for loadMore:', scrollContainer);
-        scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-        currentListenerTarget = scrollContainer;
-      } else {
-        console.log('Using window scroll for loadMore');
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        currentListenerTarget = window;
-      }
-    };
-
-    // Try immediately
-    attachListener();
-
-    // Also try after a short delay in case DOM isn't ready
-    const timeoutId = setTimeout(() => {
-      if (!scrollContainerRef.current) {
-        attachListener();
-      }
-    }, 100);
-
-    return () => {
-      if (currentListenerTarget) {
-        if (currentListenerTarget === window) {
-          window.removeEventListener('scroll', handleScroll);
-        } else {
-          (currentListenerTarget as HTMLElement).removeEventListener('scroll', handleScroll);
-        }
-      }
-      if (throttleTimeout) {
-        clearTimeout(throttleTimeout);
-      }
-      clearTimeout(timeoutId);
-      if (timeoutIdRef.current) {
-        clearTimeout(timeoutIdRef.current);
-        timeoutIdRef.current = null;
-      }
-    };
-  }, [loadMorePosts]);
-
   const refreshPosts = async () => {
     try {
       setLoading(true);
@@ -644,30 +458,16 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
 
   return (
     <div ref={containerRef} className='w-full relative'>
-      {/* Create Post - Hidden on mobile */}
-      <div className={`hidden lg:block ${theme === 'dark' ? 'bg-gray-400 border-b border-gray-900' : 'bg-white border-b border-gray-100'}`}>
-        <CreatePost
-          fullScreen={false}
-          title="Create Post"
-          buttonText="Post"
-          placeholder="Every vibe tells a story. What's yours? 🌈"
-          onPostCreated={() => {
-            refreshPosts();
-          }}
-        />
-      </div>
-
-
-      {/* Posts Feed */}
-      <div className='pb-[25dvh] '>
+      {/* Posts Feed - Virtualized */}
+      <div className='w-full'>
         {loading ? (
-          <>
+          <div className="p-4 space-y-4">
             {[1, 2, 3, 4, 5].map((index) => (
               <div key={`initial-skeleton-${index}`}>
                 <PostSkeleton theme={theme} />
               </div>
             ))}
-          </>
+          </div>
         ) : error ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -675,6 +475,7 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
             transition={{ duration: 0.3 }}
             className="flex flex-col items-center justify-center py-12 px-4"
           >
+            {/* Error UI content */}
             <div className={`w-full`}>
               <div className="p-4">
                 <div className="flex flex-col items-center text-center space-y-4">
@@ -721,33 +522,55 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick }) => {
             No posts available
           </div>
         ) : (
-
-          posts.map((post) => (
-            <MemoizedPostItem
-              key={post.id}
-              post={post}
-              theme={theme}
-              onPostClick={onPostClick}
-              onProfileClick={onProfileClick}
-              onRefreshParent={refreshPosts}
-              onUpdatePost={handlePostUpdate}
-            />
-          ))
-
-        )}
-        {/* Loading More Indicator */}
-        {loadingMore && (
-          <div className="py-8 flex justify-center items-center">
-            <div className="w-8 h-8 rounded-full border-2 border-[var(--brand-color,#ec4899)] border-t-transparent animate-spin" />
-          </div>
-        )}
-        {!hasMore && posts.length > 0 && (
-          <div className={`p-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-            No more posts to load
-          </div>
+          <Virtuoso
+            useWindowScroll={true}
+            customScrollParent={scrollElement || undefined}
+            data={posts}
+            endReached={loadMorePosts}
+            overscan={1200}
+            itemContent={(index, post) => (
+              <MemoizedPostItem
+                key={`${post.id}-${index}`}
+                post={post}
+                theme={theme}
+                onPostClick={onPostClick}
+                onProfileClick={onProfileClick}
+                onRefreshParent={refreshPosts}
+                onUpdatePost={handlePostUpdate}
+              />
+            )}
+            components={{
+              Header: () => (
+                <div className={`hidden lg:block ${theme === 'dark' ? 'bg-gray-400 border-b border-gray-900' : 'bg-white border-b border-gray-100'}`}>
+                  <CreatePost
+                    fullScreen={false}
+                    title="Create Post"
+                    buttonText="Post"
+                    placeholder="Every vibe tells a story. What's yours? 🌈"
+                    onPostCreated={() => {
+                      refreshPosts();
+                    }}
+                  />
+                </div>
+              ),
+              Footer: () => (
+                <div className="pb-32">
+                  {loadingMore && (
+                    <div className="py-8 flex justify-center items-center">
+                      <div className="w-8 h-8 rounded-full border-2 border-[var(--brand-color,#ec4899)] border-t-transparent animate-spin" />
+                    </div>
+                  )}
+                  {!hasMore && posts.length > 0 && (
+                    <div className={`p-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                      No more posts to load
+                    </div>
+                  )}
+                </div>
+              )
+            }}
+          />
         )}
       </div>
-
     </div>
   );
 };

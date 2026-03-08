@@ -29,7 +29,7 @@ const VibesGL: React.FC = () => {
     const cursorRef = useRef(state.vibesCursor);
     const hasMoreRef = useRef(true);
     const isFetchingRef = useRef(false);
-    
+
     useEffect(() => {
         cursorRef.current = state.vibesCursor;
     }, [state.vibesCursor]);
@@ -124,7 +124,7 @@ const VibesGL: React.FC = () => {
                         return {
                             ...prev,
                             vibes: incomingVibes,
-                            vibesCursor: response?.next_cursor ?? null
+                            vibesCursor: response?.cursor ?? null
                         };
                     }
 
@@ -138,11 +138,17 @@ const VibesGL: React.FC = () => {
                     return {
                         ...prev,
                         vibes: [...prev.vibes, ...filtered],
-                        vibesCursor: response?.next_cursor ?? prev.vibesCursor
+                        vibesCursor: response?.cursor ?? prev.vibesCursor
                     };
                 });
 
-                setHasMore(!!response.next_cursor);
+                // Use the same safe check as Flows.tsx to handle numeric 0 cursors
+                const cursorVal = response?.cursor != null ? String(response.cursor) : '';
+                const hasMorePosts = cursorVal !== '' && cursorVal !== '0' && cursorVal !== 'null' && cursorVal !== 'undefined';
+                setHasMore(hasMorePosts);
+                // Immediately update ref so next loadMore call has correct cursor without waiting for state→effect cycle
+                cursorRef.current = response?.cursor ?? null;
+                hasMoreRef.current = hasMorePosts;
             } catch (err) {
                 console.error("fetchVibes error:", err);
             } finally {
@@ -164,7 +170,7 @@ const VibesGL: React.FC = () => {
             setIsLoading(false); // Bellekte varsa yüklenmiş kabul et
         }
     }, [fetchVibesFromAPI, state.vibes]);
-    
+
     // Sonsuz Scroll / Auto-Load
     useEffect(() => {
         // Son 3 karta gelindiğinde otomatik yeni vibe'ları çek

@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getSafeImageURL, getSafeImageURLEx } from '../../helpers/helpers';
 import { useNavigate } from 'react-router-dom';
 
-const STORY_LIMIT = 100;
+const STORY_LIMIT = 10;
 
 type StoryCard = {
   id: number | string;
@@ -509,8 +509,8 @@ const Stories: React.FC = () => {
           <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
             <div
               className={`relative w-full max-w-[420px] rounded-3xl overflow-hidden ${theme === 'dark'
-                  ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl'
-                  : 'bg-gradient-to-br from-white/95 to-gray-50/60 backdrop-blur-xl'
+                ? 'bg-gradient-to-br from-gray-900/95 to-gray-900/60 backdrop-blur-xl'
+                : 'bg-gradient-to-br from-white/95 to-gray-50/60 backdrop-blur-xl'
                 }`}
             >
               <button
@@ -519,10 +519,10 @@ const Stories: React.FC = () => {
                 }}
                 disabled={isUploading}
                 className={`absolute top-5 right-5 z-20 w-11 h-11 rounded-full backdrop-blur-xl flex items-center justify-center transition-all duration-200 ${isUploading
-                    ? 'bg-gray-400/20 text-gray-500 cursor-not-allowed'
-                    : theme === 'dark'
-                      ? 'bg-white/10 hover:bg-white/20 text-white'
-                      : 'bg-black/10 hover:bg-black/20 text-gray-900'
+                  ? 'bg-gray-400/20 text-gray-500 cursor-not-allowed'
+                  : theme === 'dark'
+                    ? 'bg-white/10 hover:bg-white/20 text-white'
+                    : 'bg-black/10 hover:bg-black/20 text-gray-900'
                   }`}
               >
                 <X className="w-6 h-6" />
@@ -569,8 +569,8 @@ const Stories: React.FC = () => {
               {uploadError && (
                 <div
                   className={`mx-5 mb-3 p-3 rounded-xl border ${theme === 'dark'
-                      ? 'bg-red-900/20 border-red-700 text-red-300'
-                      : 'bg-red-50 border-red-200 text-red-700'
+                    ? 'bg-red-900/20 border-red-700 text-red-300'
+                    : 'bg-red-50 border-red-200 text-red-700'
                     }`}
                 >
                   <p className="text-sm font-medium">{uploadError}</p>
@@ -582,10 +582,10 @@ const Stories: React.FC = () => {
                   onClick={handleShareStory}
                   disabled={isUploading}
                   className={`flex-1 px-5 py-3.5 rounded-2xl font-bold text-[15px] tracking-[-0.011em] shadow-lg transition-all duration-200 flex items-center justify-center gap-2 ${isUploading
-                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                      : theme === 'dark'
-                        ? 'bg-white text-black hover:bg-gray-100'
-                        : 'bg-black text-white hover:bg-gray-900'
+                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                    : theme === 'dark'
+                      ? 'bg-white text-black hover:bg-gray-100'
+                      : 'bg-black text-white hover:bg-gray-900'
                     }`}
                 >
                   {isUploading ? (
@@ -603,10 +603,10 @@ const Stories: React.FC = () => {
                   }}
                   disabled={isUploading}
                   className={`px-5 py-3.5 rounded-2xl font-bold text-[15px] tracking-[-0.011em] transition-all duration-200 ${isUploading
-                      ? 'bg-gray-400/20 text-gray-500 cursor-not-allowed'
-                      : theme === 'dark'
-                        ? 'bg-white/10 hover:bg-white/20 text-white'
-                        : 'bg-black/10 hover:bg-black/20 text-gray-900'
+                    ? 'bg-gray-400/20 text-gray-500 cursor-not-allowed'
+                    : theme === 'dark'
+                      ? 'bg-white/10 hover:bg-white/20 text-white'
+                      : 'bg-black/10 hover:bg-black/20 text-gray-900'
                     }`}
                 >
                   Cancel

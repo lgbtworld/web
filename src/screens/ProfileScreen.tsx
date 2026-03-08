@@ -4842,7 +4842,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
 
             {/* Tabs - Sticky */}
             {isAuthenticated && (
-              <div className={`sticky z-20 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'} backdrop-blur-sm ${theme === 'dark' ? 'bg-gray-950/95' : 'bg-white/95'}`} style={{ top: inline || isEmbed ? '0' : `${headerHeight}px` }}>
+              <div className={`sticky z-20 border-b ${theme === 'dark' ? 'border-gray-900' : 'border-gray-200/50'} backdrop-blur-sm`} style={{ top: inline || isEmbed ? '0' : `${headerHeight}px` }}>
                 <div className="flex relative">
                   {[
                     { id: 'profile', label: t('profile.profile_tab') },

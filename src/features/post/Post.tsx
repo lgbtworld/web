@@ -1451,8 +1451,8 @@ const Post: React.FC<PostProps> = ({
         className={`
   overflow-hidden border-b transition-all duration-300 ease-out
   ${theme === "dark"
-            ? "bg-gray-950 border-gray-900 hover:bg-gray-900/50"
-            : "bg-white border-gray-200/50 hover:bg-gray-50"}
+            ? "border-gray-900 hover:bg-gray-900/50"
+            : "border-gray-200/50 hover:bg-gray-50"}
   ${onPostClick ? 'cursor-pointer' : ''}
 `}
         onClick={(e) => {

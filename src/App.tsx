@@ -1,4 +1,5 @@
 import React, { useState, Suspense, lazy } from 'react';
+import ChunkErrorBoundary from './components/ui/ChunkErrorBoundary';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Footer from './components/ui/Footer';
@@ -706,44 +707,46 @@ function AppContent() {
 
           {/* Middle Section - Scrollable */}
           <main className={`max-h-[100dvh]  min-h-[100dvh] overflow-y-hidden overflow-x-hidden scrollbar-hide flex-1 min-w-0 lg:border-l lg:border-r  ${theme === 'dark' ? 'lg:border-gray-900/70' : 'lg:border-gray-100'} pt-[56px] lg:pt-0  lg:pb-0`}>
-            <Suspense fallback={<div className="h-full w-full flex items-center justify-center bg-[var(--background-color)]"><SplashScreen onComplete={() => {}} /></div>}>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/landing" element={<LandingPage />} />
-                <Route path="/places" element={<PlacesScreen />} />
-                <Route path="/places/:publicId" element={<PlaceDetailsScreen />} />
-                <Route path="/ref/:code" element={<ReferralHandler />} />
-                <Route path="/:username/status/:postId" element={<PostDetails />} />
-                <Route path="/status/:postId" element={<PostDetails />} />
-                <Route path="/:username/:engagementType" element={<ProfileEngagementsScreen />} />
-                <Route path="/:username" element={<ProfileScreen />} />
+            <ChunkErrorBoundary>
+              <Suspense fallback={<div className="h-full w-full flex items-center justify-center bg-[var(--background-color)]"><SplashScreen onComplete={() => {}} /></div>}>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/landing" element={<LandingPage />} />
+                  <Route path="/places" element={<PlacesScreen />} />
+                  <Route path="/places/:publicId" element={<PlaceDetailsScreen />} />
+                  <Route path="/ref/:code" element={<ReferralHandler />} />
+                  <Route path="/:username/status/:postId" element={<PostDetails />} />
+                  <Route path="/status/:postId" element={<PostDetails />} />
+                  <Route path="/:username/:engagementType" element={<ProfileEngagementsScreen />} />
+                  <Route path="/:username" element={<ProfileScreen />} />
 
-                {/* Protected Routes */}
-                <Route path="/" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
-                <Route path="/home" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
-                <Route path="/pride" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
-                <Route path="/testpage" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
-                <Route path="/premium" element={<ProtectedRoute><PremiumScreen /></ProtectedRoute>} />
-                 <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} /> 
-                <Route path="/referrals" element={<ProtectedRoute><ReferralsScreen /></ProtectedRoute>} />
+                  {/* Protected Routes */}
+                  <Route path="/" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
+                  <Route path="/home" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
+                  <Route path="/pride" element={<ProtectedRoute><HomeScreen /></ProtectedRoute>} />
+                  <Route path="/testpage" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
+                  <Route path="/premium" element={<ProtectedRoute><PremiumScreen /></ProtectedRoute>} />
+                  <Route path="/wallet" element={<ProtectedRoute><WalletScreen /></ProtectedRoute>} />
+                  <Route path="/referrals" element={<ProtectedRoute><ReferralsScreen /></ProtectedRoute>} />
 
-                <Route path="/checkin" element={<ProtectedRoute><CheckInScreen /></ProtectedRoute>} />
+                  <Route path="/checkin" element={<ProtectedRoute><CheckInScreen /></ProtectedRoute>} />
 
-                <Route path="/search" element={<ProtectedRoute><SearchScreen /></ProtectedRoute>} />
-                <Route path="/match" element={<ProtectedRoute><MatchScreen /></ProtectedRoute>} />
-                <Route path="/nearby" element={<ProtectedRoute><NearbyScreen /></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute><ProfileScreen /></ProtectedRoute>} />
+                  <Route path="/search" element={<ProtectedRoute><SearchScreen /></ProtectedRoute>} />
+                  <Route path="/match" element={<ProtectedRoute><MatchScreen /></ProtectedRoute>} />
+                  <Route path="/nearby" element={<ProtectedRoute><NearbyScreen /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><ProfileScreen /></ProtectedRoute>} />
 
-                <Route path="/messages" element={<ProtectedRoute><MessagesScreen /></ProtectedRoute>} />
-                <Route path="/notifications" element={<ProtectedRoute><NotificationsScreen /></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><SettingsScreen /></ProtectedRoute>} />
-                <Route path="/classifieds" element={<ProtectedRoute><ClassifiedsScreen /></ProtectedRoute>} />
-                <Route path="/classifieds/:id" element={<ProtectedRoute><ClassifiedDetailScreen /></ProtectedRoute>} />
+                  <Route path="/messages" element={<ProtectedRoute><MessagesScreen /></ProtectedRoute>} />
+                  <Route path="/notifications" element={<ProtectedRoute><NotificationsScreen /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><SettingsScreen /></ProtectedRoute>} />
+                  <Route path="/classifieds" element={<ProtectedRoute><ClassifiedsScreen /></ProtectedRoute>} />
+                  <Route path="/classifieds/:id" element={<ProtectedRoute><ClassifiedDetailScreen /></ProtectedRoute>} />
 
-                {/* Fallback */}
-                <Route path="*" element={<HomeScreen />} />
-              </Routes>
-            </Suspense>
+                  {/* Fallback */}
+                  <Route path="*" element={<HomeScreen />} />
+                </Routes>
+              </Suspense>
+            </ChunkErrorBoundary>
           </main>
 
           {/* Right Sidebar - Fixed */}

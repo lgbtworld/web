@@ -1571,7 +1571,7 @@ const Post: React.FC<PostProps> = ({
             <ShareButton
               url={typeof window !== 'undefined' ? `${window.location.origin}/status/${post.public_id}` : ''}
               title={post.author.displayname ? `${post.author.displayname}'s post` : 'Post'}
-              description={post.content ? getLocalizedContent(post.content, defaultLanguage || 'en').replace(/<[^>]*>/g, '').substring(0, 100) : ''}
+              description={post.content ? (getLocalizedContent(post.content, defaultLanguage || 'en')?.replace(/<[^>]*>/g, '') || '').substring(0, 100) : ''}
               trigger={
                 <motion.button
                   onClick={(e) => {
@@ -2976,7 +2976,7 @@ const Post: React.FC<PostProps> = ({
               <TipButton
                 recipientId={post.public_id}
                 recipientName={post.author.displayname}
-                recipientAvatar={authorAvatarUrl}
+                recipientAvatar={authorAvatarUrl || undefined}
                 recipientUsername={post.author.username}
                 onTipSuccess={handleTipSuccess}
                 trigger={

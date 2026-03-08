@@ -297,30 +297,28 @@ const Stories: React.FC = () => {
 
         {!loadingStories && authUser && (
           <div className="flex-shrink-0 z-2 relative">
-            <div className="relative">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className={`relative w-[120px] h-[180px] rounded-[14px] overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} transition-colors duration-200 cursor-pointer`}
-              >
-                <div className={`absolute inset-0 w-full h-full flex items-center justify-center ${theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
-                  <div className={`w-16 h-16 rounded-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} flex items-center justify-center`}>
-                    <Plus className={`w-8 h-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-                  </div>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className={`relative w-[120px] h-[180px] rounded-[14px] overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} transition-colors duration-200 cursor-pointer`}
+            >
+              <div className={`absolute inset-0 w-full h-full flex items-center justify-center ${theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
+                <div className={`w-16 h-16 rounded-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} flex items-center justify-center`}>
+                  <Plus className={`w-8 h-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-3 z-2">
-                  <div className={`backdrop-blur-xl ${theme === 'dark' ? 'bg-black/60' : 'bg-white/80'} rounded-lg px-2.5 py-1.5`}>
-                    <p className={`text-[13px] font-semibold tracking-[-0.006em] truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                      Your Story
-                    </p>
-                  </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-3 z-2">
+                <div className={`backdrop-blur-xl ${theme === 'dark' ? 'bg-black/60' : 'bg-white/80'} rounded-lg px-2.5 py-1.5`}>
+                  <p className={`text-[13px] font-semibold tracking-[-0.006em] truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                    Your Story
+                  </p>
                 </div>
-                <div className="absolute top-3 left-3 z-2">
-                  <div className={`w-11 h-11 rounded-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'} flex items-center justify-center`}>
-                    <Plus className={`w-6 h-6 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
-                  </div>
+              </div>
+              <div className="absolute top-3 left-3 z-2">
+                <div className={`w-11 h-11 rounded-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'} flex items-center justify-center`}>
+                  <Plus className={`w-6 h-6 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
                 </div>
-              </button>
-            </div>
+              </div>
+            </button>
           </div>
         )}
 

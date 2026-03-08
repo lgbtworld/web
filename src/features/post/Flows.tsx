@@ -523,14 +523,13 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick, scrollParent
           </div>
         ) : (
           <Virtuoso
-            useWindowScroll={true}
+            useWindowScroll={!scrollElement}
             customScrollParent={scrollElement || undefined}
             data={posts}
             endReached={loadMorePosts}
             overscan={1200}
-            itemContent={(index, post) => (
+            itemContent={(_index, post) => (
               <MemoizedPostItem
-                key={`${post.id}-${index}`}
                 post={post}
                 theme={theme}
                 onPostClick={onPostClick}

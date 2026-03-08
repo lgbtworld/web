@@ -8,7 +8,7 @@ html, body {
   height: 100dvh;   /* dynamic viewport height */
   overflow: hidden; /* scroll bar kaldır */
   position: fixed;  /* body'yi sabitle */
-  width: 100vdw;     /* yatay genişliği kapla */
+  width: 100dvw;     /* yatay genişliği kapla */
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 
 }

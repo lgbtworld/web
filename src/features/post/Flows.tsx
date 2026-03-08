@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import CreatePost from './CreatePost';
@@ -210,6 +210,46 @@ const MemoizedPostItem = React.memo(({ post, theme, onPostClick, onProfileClick,
   // Sadece ana prop değişikliklerinde re-render et (fonksiyon referanslarını es geç)
   return prevProps.post === nextProps.post && prevProps.theme === nextProps.theme;
 });
+
+const VirtuosoHeader = React.memo(({ context }: any) => {
+  const { theme, refreshPosts } = context || {};
+  return (
+    <div className={`hidden lg:block ${theme === 'dark' ? 'bg-gray-400 border-b border-gray-900' : 'bg-white border-b border-gray-100'}`}>
+      <CreatePost
+        fullScreen={false}
+        title="Create Post"
+        buttonText="Post"
+        placeholder="Every vibe tells a story. What's yours? 🌈"
+        onPostCreated={() => {
+          if (refreshPosts) refreshPosts();
+        }}
+      />
+    </div>
+  );
+});
+
+const VirtuosoFooter = React.memo(({ context }: any) => {
+  const { theme, loadingMore, hasMore, postsLength } = context || {};
+  return (
+    <div className="pb-32">
+      {loadingMore && (
+        <div className="py-8 flex justify-center items-center">
+          <div className="w-8 h-8 rounded-full border-2 border-[var(--brand-color,#ec4899)] border-t-transparent animate-spin" />
+        </div>
+      )}
+      {!hasMore && postsLength > 0 && (
+        <div className={`p-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+          No more posts to load
+        </div>
+      )}
+    </div>
+  );
+});
+
+const virtuosoComponents = {
+  Header: VirtuosoHeader,
+  Footer: VirtuosoFooter
+};
 
 interface TimelineResponse {
   posts: ApiPost[];
@@ -456,6 +496,14 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick, scrollParent
     );
   }, []);
 
+  const virtuosoContext = useMemo(() => ({
+    theme,
+    refreshPosts,
+    loadingMore,
+    hasMore,
+    postsLength: posts.length
+  }), [theme, refreshPosts, loadingMore, hasMore, posts.length]);
+
   return (
     <div ref={containerRef} className='w-full relative'>
       {/* Posts Feed - Virtualized */}
@@ -547,35 +595,8 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick, scrollParent
                 onUpdatePost={handlePostUpdate}
               />
             )}
-            components={{
-              Header: () => (
-                <div className={`hidden lg:block ${theme === 'dark' ? 'bg-gray-400 border-b border-gray-900' : 'bg-white border-b border-gray-100'}`}>
-                  <CreatePost
-                    fullScreen={false}
-                    title="Create Post"
-                    buttonText="Post"
-                    placeholder="Every vibe tells a story. What's yours? 🌈"
-                    onPostCreated={() => {
-                      refreshPosts();
-                    }}
-                  />
-                </div>
-              ),
-              Footer: () => (
-                <div className="pb-32">
-                  {loadingMore && (
-                    <div className="py-8 flex justify-center items-center">
-                      <div className="w-8 h-8 rounded-full border-2 border-[var(--brand-color,#ec4899)] border-t-transparent animate-spin" />
-                    </div>
-                  )}
-                  {!hasMore && posts.length > 0 && (
-                    <div className={`p-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                      No more posts to load
-                    </div>
-                  )}
-                </div>
-              )
-            }}
+            context={virtuosoContext}
+            components={virtuosoComponents}
           />
         )}
       </div>

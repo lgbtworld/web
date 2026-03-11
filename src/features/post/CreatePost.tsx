@@ -389,41 +389,47 @@ const CreatePost: React.FC<CreatePostProps> = ({
     }
 
     const contentJSON = editorInstance.getEditorState().toJSON()
-    const postData = {
-      content: JSON.stringify(contentJSON),
-      hashtags: hashtags,
-      mentions: mentions,
-      images: selectedImages,
-      videos: selectedVideos,
-      audience: audience,
-      ...(postKind && { kind: postKind }),
-      ...(extras && { extras }),
-      ...(parentPostId && { parentPostId }),
-      ...(polls.length > 0 && polls.reduce((acc, poll, pollIndex) => {
-        acc[`polls[${pollIndex}].question`] = poll.question;
-        acc[`polls[${pollIndex}].duration`] = poll.duration;
-        acc[`polls[${pollIndex}].kind`] = poll.kind;
-        acc[`polls[${pollIndex}].max_selectable`] = poll.maxSelectable;
-        poll.options.forEach((option, optionIndex) => {
-          acc[`polls[${pollIndex}].options[${optionIndex}]`] = option;
+      const postData: Record<string, any> = {
+        content: JSON.stringify(contentJSON),
+        hashtags: hashtags,
+        mentions: mentions,
+        images: selectedImages,
+        videos: selectedVideos,
+        audience: audience,
+        ...(postKind && { kind: postKind }),
+        ...(parentPostId && { parentPostId }),
+        ...(polls.length > 0 && polls.reduce((acc, poll, pollIndex) => {
+          acc[`polls[${pollIndex}].question`] = poll.question;
+          acc[`polls[${pollIndex}].duration`] = poll.duration;
+          acc[`polls[${pollIndex}].kind`] = poll.kind;
+          acc[`polls[${pollIndex}].max_selectable`] = poll.maxSelectable;
+          poll.options.forEach((option, optionIndex) => {
+            acc[`polls[${pollIndex}].options[${optionIndex}]`] = option;
+          });
+          return acc;
+        }, {} as Record<string, any>)),
+        event: isEventActive ? {
+          title: eventTitle,
+          description: eventDescription,
+          kind: eventKind,
+          date: eventDate,
+          time: eventTime,
+          capacity: eventCapacity ? parseInt(eventCapacity) : undefined,
+          is_paid: eventIsPaid,
+          price: eventPrice ? parseFloat(eventPrice) : undefined,
+          currency: eventCurrency || undefined,
+          is_online: eventIsOnline,
+          online_url: eventOnlineURL || undefined
+        } : null,
+        location: location
+      };
+  
+      if (extras) {
+        Object.keys(extras).forEach(key => {
+          const value = extras[key];
+          postData[`extras[${key}]`] = JSON.stringify(value);
         });
-        return acc;
-      }, {} as Record<string, any>)),
-      event: isEventActive ? {
-        title: eventTitle,
-        description: eventDescription,
-        kind: eventKind,
-        date: eventDate,
-        time: eventTime,
-        capacity: eventCapacity ? parseInt(eventCapacity) : undefined,
-        is_paid: eventIsPaid,
-        price: eventPrice ? parseFloat(eventPrice) : undefined,
-        currency: eventCurrency || undefined,
-        is_online: eventIsOnline,
-        online_url: eventOnlineURL || undefined
-      } : null,
-      location: location
-    };
+      }
 
     try {
       // Call API to create post

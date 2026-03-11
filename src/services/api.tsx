@@ -26,6 +26,8 @@ export class ApiService {
     });
   }
 
+
+
   async handleGetVapidKey() {
     return this.call(Actions.CMD_GET_VAPID_PUBLIC_KEY, {
       method: "POST",
@@ -159,6 +161,15 @@ export class ApiService {
       body: { limit, cursor }, // doğru değişkenler gönderiliyor
     });
   }
+
+
+  async fetchCheckIns({ limit = 10, cursor = "" }: { limit?: number; cursor?: string }) {
+    return this.call(Actions.CMD_USER_CHECK_IN_FETCH, {
+      method: "POST",
+      body: { limit, cursor }, // doğru değişkenler gönderiliyor
+    });
+  }
+
 
   async fetchVibes({ limit = 10, cursor = "" }: { limit?: number; cursor?: string }) {
     return this.call(Actions.POST_VIBES, {

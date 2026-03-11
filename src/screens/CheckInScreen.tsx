@@ -41,6 +41,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { tagNameToColor } from '../helpers/colors';
 import CreatePost from '../features/post/CreatePost';
 import { getLocalizedContent } from '../helpers/helpers';
+import { api } from '../services/api';
+import Post, { ApiPost } from '../features/post/Post';
+import { PostSkeleton } from '../features/post/Flows';
 
 type TagCategory = 'capacity' | 'intent' | 'availability' | 'personality' | 'safety';
 
@@ -53,30 +56,7 @@ interface CheckInTag {
     color: string;
 }
 
-interface CheckIn {
-    id: string;
-    user: { displayname: string; username: string; avatar: string };
-    location: [number, number];
-    shout?: string;
-    tags: string[];
-    timestamp: string;
-}
 
-
-const MOCK_CHECKINS: CheckIn[] = [
-    { id: 'c1', user: { displayname: 'Alex Rivera', username: 'arivera', avatar: 'https://i.pravatar.cc/150?u=arivera' }, location: [41.0082, 28.9784], shout: 'Best oat latte in town! ☕️', tags: ['has_place', 'chill', 'available_now'], timestamp: '2m' },
-    { id: 'c2', user: { displayname: 'Sam Taylor', username: 'staylor', avatar: 'https://i.pravatar.cc/150?u=staylor' }, location: [41.0152, 28.9824], shout: 'The music is amazing tonight! 🌈✨', tags: ['seeking_fun', 'fun', 'has_vehicle'], timestamp: '15m' },
-    { id: 'c3', user: { displayname: 'Jordan Lee', username: 'jlee', avatar: 'https://i.pravatar.cc/150?u=jlee' }, location: [41.0122, 28.9754], shout: 'Anyone up for a quick ride?', tags: ['has_vehicle', 'chill'], timestamp: '20m' },
-    { id: 'c4', user: { displayname: 'Casey Smith', username: 'csmith', avatar: 'https://i.pravatar.cc/150?u=csmith' }, location: [41.0202, 28.9854], shout: 'Just chilling at home 🏠', tags: ['owns_home', 'available_now'], timestamp: '25m' },
-    { id: 'c5', user: { displayname: 'Riley Davis', username: 'rdavis', avatar: 'https://i.pravatar.cc/150?u=rdavis' }, location: [41.0052, 28.9714], shout: '', tags: ['seeking_love', 'respectful'], timestamp: '30m' },
-    { id: 'c6', user: { displayname: 'Morgan White', username: 'mwhite', avatar: 'https://i.pravatar.cc/150?u=mwhite' }, location: [41.0182, 28.9904], shout: 'Looking for a fun night out!', tags: ['seeking_fun', 'night_only'], timestamp: '45m' },
-    { id: 'c7', user: { displayname: 'Jamie Brown', username: 'jbrown', avatar: 'https://i.pravatar.cc/150?u=jbrown' }, location: [41.0012, 28.9684], shout: "Let's chat over coffee ☕", tags: ['seeking_chat', 'chill'], timestamp: '1s' },
-    { id: 'c8', user: { displayname: 'Taylor Green', username: 'tgreen', avatar: 'https://i.pravatar.cc/150?u=tgreen' }, location: [41.0252, 28.9804], shout: '', tags: ['has_money', 'paid_meeting'], timestamp: '1s 15m' },
-    { id: 'c9', user: { displayname: 'Drew Hall', username: 'dhall', avatar: 'https://i.pravatar.cc/150?u=dhall' }, location: [41.0092, 28.9764], shout: 'No pressure, just good vibes', tags: ['no_pressure', 'respectful'], timestamp: '1s 30m' },
-    { id: 'c10', user: { displayname: 'Quinn Adams', username: 'qadams', avatar: 'https://i.pravatar.cc/150?u=qadams' }, location: [41.0142, 28.9834], shout: '', tags: ['sporty', 'available_now'], timestamp: '2s' },
-    { id: 'c11', user: { displayname: 'Avery Baker', username: 'abaker', avatar: 'https://i.pravatar.cc/150?u=abaker' }, location: [41.0042, 28.9744], shout: 'Gaming tonight 🎮', tags: ['chill', 'night_only'], timestamp: '2s 15m' },
-    { id: 'c12', user: { displayname: 'Skyler Hill', username: 'shill', avatar: 'https://i.pravatar.cc/150?u=shill' }, location: [41.0222, 28.9814], shout: 'Just passing through town', tags: ['traveler', 'chill'], timestamp: '2s 30m' },
-];
 
 const LUCIDE_ICON_MAP: Record<string, LucideIcon> = {
     home: Home,
@@ -199,79 +179,6 @@ function HoneycombItem({ tag, pos, isSelected, hasSelection, onToggle, dark, def
     );
 }
 
-/* ─── CheckIn Card ──────────────────────────────────────────────────────────── */
-function CheckInCard({ checkin, dark, checkinTags }: { checkin: CheckIn; dark: boolean; checkinTags: CheckInTag[] }) {
-    const tags = checkin.tags
-        .map(t => checkinTags.find(ct => ct.tag === t))
-        .filter(Boolean) as CheckInTag[];
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`
-                group flex gap-3 p-3.5 rounded-[20px] border transition-all cursor-pointer
-                ${dark
-                    ? 'bg-gray-900/40 border-gray-800/60 hover:bg-gray-800/50 hover:border-gray-700/70'
-                    : 'bg-white border-black/[0.06] hover:bg-gray-50 hover:border-black/[0.10]'
-                }
-            `}
-        >
-            {/* Avatar */}
-            <div className="relative flex-shrink-0">
-                <img
-                    src={checkin.user.avatar}
-                    referrerPolicy="no-referrer"
-                    className={`w-[52px] h-[52px] rounded-[14px] object-cover border ${dark ? 'border-gray-800' : 'border-gray-100'} group-hover:scale-[1.03] transition-transform duration-200`}
-                />
-                <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 ${dark ? 'border-gray-900' : 'border-white'}`} />
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 min-w-0 flex flex-col gap-1">
-                <div className="flex items-baseline gap-2">
-                    <span className={`text-[14px] font-bold truncate ${dark ? 'text-white' : 'text-gray-900'}`}>
-                        {checkin.user.displayname}
-                    </span>
-                    <span className={`text-[10px] font-semibold flex-shrink-0 ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
-                        {checkin.timestamp}
-                    </span>
-                </div>
-
-                {checkin.shout && (
-                    <p className={`text-[12px] leading-snug ${dark ? 'text-gray-400' : 'text-gray-500'} truncate`}>
-                        {checkin.shout}
-                    </p>
-                )}
-
-                {tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-0.5">
-                        {tags.map(tag => {
-                            const Icon = tag.icon;
-                            return (
-                                <div
-                                    key={tag.id}
-                                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-lg ${dark ? 'bg-gray-800/60 text-gray-300' : 'bg-gray-100 text-gray-600'}`}
-                                >
-                                    <Icon className="w-2.5 h-2.5" strokeWidth={2.5} />
-                                    <span className="text-[9px] font-black uppercase tracking-wide leading-none">{tag.name.tr}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
-
-            {/* Action */}
-            <div className="flex-shrink-0 flex items-center self-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${dark ? 'text-gray-600 group-hover:text-gray-300 group-hover:bg-white/5' : 'text-gray-300 group-hover:text-gray-600 group-hover:bg-black/5'} transition-all`}>
-                    <ChevronRight className="w-4 h-4" />
-                </div>
-            </div>
-        </motion.div>
-    );
-}
-
 /* ─── Main Component ────────────────────────────────────────────────────────── */
 export default function CheckInScreen() {
     const { theme } = useTheme();
@@ -283,14 +190,33 @@ export default function CheckInScreen() {
     }));
 
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
-    const [isCheckingIn, setIsCheckingIn] = useState(false);
-    const [checkins, setCheckins] = useState<CheckIn[]>(MOCK_CHECKINS);
+    const [posts, setPosts] = useState<ApiPost[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [userLocation, setUserLocation] = useState<[number, number]>([41.0082, 28.9784]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [sheetMode, setSheetMode] = useState<'min' | 'half' | 'full'>('half');
     // useMotionValue — drag sırasında lag yok, centerOnItem'da animate() ile smooth spring
     const dragX = useMotionValue(0);
     const dragY = useMotionValue(0);
+
+    const fetchCheckIns = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await api.fetchCheckIns({ limit: 50 });
+            setPosts(response.posts);
+        } catch (err) {
+            console.error('Error fetching check-ins:', err);
+            setError('Failed to load check-ins. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCheckIns();
+    }, []);
 
     useEffect(() => {
         if (navigator.geolocation) {
@@ -323,24 +249,6 @@ export default function CheckInScreen() {
     };
 
 
-    const handleCheckIn = () => {
-        if (selectedTags.length === 0) return;
-        setIsCheckingIn(true);
-        setTimeout(() => {
-            setCheckins(prev => [{
-                id: Math.random().toString(36).substr(2, 9),
-                user: { displayname: 'Siz', username: 'me', avatar: 'https://i.pravatar.cc/150?u=me' },
-                location: userLocation,
-                tags: selectedTags,
-                timestamp: 'şimdi',
-            }, ...prev]);
-            setSelectedTags([]);
-            setIsCheckingIn(false);
-            setIsModalOpen(false);
-        }, 1400);
-    };
-
-
     const sheetVariants = {
         full: { y: '0vh' },
         half: { y: '45vh' },
@@ -366,12 +274,12 @@ export default function CheckInScreen() {
                         }
                     />
                     <Marker position={userLocation} icon={createUserIcon('https://i.pravatar.cc/150?u=me', true)} />
-                    {checkins.map(c => (
-                        <Marker key={c.id} position={c.location} icon={createUserIcon(c.user.avatar)}>
+                    {posts.map(p => (
+                        p.location && <Marker key={p.id} position={[p.location.latitude, p.location.longitude]} icon={createUserIcon(p.author.avatar?.url ?? 'https://i.pravatar.cc/150?u=a')}>
                             <Popup className="custom-popup">
                                 <div className="p-1.5 text-center min-w-[100px]">
-                                    <p className={`font-bold text-[13px] ${dark ? 'text-white' : 'text-gray-900'}`}>{c.user.displayname}</p>
-                                    {c.shout && <p className={`text-[11px] mt-0.5 ${dark ? 'text-gray-400' : 'text-gray-500'}`}>{c.shout}</p>}
+                                    <p className={`font-bold text-[13px] ${dark ? 'text-white' : 'text-gray-900'}`}>{p.author.displayname}</p>
+                                    {p.content && <p className={`text-[11px] mt-0.5 ${dark ? 'text-gray-400' : 'text-gray-500'}`}>{getLocalizedContent(p.content, defaultLanguage)}</p>}
                                 </div>
                             </Popup>
                         </Marker>
@@ -457,7 +365,7 @@ export default function CheckInScreen() {
                             <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${dark ? 'bg-emerald-500/10' : 'bg-emerald-50'}`}>
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 <span className={`text-[9px] font-black uppercase tracking-[0.12em] ${dark ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                                    {checkins.length}
+                                    {posts.length}
                                 </span>
                             </div>
                         </div>
@@ -489,8 +397,16 @@ export default function CheckInScreen() {
 
                     {/* Cards list */}
                     <div className="flex-1 overflow-y-auto px-3.5 py-3 space-y-2 pb-24 lg:pb-6 no-scrollbar">
-                        {checkins.map(c => (
-                            <CheckInCard key={c.id} checkin={c} dark={dark} checkinTags={checkinTags} />
+                        {loading ? (
+                            <div className="space-y-4">
+                                {[1, 2, 3].map(i => <PostSkeleton key={i} theme={dark ? 'dark' : 'light'} />)}
+                            </div>
+                        ) : error ? (
+                            <div className="text-center py-10">
+                                <p className="text-red-500">{error}</p>
+                            </div>
+                        ) : posts.map(p => (
+                            <Post key={p.id} post={p} />
                         ))}
                     </div>
                 </motion.div>
@@ -620,7 +536,10 @@ export default function CheckInScreen() {
                                         fullScreen={false}
                                         placeholder="Ne söylemek istersin?"
                                         canClose={false}
-                                        onPostCreated={() => setIsModalOpen(false)}
+                                        onPostCreated={() => {
+                                            setIsModalOpen(false);
+                                            fetchCheckIns();
+                                        }}
                                     />
                                 </div>
 

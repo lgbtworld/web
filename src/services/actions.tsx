@@ -108,9 +108,10 @@ export const Actions = {
 
 
 
-  CMD_USER_UPDATE_PREFERENCES: "user.update_preferences"
+  CMD_USER_UPDATE_PREFERENCES: "user.update_preferences",
 
-
+  CMD_USER_CHECK_IN: "user.check_in",
+  CMD_USER_CHECK_IN_FETCH: "user.check_in_fetch",
 
 } as const;
 

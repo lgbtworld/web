@@ -396,7 +396,7 @@ export default function CheckInScreen() {
                     </div>
 
                     {/* Cards list */}
-                    <div className="flex-1 overflow-y-auto px-3.5 py-3 space-y-2 pb-24 lg:pb-6 no-scrollbar">
+                    <div className="flex-1 overflow-y-auto space-y-2 pb-24 lg:pb-6 no-scrollbar">
                         {loading ? (
                             <div className="space-y-4">
                                 {[1, 2, 3].map(i => <PostSkeleton key={i} theme={dark ? 'dark' : 'light'} />)}

@@ -104,6 +104,8 @@ interface CreatePostProps {
   fullScreen?: boolean;
   onReply?: (content: string, parentPostId?: string) => void;
   onPostCreated?: () => void;
+  postKind?: string;
+  extras?: Record<string, any>;
 }
 
 const CreatePost: React.FC<CreatePostProps> = ({
@@ -115,7 +117,9 @@ const CreatePost: React.FC<CreatePostProps> = ({
   parentPostId,
   onReply,
   fullScreen = false,
-  onPostCreated
+  onPostCreated,
+  postKind,
+  extras,
 }) => {
   const [postText, setPostText] = useState('');
   const [editorContent, setEditorContent] = useState('');
@@ -392,6 +396,8 @@ const CreatePost: React.FC<CreatePostProps> = ({
       images: selectedImages,
       videos: selectedVideos,
       audience: audience,
+      ...(postKind && { kind: postKind }),
+      ...(extras && { extras }),
       ...(parentPostId && { parentPostId }),
       ...(polls.length > 0 && polls.reduce((acc, poll, pollIndex) => {
         acc[`polls[${pollIndex}].question`] = poll.question;

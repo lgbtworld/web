@@ -613,8 +613,9 @@ export default function CheckInScreen() {
                                 {/* Shout + media input — replaced with CreatePost */}
                                 <div className="pt-2">
                                     <CreatePost
-                                    title='CheckIn'
-
+                                        title="CheckIn"
+                                        postKind="checkin"
+                                        extras={{ tags: selectedTags }}
                                         buttonText="CheckIn"
                                         fullScreen={false}
                                         placeholder="Ne söylemek istersin?"

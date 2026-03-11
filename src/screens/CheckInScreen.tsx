@@ -28,6 +28,7 @@ import {
     Minimize2,
     Maximize2,
     Minus,
+    Plus,
     ChevronRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -38,6 +39,7 @@ import 'leaflet/dist/leaflet.css';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
 import { tagNameToColor } from '../helpers/colors';
+import CreatePost from '../features/post/CreatePost';
 import { getLocalizedContent } from '../helpers/helpers';
 
 type TagCategory = 'capacity' | 'intent' | 'availability' | 'personality' | 'safety';
@@ -281,8 +283,6 @@ export default function CheckInScreen() {
     }));
 
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
-    const [shout, setShout] = useState('');
-    const [mediaFiles, setMediaFiles] = useState<File[]>([]);
     const [isCheckingIn, setIsCheckingIn] = useState(false);
     const [checkins, setCheckins] = useState<CheckIn[]>(MOCK_CHECKINS);
     const [userLocation, setUserLocation] = useState<[number, number]>([41.0082, 28.9784]);
@@ -291,7 +291,6 @@ export default function CheckInScreen() {
     // useMotionValue — drag sırasında lag yok, centerOnItem'da animate() ile smooth spring
     const dragX = useMotionValue(0);
     const dragY = useMotionValue(0);
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         if (navigator.geolocation) {
@@ -306,8 +305,6 @@ export default function CheckInScreen() {
             animate(dragX, 0, { duration: 0 });
             animate(dragY, 0, { duration: 0 });
             setSelectedTags([]);
-            setShout('');
-            setMediaFiles([]);
         }
     }, [isModalOpen]);
 
@@ -334,12 +331,10 @@ export default function CheckInScreen() {
                 id: Math.random().toString(36).substr(2, 9),
                 user: { displayname: 'Siz', username: 'me', avatar: 'https://i.pravatar.cc/150?u=me' },
                 location: userLocation,
-                shout: shout.trim() || undefined,
                 tags: selectedTags,
                 timestamp: 'şimdi',
             }, ...prev]);
             setSelectedTags([]);
-            setShout('');
             setIsCheckingIn(false);
             setIsModalOpen(false);
         }, 1400);
@@ -615,101 +610,20 @@ export default function CheckInScreen() {
                                     )}
                                 </AnimatePresence>
 
-                                {/* Shout + media input — Telegram/WhatsApp style */}
-                                <div className={`rounded-2xl border transition-all overflow-hidden ${dark ? 'bg-gray-900/50 border-white/[0.06] focus-within:border-white/[0.14]' : 'bg-gray-50 border-black/[0.06] focus-within:border-black/[0.12]'}`}>
+                                {/* Shout + media input — replaced with CreatePost */}
+                                <div className="pt-2">
+                                    <CreatePost
+                                    title='CheckIn'
 
-                                    {/* Media previews */}
-                                    <AnimatePresence>
-                                        {mediaFiles.length > 0 && (
-                                            <motion.div
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                                className="px-3 pt-3 flex gap-2 flex-wrap"
-                                            >
-                                                {mediaFiles.map((file, i) => (
-                                                    <div key={i} className="relative">
-                                                        <div className={`w-16 h-16 rounded-xl overflow-hidden border ${dark ? 'border-white/10' : 'border-black/10'}`}>
-                                                            {file.type.startsWith('video') ? (
-                                                                <div className={`w-full h-full flex items-center justify-center ${dark ? 'bg-gray-800' : 'bg-gray-200'}`}>
-                                                                    <Video className={`w-6 h-6 ${dark ? 'text-gray-400' : 'text-gray-500'}`} />
-                                                                </div>
-                                                            ) : (
-                                                                <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" />
-                                                            )}
-                                                        </div>
-                                                        <button
-                                                            onClick={() => setMediaFiles(prev => prev.filter((_, j) => j !== i))}
-                                                            className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-sm"
-                                                        >
-                                                            <X className="w-2.5 h-2.5" />
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-
-                                    {/* Text row */}
-                                    <div className="flex items-center gap-2 px-3 py-2.5">
-                                        {/* Attach button */}
-                                        <label className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all ${dark ? 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.07]' : 'text-gray-400 hover:text-gray-700 hover:bg-black/[0.05]'}`}>
-                                            <ImagePlus className="w-4.5 h-4.5" />
-                                            <input
-                                                type="file"
-                                                accept="image/*,video/*"
-                                                multiple
-                                                className="hidden"
-                                                onChange={e => {
-                                                    const files = Array.from(e.target.files || []);
-                                                    setMediaFiles(prev => [...prev, ...files].slice(0, 6));
-                                                    e.target.value = '';
-                                                }}
-                                            />
-                                        </label>
-
-                                        <textarea
-                                            ref={textareaRef}
-                                            placeholder="Ne söylemek istersin?"
-                                            value={shout}
-                                            onChange={e => setShout(e.target.value)}
-                                            rows={1}
-                                            className={`flex-1 bg-transparent text-[13px] font-medium outline-none resize-none leading-relaxed ${dark ? 'text-white placeholder:text-gray-600' : 'text-gray-900 placeholder:text-gray-400'}`}
-                                        />
-                                    </div>
+                                        buttonText="CheckIn"
+                                        fullScreen={false}
+                                        placeholder="Ne söylemek istersin?"
+                                        canClose={false}
+                                        onPostCreated={() => setIsModalOpen(false)}
+                                    />
                                 </div>
 
-                                {/* Action buttons */}
-                                <div className="flex gap-3 pb-safe">
-                                    <button
-                                        onClick={() => setIsModalOpen(false)}
-                                        className={`h-[50px] px-5 rounded-full font-bold text-[12px] uppercase tracking-[0.12em] transition-all border ${dark ? 'border-white/[0.10] text-gray-300 hover:bg-white/[0.06]' : 'border-black/[0.10] text-gray-600 hover:bg-black/[0.04]'}`}
-                                    >
-                                        İptal
-                                    </button>
-                                    <motion.button
-                                        onClick={handleCheckIn}
-                                        disabled={isCheckingIn || selectedTags.length === 0}
-                                        whileTap={{ scale: 0.97 }}
-                                        className={`
-                                            flex-1 h-[50px] rounded-full font-bold text-[12px] uppercase tracking-[0.12em]
-                                            flex items-center justify-center gap-2 transition-all
-                                            ${selectedTags.length === 0
-                                                ? dark ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : dark ? 'bg-white text-black hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-black'
-                                            }
-                                        `}
-                                    >
-                                        {isCheckingIn ? (
-                                            <div className={`w-4 h-4 rounded-full border-2 animate-spin ${dark ? 'border-black/20 border-t-black' : 'border-white/20 border-t-white'}`} />
-                                        ) : (
-                                            <>
-                                                <MapPin className="w-3.5 h-3.5" />
-                                                Check-in Yap
-                                            </>
-                                        )}
-                                    </motion.button>
-                                </div>
+                     
                             </div>
                         </motion.div>
                     </>

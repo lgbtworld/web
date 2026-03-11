@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Actions } from "../services/actions";
 import { api } from "../services/api";
 import i18n from "../i18n";
 
@@ -24,6 +23,7 @@ interface InitialData {
   preferences: any;
   event_kinds: any[];
   report_kinds: any[];
+  checkin_tag_types: any[]
   countries: Record<string, any>;
   languages: Record<string, any>;
   status: string;

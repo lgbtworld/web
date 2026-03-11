@@ -19,16 +19,26 @@ import {
     X,
     Globe,
     Video,
+    Sparkles,
+    Droplet,
+    Feather,
+    Dumbbell,
+    FlaskRound,
     ImagePlus,
     Minimize2,
     Maximize2,
     Minus,
     ChevronRight,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { useTheme } from '../contexts/ThemeContext';
 import 'leaflet/dist/leaflet.css';
+import { useApp } from '../contexts/AppContext';
+import { useAuth } from '../contexts/AuthContext';
+import { tagNameToColor } from '../helpers/colors';
+import { getLocalizedContent } from '../helpers/helpers';
 
 type TagCategory = 'capacity' | 'intent' | 'availability' | 'personality' | 'safety';
 
@@ -36,7 +46,7 @@ interface CheckInTag {
     id: string;
     tag: string;
     name: { en: string; tr: string };
-    icon: any;
+    icon: LucideIcon;
     category: TagCategory;
     color: string;
 }
@@ -50,27 +60,6 @@ interface CheckIn {
     timestamp: string;
 }
 
-
-
-const CHECKIN_TAGS: CheckInTag[] = [
-    { id: '1', tag: 'has_place', name: { en: 'Has Place', tr: 'Mekanı Var' }, icon: Home, category: 'capacity', color: 'from-blue-500 to-indigo-600' },
-    { id: '2', tag: 'has_vehicle', name: { en: 'Has Vehicle', tr: 'Aracı Var' }, icon: Car, category: 'capacity', color: 'from-blue-400 to-indigo-500' },
-    { id: '3', tag: 'owns_home', name: { en: 'Owns Home', tr: 'Evi Var' }, icon: Building2, category: 'capacity', color: 'from-sky-500 to-blue-600' },
-    { id: '4', tag: 'has_money', name: { en: 'Has Money', tr: 'Parası Var' }, icon: Wallet, category: 'capacity', color: 'from-cyan-500 to-blue-500' },
-    { id: '5', tag: 'seeking_love', name: { en: 'Seeking Love', tr: 'Aşk Arıyor' }, icon: Heart, category: 'intent', color: 'from-rose-500 to-pink-600' },
-    { id: '6', tag: 'seeking_fun', name: { en: 'Seeking Fun', tr: 'Takılmak İstiyor' }, icon: Zap, category: 'intent', color: 'from-rose-400 to-red-500' },
-    { id: '7', tag: 'seeking_chat', name: { en: 'Seeking Chat', tr: 'Sohbet' }, icon: MessageSquare, category: 'intent', color: 'from-pink-500 to-rose-600' },
-    { id: '8', tag: 'paid_meeting', name: { en: 'Paid Meeting', tr: 'Ücretli' }, icon: Banknote, category: 'intent', color: 'from-fuchsia-500 to-pink-600' },
-    { id: '9', tag: 'available_now', name: { en: 'Available Now', tr: 'Şu An Müsait' }, icon: Clock, category: 'availability', color: 'from-emerald-500 to-teal-600' },
-    { id: '10', tag: 'night_only', name: { en: 'Night Only', tr: 'Gece Uygun' }, icon: Moon, category: 'availability', color: 'from-teal-500 to-emerald-600' },
-    { id: '11', tag: 'chill', name: { en: 'Chill', tr: 'Sakin' }, icon: Coffee, category: 'personality', color: 'from-amber-500 to-orange-500' },
-    { id: '12', tag: 'fun', name: { en: 'Fun', tr: 'Eğlenceli' }, icon: Smile, category: 'personality', color: 'from-orange-500 to-amber-600' },
-    { id: '13', tag: 'sporty', name: { en: 'Sporty', tr: 'Sporcu' }, icon: Zap, category: 'personality', color: 'from-yellow-500 to-orange-500' },
-    { id: '14', tag: 'traveler', name: { en: 'Traveler', tr: 'Gezgin' }, icon: Globe, category: 'personality', color: 'from-amber-400 to-yellow-500' },
-    { id: '15', tag: 'foodie', name: { en: 'Foodie', tr: 'Gurme' }, icon: Coffee, category: 'personality', color: 'from-orange-400 to-amber-500' },
-    { id: '16', tag: 'respectful', name: { en: 'Respectful', tr: 'Saygılı' }, icon: ShieldCheck, category: 'safety', color: 'from-violet-500 to-purple-600' },
-    { id: '17', tag: 'no_pressure', name: { en: 'No Pressure', tr: 'Israrcı Değil' }, icon: Hand, category: 'safety', color: 'from-purple-500 to-violet-600' },
-];
 
 const MOCK_CHECKINS: CheckIn[] = [
     { id: 'c1', user: { displayname: 'Alex Rivera', username: 'arivera', avatar: 'https://i.pravatar.cc/150?u=arivera' }, location: [41.0082, 28.9784], shout: 'Best oat latte in town! ☕️', tags: ['has_place', 'chill', 'available_now'], timestamp: '2m' },
@@ -86,6 +75,36 @@ const MOCK_CHECKINS: CheckIn[] = [
     { id: 'c11', user: { displayname: 'Avery Baker', username: 'abaker', avatar: 'https://i.pravatar.cc/150?u=abaker' }, location: [41.0042, 28.9744], shout: 'Gaming tonight 🎮', tags: ['chill', 'night_only'], timestamp: '2s 15m' },
     { id: 'c12', user: { displayname: 'Skyler Hill', username: 'shill', avatar: 'https://i.pravatar.cc/150?u=shill' }, location: [41.0222, 28.9814], shout: 'Just passing through town', tags: ['traveler', 'chill'], timestamp: '2s 30m' },
 ];
+
+const LUCIDE_ICON_MAP: Record<string, LucideIcon> = {
+    home: Home,
+    car: Car,
+    building: Building2,
+    wallet: Wallet,
+    heart: Heart,
+    zap: Zap,
+    'message-circle': MessageSquare,
+    banknote: Banknote,
+    sparkles: Sparkles,
+    droplet: Droplet,
+    feather: Feather,
+    dumbbell: Dumbbell,
+    'flask-round': FlaskRound,
+    clock: Clock,
+    moon: Moon,
+    coffee: Coffee,
+    smile: Smile,
+    'shield-check': ShieldCheck,
+    hand: Hand,
+    globe: Globe,
+};
+
+const resolveTagIcon = (icon?: string | LucideIcon): LucideIcon => {
+    if (!icon) return MapPin;
+    if (typeof icon === 'function') return icon as LucideIcon;
+    const key = icon.toLowerCase();
+    return LUCIDE_ICON_MAP[key] ?? MapPin;
+};
 
 const createUserIcon = (avatar: string, isSelf = false) => {
     return L.divIcon({
@@ -121,15 +140,16 @@ const getHexPosition = (index: number) => {
 };
 
 /* ─── Honeycomb Item ────────────────────────────────────────────────────────── */
-function HoneycombItem({ tag, pos, isSelected, hasSelection, onToggle, dark }: {
+function HoneycombItem({ tag, pos, isSelected, hasSelection, onToggle, dark, defaultLanguage }: {
     tag: CheckInTag;
     pos: { x: number; y: number };
     isSelected: boolean;
     hasSelection: boolean;
     onToggle: (pos: { x: number; y: number }) => void;
     dark: boolean;
+    defaultLanguage: string;
 }) {
-    const Icon = tag.icon;
+   const Icon = tag.icon ?? MapPin;
     // pos hiç değişmediği için spring gereksiz — doğrudan kullanıyoruz
     return (
         <motion.button
@@ -150,18 +170,27 @@ function HoneycombItem({ tag, pos, isSelected, hasSelection, onToggle, dark }: {
             `}
         >
             <motion.div
-                className={`absolute inset-0 bg-gradient-to-br ${tag.color}`}
+                 style={tagNameToColor(tag.tag)}
+
+                className={`absolute inset-0`}
                 initial={false}
                 animate={{ opacity: isSelected ? 1 : 0 }}
                 transition={{ duration: 0.22, ease: 'easeInOut' }}
             />
             <div className="relative flex flex-col items-center gap-1">
-                <Icon
-                    className={`w-8 h-8 transition-colors duration-250 ${isSelected ? 'text-white' : dark ? 'text-gray-200' : 'text-gray-700'}`}
-                    strokeWidth={1.8}
-                />
+                
+               <Icon
+            className={`w-8 h-8 transition-colors duration-250 ${
+                isSelected
+                    ? 'text-white'
+                    : dark
+                        ? 'text-gray-200'
+                        : 'text-gray-700'
+            }`}
+            strokeWidth={1.8}
+        />
                 <span className={`text-[10px] font-black uppercase tracking-tight text-center px-1 leading-none transition-colors duration-250 ${isSelected ? 'text-white' : dark ? 'text-gray-300' : 'text-gray-600'}`}>
-                    {tag.name.tr}
+                    {getLocalizedContent(tag.name, defaultLanguage)}
                 </span>
             </div>
         </motion.button>
@@ -169,9 +198,9 @@ function HoneycombItem({ tag, pos, isSelected, hasSelection, onToggle, dark }: {
 }
 
 /* ─── CheckIn Card ──────────────────────────────────────────────────────────── */
-function CheckInCard({ checkin, dark }: { checkin: CheckIn; dark: boolean }) {
+function CheckInCard({ checkin, dark, checkinTags }: { checkin: CheckIn; dark: boolean; checkinTags: CheckInTag[] }) {
     const tags = checkin.tags
-        .map(t => CHECKIN_TAGS.find(ct => ct.tag === t))
+        .map(t => checkinTags.find(ct => ct.tag === t))
         .filter(Boolean) as CheckInTag[];
 
     return (
@@ -245,6 +274,11 @@ function CheckInCard({ checkin, dark }: { checkin: CheckIn; dark: boolean }) {
 export default function CheckInScreen() {
     const { theme } = useTheme();
     const dark = theme === 'dark';
+    const { data: appData,defaultLanguage } = useApp();
+    const checkinTags: CheckInTag[] = (appData?.checkin_tag_types ?? []).map((tag: any) => ({
+        ...tag,
+        icon: resolveTagIcon(tag.icon),
+    }));
 
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [shout, setShout] = useState('');
@@ -461,7 +495,7 @@ export default function CheckInScreen() {
                     {/* Cards list */}
                     <div className="flex-1 overflow-y-auto px-3.5 py-3 space-y-2 pb-24 lg:pb-6 no-scrollbar">
                         {checkins.map(c => (
-                            <CheckInCard key={c.id} checkin={c} dark={dark} />
+                            <CheckInCard key={c.id} checkin={c} dark={dark} checkinTags={checkinTags} />
                         ))}
                     </div>
                 </motion.div>
@@ -510,7 +544,7 @@ export default function CheckInScreen() {
                                     style={{ x: dragX, y: dragY }}
                                     className="absolute inset-0 flex items-center justify-center cursor-grab active:cursor-grabbing"
                                 >
-                                    {CHECKIN_TAGS.map((tag, idx) => {
+                                    {checkinTags.map((tag, idx) => {
                                         const pos = getHexPosition(idx);
                                         return (
                                             <HoneycombItem
@@ -521,6 +555,7 @@ export default function CheckInScreen() {
                                                 hasSelection={selectedTags.length > 0}
                                                 onToggle={pos => toggleTag(tag.tag, pos)}
                                                 dark={dark}
+                                                defaultLanguage={defaultLanguage}
                                             />
                                         );
                                     })}
@@ -546,17 +581,31 @@ export default function CheckInScreen() {
                                         >
                                             <div className={`px-3.5 py-2.5 rounded-2xl flex flex-wrap gap-1.5 ${dark ? 'bg-white/[0.04] border border-white/[0.06]' : 'bg-gray-50 border border-black/[0.06]'}`}>
                                                 {selectedTags.map(t => {
-                                                    const tag = CHECKIN_TAGS.find(ct => ct.tag === t);
-                                                    if (!tag) return null;
+                                                    const tag = checkinTags.find(ct => ct.tag === t);
+                                                    if (!tag) {
+                                                        return (
+                                                            <button
+                                                                key={t}
+                                                                onClick={() => toggleTag(t)}
+                                                                className={`flex items-center gap-1.5 px-2 py-1 rounded-xl ${dark ? 'bg-white/10 text-white' : 'bg-black/10 text-gray-800'}`}
+                                                            >
+                                                                <span className="text-[10px] font-bold">{t}</span>
+                                                                <X className="w-2 h-2 opacity-60" />
+                                                            </button>
+                                                        );
+                                                    }
                                                     const Icon = tag.icon;
                                                     return (
                                                         <button
                                                             key={t}
                                                             onClick={() => toggleTag(t)}
-                                                            className={`flex items-center gap-1.5 px-2 py-1 rounded-xl text-white bg-gradient-to-r ${tag.color}`}
+                                                              style={tagNameToColor(tag.tag)}
+
+                                                  
+                                                            className={`flex items-center gap-1.5 px-2 py-1 rounded-xl text-white`}
                                                         >
                                                             <Icon className="w-3 h-3" strokeWidth={2} />
-                                                            <span className="text-[10px] font-bold">{tag.name.tr}</span>
+                                                            <span className="text-[10px] font-bold">{getLocalizedContent(tag.name, defaultLanguage)}</span>
                                                             <X className="w-2 h-2 opacity-60" />
                                                         </button>
                                                     );

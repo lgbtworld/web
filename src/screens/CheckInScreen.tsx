@@ -92,15 +92,15 @@ const createUserIcon = (avatar: string, isSelf = false) => {
     return L.divIcon({
         className: '',
         html: `
-          <div style="position:relative;width:40px;height:40px;">
-            <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:2.5px solid ${isSelf ? '#3b82f6' : 'rgba(255,255,255,0.85)'};box-shadow:0 2px 8px rgba(0,0,0,0.3);">
-              <img src="${avatar}" style="width:100%;height:100%;object-fit:cover;" referrerpolicy="no-referrer"/>
+          <div style="position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;transition:transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <div style="width:42px;height:42px;border-radius:50%;overflow:hidden;border:2.5px solid ${isSelf ? '#8b5cf6' : '#ffffff'};box-shadow:0 6px 16px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05);background-color:#f3f4f6;">
+              <img src="${avatar}" style="width:100%;height:100%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.src='https://i.pravatar.cc/150?u=a'"/>
             </div>
-            ${isSelf ? `<div style="position:absolute;bottom:-1px;right:-1px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid white;"></div>` : `<div style="position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:#22c55e;border:2px solid white;"></div>`}
+            ${isSelf ? `<div style="position:absolute;bottom:1px;right:1px;width:14px;height:14px;border-radius:50%;background:#10b981;border:2.5px solid #ffffff;box-shadow:0 2px 5px rgba(0,0,0,0.2);"></div>` : `<div style="position:absolute;bottom:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#10b981;border:2px solid #ffffff;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`}
           </div>
         `,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20],
+        iconSize: [48, 48],
+        iconAnchor: [24, 24],
     });
 };
 
@@ -274,16 +274,46 @@ export default function CheckInScreen() {
                         }
                     />
                     <Marker position={userLocation} icon={createUserIcon('https://i.pravatar.cc/150?u=me', true)} />
-                    {posts.map(p => (
-                        p.location && <Marker key={p.id} position={[p.location.latitude, p.location.longitude]} icon={createUserIcon(p.author.avatar?.url ?? 'https://i.pravatar.cc/150?u=a')}>
-                            <Popup className="custom-popup">
-                                <div className="p-1.5 text-center min-w-[100px]">
-                                    <p className={`font-bold text-[13px] ${dark ? 'text-white' : 'text-gray-900'}`}>{p.author.displayname}</p>
-                                    {p.content && <p className={`text-[11px] mt-0.5 ${dark ? 'text-gray-400' : 'text-gray-500'}`}>{getLocalizedContent(p.content, defaultLanguage)}</p>}
-                                </div>
-                            </Popup>
-                        </Marker>
-                    ))}
+                    {posts.map(p => {
+                        const hasTags = p.extras?.tags && p.extras.tags.length > 0;
+                        const firstTag = hasTags ? checkinTags.find(t => t.tag === p.extras.tags[0]) : null;
+                        const TagIcon = firstTag?.icon || MapPin;
+                        
+                        return (
+                            p.location && <Marker key={p.id} position={[p.location.latitude, p.location.longitude]} icon={createUserIcon(p.author.avatar?.variants?.image?.thumbnail?.url || p.author.avatar?.url || 'https://i.pravatar.cc/150?u=a')}>
+                                <Popup className="custom-popup" closeButton={false}>
+                                    <div className="flex flex-col min-w-[150px] max-w-[220px]">
+                                        <div className="p-3.5">
+                                            <div className="flex items-center gap-2.5 mb-2">
+                                                <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-gray-100 border border-black/5 shadow-sm">
+                                                    <img src={p.author.avatar?.variants?.image?.thumbnail?.url || p.author.avatar?.url || `https://i.pravatar.cc/150?u=${p.author_id}`} alt="avatar" className="w-full h-full object-cover" />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <h4 className={`text-[13px] font-bold truncate leading-tight tracking-tight ${dark ? 'text-white' : 'text-gray-900'}`}>{p.author.displayname}</h4>
+                                                    <p className={`text-[11px] font-medium truncate leading-tight ${dark ? 'text-gray-400' : 'text-gray-500'}`}>@{p.author.username}</p>
+                                                </div>
+                                            </div>
+                                            
+                                            {hasTags && firstTag && (
+                                                <div className="flex items-center gap-1.5 mt-2.5 mb-2">
+                                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border" style={{ ...tagNameToColor(firstTag.tag), background: 'transparent', color: tagNameToColor(firstTag.tag).background, borderColor: dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }}>
+                                                        <TagIcon className="w-3.5 h-3.5" />
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider">{getLocalizedContent(firstTag.name, defaultLanguage)}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {p.content && (
+                                                <p className={`text-[12px] leading-relaxed mt-2 line-clamp-3 font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                    {getLocalizedContent(p.content, defaultLanguage)}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </Popup>
+                            </Marker>
+                        );
+                    })}
                 </MapContainer>
             </div>
 
@@ -294,29 +324,29 @@ export default function CheckInScreen() {
                 <AnimatePresence>
                     {!isModalOpen && (
                         <motion.div
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            className="absolute bottom-[47vh] md:bottom-[52vh] right-5 z-[110] pointer-events-auto"
+                            initial={{ scale: 0, y: 15, opacity: 0 }}
+                            animate={{ scale: 1, y: 0, opacity: 1 }}
+                            exit={{ scale: 0, y: 15, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                            className="absolute bottom-[47vh] md:bottom-[52vh] right-5 z-[110] pointer-events-auto flex flex-col items-center gap-2"
                         >
                             <motion.button
                                 whileHover={{ scale: 1.06 }}
                                 whileTap={{ scale: 0.94 }}
                                 onClick={() => setIsModalOpen(true)}
                                 className={`
-                                    relative w-[58px] h-[58px] rounded-full flex items-center justify-center
-                                    ${dark ? 'bg-white text-black' : 'bg-gray-900 text-white'}
-                                    shadow-xl overflow-hidden
+                                    relative w-14 h-14 rounded-full flex items-center justify-center
+                                    bg-emerald-500 text-white shadow-[0_8px_24px_rgba(16,185,129,0.35)] overflow-hidden
                                 `}
                             >
-                                <div className={`absolute inset-0 ${dark ? 'bg-gray-100' : 'bg-gray-700'} opacity-0 hover:opacity-10 transition-opacity`} />
-                                <MapPin className="relative z-10 w-6 h-6" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
+                                <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                                <MapPin className="relative z-10 w-6 h-6 drop-shadow-sm" fill="currentColor" strokeWidth={1.5} />
                             </motion.button>
                             <div className={`
-                                absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap
-                                text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full
-                                ${dark ? 'bg-gray-900/80 text-gray-400' : 'bg-white/80 text-gray-500'}
-                                backdrop-blur-sm
+                                whitespace-nowrap text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full
+                                ${dark ? 'bg-gray-900/80 text-gray-300 border border-white/10 shadow-lg mt-0.5' : 'bg-white/90 text-gray-600 border border-black/5 shadow-md mt-0.5'}
+                                backdrop-blur-md
                             `}>
                                 Check-in
                             </div>
@@ -554,16 +584,17 @@ export default function CheckInScreen() {
             <style dangerouslySetInnerHTML={{
                 __html: `
                 .custom-popup .leaflet-popup-content-wrapper {
-                    background: ${dark ? 'rgba(10,10,15,0.92)' : 'rgba(255,255,255,0.94)'};
-                    backdrop-filter: blur(16px);
-                    border: 1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)'};
-                    border-radius: 18px;
-                    color: ${dark ? '#fff' : '#0f172a'};
-                    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+                    background: ${dark ? 'rgba(15,15,20,0.85)' : 'rgba(255,255,255,0.95)'};
+                    backdrop-filter: blur(20px);
+                    -webkit-backdrop-filter: blur(20px);
+                    border: 1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
+                    border-radius: 20px;
+                    box-shadow: 0 10px 40px ${dark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.15)'};
                     padding: 0;
+                    overflow: hidden;
                 }
                 .custom-popup .leaflet-popup-tip-container { display: none; }
-                .custom-popup .leaflet-popup-content { margin: 0; }
+                .custom-popup .leaflet-popup-content { margin: 0; width: auto !important; }
                 .no-scrollbar::-webkit-scrollbar { display: none; }
                 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
                 .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }

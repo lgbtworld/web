@@ -48,8 +48,8 @@ function buildItems(pool, seg) {
 
 
   const normalizedImages = pool.map(user => {
-    let imageURL = getSafeImageURLEx(user.public_id, user.avatar, "large")
-    let imageUser = user.displayname;
+    const imageURL = getSafeImageURLEx(user.public_id, user.avatar, "large")
+    const imageUser = user.displayname;
     return { src: imageURL, alt: imageUser || '', userData: user };
   });
 
@@ -319,7 +319,7 @@ export default function DomeView({
         }
         if (last) {
           draggingRef.current = false;
-          let [vMagX, vMagY] = velocity;
+          const [vMagX, vMagY] = velocity;
           const [dirX, dirY] = direction;
           let vx = vMagX * dirX;
           let vy = vMagY * dirY;

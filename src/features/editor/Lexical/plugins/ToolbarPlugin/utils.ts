@@ -37,7 +37,7 @@ import { DEFAULT_FONT_SIZE, MAX_ALLOWED_FONT_SIZE, MIN_ALLOWED_FONT_SIZE } from 
 
 
 
-// eslint-disable-next-line no-shadow
+ 
 export enum UpdateFontSizeType {
   increment = 1,
   decrement,

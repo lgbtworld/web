@@ -358,7 +358,7 @@ const Flows: React.FC<FlowsProps> = ({ onPostClick, onProfileClick, scrollParent
     };
 
     fetchPosts();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);  
 
   // Load more posts function - using refs to avoid dependency issues
   const loadMorePosts = useCallback(async () => {

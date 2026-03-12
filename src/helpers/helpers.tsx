@@ -52,14 +52,14 @@ export function getSafeImageURL(
     attachment: any,
     variant: string = "small"
   ): string | null {
-    var serviceURI = serviceURL[defaultServiceServerId]
+    const serviceURI = serviceURL[defaultServiceServerId]
     try {
       // Try multiple path structures:
       // 1. attachment.file.variants.image[variant].url (for nested file structure like avatar/cover)
       // 2. attachment.variants.image[variant].url (for direct file structure like media)
       // 3. attachment.file.variants.video[variant].url (for video files)
       // 4. attachment.variants.video[variant].url (for direct video structure)
-      let path = attachment?.file?.variants?.image?.[variant]?.url || 
+      const path = attachment?.file?.variants?.image?.[variant]?.url || 
                  attachment?.variants?.image?.[variant]?.url ||
                  attachment?.file?.variants?.video?.[variant]?.url ||
                  attachment?.variants?.video?.[variant]?.url;
@@ -88,14 +88,14 @@ export function getSafeImageURLEx(
     attachment: any,
     variant: string = "small"
   ): string | null {
-    var serviceURI = serviceURL[defaultServiceServerId]
+    const serviceURI = serviceURL[defaultServiceServerId]
     try {
       // Try multiple path structures:
       // 1. attachment.file.variants.image[variant].url (for nested file structure like avatar/cover)
       // 2. attachment.variants.image[variant].url (for direct file structure like media)
       // 3. attachment.file.variants.video[variant].url (for video files)
       // 4. attachment.variants.video[variant].url (for direct video structure)
-      let path = attachment?.file?.variants?.image?.[variant]?.url || 
+      const path = attachment?.file?.variants?.image?.[variant]?.url || 
                  attachment?.variants?.image?.[variant]?.url ||
                  attachment?.file?.variants?.video?.[variant]?.url ||
                  attachment?.variants?.video?.[variant]?.url;

@@ -52,7 +52,7 @@ export const CustomMarker = React.memo(({ item, onClick }: CustomMarkerProps) =>
       return (Math.abs(sinValue) * 256) % 256;
     };
 
-    var index = _index ? BigInt(_index) : BigInt(0);
+    const index = _index ? BigInt(_index) : BigInt(0);
     const r = Math.floor(getChannel(index * BigInt(123456)));
     const g = Math.floor(getChannel(index * BigInt(789101)));
     const b = Math.floor(getChannel(index * BigInt(112131)));

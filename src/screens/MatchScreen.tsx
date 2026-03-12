@@ -584,7 +584,7 @@ const MatchScreen: React.FC = () => {
       setHasLoadedPassed(true);
       fetchPassedProfilesRef.current?.(20);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []); // Only run once on mount
 
   // Handle send message - create chat and navigate

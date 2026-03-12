@@ -32,7 +32,7 @@ const useMarkerData = ({ locations, map, viewportWidth, viewportHeight }: useMap
 
     const coordsSum: LatLngExpression[] = []
     locations.forEach(item => {
-      let position: LatLngExpression = decodeGeoHash(item)
+      const position: LatLngExpression = decodeGeoHash(item)
   
       coordsSum.push(position)
     })

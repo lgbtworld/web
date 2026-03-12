@@ -510,7 +510,7 @@ const MessagesScreen: React.FC = () => {
       // Leave chat room on cleanup
       if (currentChatRoomRef.current) {
         console.log('Leaving chat room (cleanup):', currentChatRoomRef.current);
-        let leaveMessage = { chat_id: currentChatRoomRef.current }
+        const leaveMessage = { chat_id: currentChatRoomRef.current }
         socket.emit('leave', JSON.stringify(leaveMessage));
         currentChatRoomRef.current = null;
       }
@@ -1033,7 +1033,7 @@ const MessagesScreen: React.FC = () => {
       // Leave current chat room if chat is deselected
       if (socket && currentChatRoomRef.current) {
         console.log('Leaving chat room (chat deselected):', currentChatRoomRef.current);
-        let leaveMessage = { chat_id: currentChatRoomRef.current }
+        const leaveMessage = { chat_id: currentChatRoomRef.current }
         socket.emit('leave', JSON.stringify(leaveMessage));
         currentChatRoomRef.current = null;
       }
@@ -1059,14 +1059,14 @@ const MessagesScreen: React.FC = () => {
     // Leave previous chat room if exists and different
     if (currentChatRoomRef.current && currentChatRoomRef.current !== realChatId) {
       console.log('Leaving previous chat room:', currentChatRoomRef.current);
-      let leaveMessage = { chat_id: currentChatRoomRef.current }
+      const leaveMessage = { chat_id: currentChatRoomRef.current }
       socket.emit('leave', JSON.stringify(leaveMessage));
     }
 
     // Join new chat room
     if (currentChatRoomRef.current !== realChatId) {
       console.log('Joining chat room:', realChatId);
-      let joinMessage = { chat_id: realChatId }
+      const joinMessage = { chat_id: realChatId }
       socket.emit('join', JSON.stringify(joinMessage));
       currentChatRoomRef.current = realChatId;
     }
@@ -1243,7 +1243,7 @@ const MessagesScreen: React.FC = () => {
     if (socket && currentChatRoomRef.current !== realChatId) {
       console.log('Not joined to chat room yet, joining now before sending message:', realChatId);
 
-      let joinMessage = { chat_id: realChatId }
+      const joinMessage = { chat_id: realChatId }
       socket.emit('join', JSON.stringify(joinMessage));
       currentChatRoomRef.current = realChatId;
       // Small delay to ensure join is processed (though emit is fire-and-forget)
@@ -1606,7 +1606,7 @@ const MessagesScreen: React.FC = () => {
     // Leave previous chat room if exists
     if (socket && currentChatRoomRef.current && currentChatRoomRef.current !== realChatId) {
       console.log('Leaving previous chat room:', currentChatRoomRef.current);
-      let leaveMessage = { chat_id: currentChatRoomRef.current }
+      const leaveMessage = { chat_id: currentChatRoomRef.current }
       socket.emit('leave', JSON.stringify(leaveMessage));
       currentChatRoomRef.current = null;
     }
@@ -1616,7 +1616,7 @@ const MessagesScreen: React.FC = () => {
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (uuidRegex.test(realChatId)) {
         console.log('Joining chat room:', realChatId);
-        let joinMessage = { chat_id: realChatId }
+        const joinMessage = { chat_id: realChatId }
         socket.emit('join', JSON.stringify(joinMessage));
         currentChatRoomRef.current = realChatId;
       }

@@ -2868,7 +2868,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ inline = false, isEmbed =
         console.log('ProfileScreen - API response:', response);
 
         // Handle different response structures
-        let userData = response?.user || response;
+        const userData = response?.user || response;
 
         if (!userData) {
           throw new Error('User not found');

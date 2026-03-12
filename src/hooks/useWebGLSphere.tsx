@@ -305,7 +305,7 @@ class InfiniteGridMenu {
         canvas.width = this.atlasSize * cellSize; canvas.height = this.atlasSize * cellSize;
         Promise.all(this.items.map(item => new Promise<HTMLImageElement>(resolve => {
             const imageURL = getSafeImageURLEx(item.public_id, item.avatar, 'large');
-            let fallbackImage = generateFallbackImage(item.public_id)
+            const fallbackImage = generateFallbackImage(item.public_id)
             const img = new Image(); img.crossOrigin = 'anonymous';
             img.onload = () => resolve(img);
             img.onerror = () => { img.src = fallbackImage }; // Fallback
@@ -329,7 +329,7 @@ class InfiniteGridMenu {
     #animate(deltaTime: number) {
         const gl = this.gl; if (!gl || !this.control) return;
         this.control.update(deltaTime, this.TARGET_FRAME_DURATION);
-        let positions = this.instancePositions.map(p => vec3.transformQuat(vec3.create(), p, this.control!.orientation));
+        const positions = this.instancePositions.map(p => vec3.transformQuat(vec3.create(), p, this.control!.orientation));
         const scale = 0.25; const SCALE_INTENSITY = 0.6;
         positions.forEach((p, ndx) => {
             const s = (Math.abs(p[2]) / this.SPHERE_RADIUS) * SCALE_INTENSITY + (1 - SCALE_INTENSITY); const finalScale = s * scale; const matrix = mat4.create();

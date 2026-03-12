@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { MessageCircle, Share, Bookmark, MapPin, Calendar, X, ChevronLeft, ChevronRight, CircleCheck, CheckSquare, ListOrdered, Scale, BarChart3, Loader2, ExternalLink, Sparkles, Globe, Users, HandCoins, Heart, HeartOff, Banana, MoreVertical, Trash2, Flag } from 'lucide-react';
+import { MessageCircle, Share, Bookmark, MapPin, Calendar, X, ChevronLeft, ChevronRight, CircleCheck, CheckSquare, ListOrdered, Scale, BarChart3, Loader2, ExternalLink, Sparkles, Globe, Users, HandCoins, Heart, HeartOff, Banana, MoreVertical, Trash2, Flag, Home, Car, Building2, Wallet, Zap, MessageSquare, Banknote, Droplet, Feather, Dumbbell, FlaskRound, Clock, Moon, Coffee, Smile, ShieldCheck, Hand } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -20,6 +21,7 @@ import { ListNode, ListItemNode } from '@lexical/list';
 import { LinkNode, AutoLinkNode } from '@lexical/link';
 import { MentionNode } from '../editor/Lexical/nodes/MentionNode';
 import { getLocalizedContent, getSafeImageURL, getSafeImageURLEx } from '../../helpers/helpers';
+import { tagNameToColor } from '../../helpers/colors';
 import { ImageNode } from '../editor/Lexical/nodes/ImageNode';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { HashtagPlugin } from '@lexical/react/LexicalHashtagPlugin';
@@ -36,12 +38,44 @@ import { YouTubeNode } from '../editor/Lexical/nodes/YouTubeNode';
 import { TweetNode } from '../editor/Lexical/nodes/TweetNode';
 import { MetadataNode } from '../editor/Lexical/nodes/MetadataNode';
 
+const LUCIDE_ICON_MAP: Record<string, LucideIcon> = {
+  home: Home,
+  car: Car,
+  building: Building2,
+  wallet: Wallet,
+  heart: Heart,
+  zap: Zap,
+  'message-circle': MessageSquare,
+  banknote: Banknote,
+  sparkles: Sparkles,
+  droplet: Droplet,
+  feather: Feather,
+  dumbbell: Dumbbell,
+  'flask-round': FlaskRound,
+  clock: Clock,
+  moon: Moon,
+  coffee: Coffee,
+  smile: Smile,
+  'shield-check': ShieldCheck,
+  hand: Hand,
+  globe: Globe,
+};
+
+const resolveTagIcon = (icon?: string | LucideIcon): LucideIcon => {
+  if (!icon) return MapPin;
+  if (typeof icon === 'function') return icon as LucideIcon;
+  const key = icon.toLowerCase();
+  return LUCIDE_ICON_MAP[key] ?? MapPin;
+};
+
 // API data structure interfaces
 interface ApiPost {
   id: string;
   public_id: string;
   author_id: string;
-  type: string;
+  type?: string;
+  post_kind?: string;
+  extras?: any;
   content?: {
     en?: string;
   };
@@ -105,6 +139,7 @@ interface ApiPost {
     file_id: string;
     owner_id: string;
     owner_type: string;
+  extras?: any;
     role: string;
     is_public: boolean;
     file: {
@@ -112,6 +147,7 @@ interface ApiPost {
       url: string;
       storage_path: string;
       mime_type: string;
+  extras?: any;
       size: number;
       name: string;
       created_at: string;
@@ -124,6 +160,7 @@ interface ApiPost {
     post_id: string;
     contentable_id: string;
     contentable_type: string;
+  extras?: any;
     question: {
       en: string;
     };
@@ -192,6 +229,7 @@ interface ApiPost {
       id: string;
       contentable_id: string;
       contentable_type: string;
+  extras?: any;
       country_code: string | null;
       address: string;
       display: string | null;
@@ -206,6 +244,7 @@ interface ApiPost {
       deleted_at: string | null;
     };
     type: string;
+  extras?: any;
     kind?: string;
     capacity?: number;
     is_paid?: boolean;
@@ -226,6 +265,7 @@ interface ApiPost {
     id: string;
     contentable_id: string;
     contentable_type: string;
+  extras?: any;
     country_code: string | null;
     address: string;
     display: string | null;
@@ -243,6 +283,7 @@ interface ApiPost {
     id: string;
     contentable_id: string;
     contentable_type: string;
+  extras?: any;
     counts: {
       comment_count?: number;
       bookmark_count?: number;
@@ -2775,6 +2816,38 @@ const Post: React.FC<PostProps> = ({
                 )}
               </div>
             </motion.div>
+          </div>
+        )}
+
+        {/* Check-In Section */}
+        {(post.type === 'checkin' || post.post_kind === 'checkin') && post.extras?.tags && post.extras.tags.length > 0 && (
+          <div className="px-4 py-3">
+            <div className={`px-4 py-3 rounded-2xl flex flex-wrap gap-2 ${theme === 'dark' ? 'bg-white/[0.04] border border-white/[0.06]' : 'bg-gray-50 border border-black/[0.06]'}`}>
+              {post.extras.tags.map((t: string) => {
+                const tagType = appData?.checkin_tag_types?.find((ct: any) => ct.tag === t);
+                if (!tagType) {
+                  return (
+                    <div
+                      key={t}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${theme === 'dark' ? 'bg-white/10 text-white' : 'bg-black/10 text-gray-800'}`}
+                    >
+                      <span className="text-xs font-bold">{t}</span>
+                    </div>
+                  );
+                }
+                const Icon = resolveTagIcon(tagType.icon);
+                return (
+                  <div
+                    key={t}
+                    style={tagNameToColor(tagType.tag)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white`}
+                  >
+                    <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+                    <span className="text-xs font-bold">{getLocalizedContent(tagType.name, defaultLanguage)}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 

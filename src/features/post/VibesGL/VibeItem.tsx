@@ -16,11 +16,11 @@ export const VibeItem: React.FC<ReelItemProps> = ({ vibe }) => {
 
   
       const handleBlockAction = async (userId: string) => {
-            let action = "block"
+            const action = "block"
 
       }
     const handleLikeAction = async (postId: string) => {
-      let action = "like"
+      const action = "like"
         setState(prevState => ({
             ...prevState,
             nearbyUsers: prevState.nearbyUsers.map(u =>
